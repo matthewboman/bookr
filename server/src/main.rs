@@ -3,6 +3,7 @@ mod schema;
 mod setup;
 // mod types;
 
+use actix_cors::Cors;
 use actix_web::{guard, web, App, HttpResponse, HttpServer, Result};
 use async_graphql::{http::GraphiQLSource, EmptyMutation, EmptySubscription, Schema};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
@@ -37,7 +38,10 @@ async fn main() -> std::io::Result<()> {
         .finish();
 
     HttpServer::new(move || {
+        let cors = Cors::permissive();
+
         App::new()
+            .wrap(cors)
             .app_data(crate::web::Data::new(schema.clone()))
             .service(web::resource("/").guard(guard::Post()).to(graphql))
             .service(web::resource("/").guard(guard::Get()).to(graphiql))
