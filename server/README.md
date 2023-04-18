@@ -1,6 +1,5 @@
-Getting started:
-- Start the Docker service
-- `docker compose up`
+# Getting started:
+- Copy `.env.example` to `.env` and add credentials
 - `sqlx database create`
 - `sqlx migrate run`
 - `cargo run`
