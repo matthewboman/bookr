@@ -1,7 +1,13 @@
 use async_graphql::SimpleObject;
 use sea_orm::entity::prelude::*;
 
-// use crate::types::*;
+// TODO: Should I distinguish between contact types: venues, buyers/promoters?
+
+// pub enum AgeRange {
+//     AllAges,
+//     EighteenPlus,
+//     TwentyOnePlus
+// }
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
 #[graphql(name = "Contacts")]
@@ -10,16 +16,18 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub contact_id:   i32,
     pub display_name: String,
-    pub address:      String,
+    pub address:      Option<String>,
     pub city:         String,
     pub state:        Option<String>,
     pub zip_code:     Option<String>,
     pub country:      Option<String>,
     pub latitude:     Option<f32>,
     pub longitude:    Option<f32>,
-    pub capacity:     Option<i32>,
+    pub capacity:     Option<i32>, // TODO: Some venues have multiple rooms with different capacity....
     pub email:        Option<String>,
     pub contact_form: Option<String>,
+
+    // TODO: pub age_range: AgeRange,
 
     pub created_at:   DateTime,
     pub updated_at:   DateTime

@@ -1,7 +1,7 @@
 create table contacts (
     contact_id serial not null primary key,
     display_name text not null,
-    address text not null,
+    address text,
     city text not null,
     state text,
     zip_code text,

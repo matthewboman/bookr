@@ -2,15 +2,63 @@
 	import { browser } from '$app/environment'
 	import { onMount } from 'svelte'
 
-	let LeafletContainer;
+	import MediaQuery from '../components/MediaQuery.svelte'
+
+	let LeafletContainer
 
 	onMount(async () => {
 		if (browser) {
-			LeafletContainer = (await import('../components/map.svelte')).default
+			LeafletContainer = (await import('../components/Map.svelte')).default
 		}
 	})
 </script>
 
+<style>
+	.map-container {
+        text-align: center;
+    }
+    .map {
+        display: inline-block;
+    }
+
+	.computer {
+        width: 90vw;
+        height: 800px;
+    }
+
+    .tablet {
+        width: 90vw;
+        height: 600px;
+    }
+
+    .mobile {
+        width: 90vw;
+        height: 600px;
+    }
+</style>
+
 {#if browser}
-<svelte:component this={LeafletContainer} />
+	<MediaQuery query="(min-width: 1281px)" let:matches>
+		{#if matches}
+			<div class="map computer">    
+				<svelte:component this={LeafletContainer} />
+			</div>
+		{/if}
+	</MediaQuery>
+
+	<MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
+		{#if matches}
+		<div class="map tablet">    
+			<svelte:component this={LeafletContainer} />
+		</div>
+		{/if}
+	</MediaQuery>
+
+	<MediaQuery query="(max-width: 480px)" let:matches>
+		{#if matches}
+		<div class="map mobile">    
+			<svelte:component this={LeafletContainer} />
+		</div>
+		{/if}
+	</MediaQuery>
 {/if}
