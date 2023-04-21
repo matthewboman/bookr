@@ -11,6 +11,7 @@ create table contacts (
     capacity int,
     email text,
     contact_form text,
+    age_range text,
 
     created_at timestamp(3) default current_timestamp not null,
     updated_at timestamp(3) default current_timestamp not null

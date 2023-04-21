@@ -25,11 +25,14 @@ const fetchGeoLocation = address => new Promise((resolve, reject) => {
 
     gmAPI.geocode(geocodeParams, (err, res) => {
         if (err) {
+            console.log(`Geocoding Error with address ${address}:`, err)
             reject(err)
         }
         if (res && res.results[0]) {
             resolve(res.results[0].geometry.location)
         }
+        console.log(`Could not find ${address}`)
+        console.log("Response", res)
         resolve(null)
     })
 })

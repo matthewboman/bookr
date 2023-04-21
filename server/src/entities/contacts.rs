@@ -3,12 +3,6 @@ use sea_orm::entity::prelude::*;
 
 // TODO: Should I distinguish between contact types: venues, buyers/promoters?
 
-// pub enum AgeRange {
-//     AllAges,
-//     EighteenPlus,
-//     TwentyOnePlus
-// }
-
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
 #[graphql(name = "Contacts")]
 #[sea_orm(table_name = "contacts")]
@@ -26,8 +20,7 @@ pub struct Model {
     pub capacity:     Option<i32>, // TODO: Some venues have multiple rooms with different capacity....
     pub email:        Option<String>,
     pub contact_form: Option<String>,
-
-    // TODO: pub age_range: AgeRange,
+    pub age_range:    Option<String>,
 
     pub created_at:   DateTime,
     pub updated_at:   DateTime
