@@ -1,6 +1,6 @@
 # Map of venues for booking tours
 
-## Project ingo
+## Project info
 - `/server` is a GraphQL enpoint written in Rust that connects to a Postgres database
 - `/frontend` is a web application written in Svelte that renders a map of venues
 - `/addr_to_geo` is a Node script that pulls contacts from the database and adds a latitude/longitude so they can be rendered on a map.
