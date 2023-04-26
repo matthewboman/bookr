@@ -1,9 +1,8 @@
-<script>
-    // @ts-nocheck
+<script lang="ts">
 	import { onMount } from 'svelte'
     
-    export let filteredContacts
-    export let contactList
+    export let filteredContacts: any[]
+    export let contactList: any[]
 
     // Filters
     let minCapacity         = 0
@@ -15,7 +14,7 @@
     let allowNullAgeRange   = true
 
 
-    const capacityFilter = contact => {
+    const capacityFilter = (contact: any) => {
         if (allowNullCapacity && contact.capacity == null) return true
         if (!allowNullCapacity && contact.capacity == null) return false
 
@@ -24,7 +23,7 @@
         return false
     }
 
-    const ageRangeFilter = contact => {
+    const ageRangeFilter = (contact: any) => {
         if (allAges && contact.ageRange == 'all') return true
         if (eighteenPlus && contact.ageRange == '18+') return true
         if (twentyonePlus && contact.ageRange == '21+') return true
@@ -42,9 +41,7 @@
 
     // Workaround to reload when data is fetched
     onMount(() => {
-        setTimeout(()=> {
-            update()
-        }, 1) 
+        setTimeout(()=> { update() }, 1) 
     })
 </script>
 

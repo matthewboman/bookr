@@ -1,98 +1,51 @@
 <script>
     // @ts-nocheck
-	import { onMount } from 'svelte'
-	import { browser } from '$app/environment'
+    import Map        from './Map.svelte'
+    import MediaQuery from './MediaQuery.svelte'
 
-
-    import { LeafletMap, Marker, Popup, TileLayer } from 'svelte-leafletjs'
-    import { ApolloClient, InMemoryCache, gql } from "@apollo/client/core"
-	import { setClient, query } from "svelte-apollo"
-
-    import ContactPopup    from './ContactPopup.svelte'
-    import FilterContainer from './FilterContainer.svelte';
-	import About           from './About.svelte'
-
-    let Map
-
-	onMount(async () => {
-		if (browser) {
-			Map = (await import('./Map.svelte')).default
-		}
-	})
-
-
-    // GQL
-    // unfortunately this can't be extracted to a service w/o overhead
-    // https://github.com/timhall/svelte-apollo/issues/99
-    const GQL_URL = "http://127.0.0.1:8000/"
-    const client  = new ApolloClient({
-        uri:   GQL_URL,
-		cache: new InMemoryCache()
-	})
-
-	setClient(client)
-
-    const CONTACTS = gql`
-        query Contacts {
-            contacts {
-                contactId,
-                displayName,
-                address,
-                city,
-                state,
-                zipCode,
-                capacity,
-                latitude,
-                longitude,
-                email,
-                contactForm,
-                ageRange
-            }
-        }
-    `
-
-    const contacts = query(CONTACTS)
-
-    // Map
-    const mapOptions = {
-        center: [ 37.09, -90.71 ],
-        zoom:   3.5,
-    }
-    const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-    const tileLayerOptions = {
-        minZoom: 0,
-        maxZoom: 20,
-        maxNativeZoom: 19,
-        attribution: "© OpenStreetMap contributors",
-    }
-
-    let leafletMap
-
-    // Filtering
-    let filteredContacts = []
-    $: renderedContacts  = filteredContacts
-    $: contactList       = $contacts.data ? $contacts.data.contacts : []
+    export let renderedContacts = []
 </script>
 
-{#if $contacts.loading}
-    loading...
-{:else if $contacts.error}
-    error...
-{:else}
-    <!-- <LeafletMap bind:this={leafletMap} options={mapOptions}>
-        <TileLayer url={tileUrl} options={tileLayerOptions}/>
-        {#each renderedContacts as contact}
-            <Marker latLng={[contact.latitude, contact.longitude]}>
-                <Popup>
-                    <ContactPopup contact={contact}/>
-                </Popup>
-            </Marker>
-        {/each}
-    </LeafletMap> -->
-    {#if browser}
-    <Map renderedContacts={filteredContacts} />
-    {/if}
-    <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList}/>
-{/if}
+<style>
+    .map {
+        display: inline-block;
+    }
 
-<About />
+	/* Device-specific map layout */
+	.computer {
+        width: 90vw;
+        height: 800px;
+    }
+    .tablet {
+        width: 90vw;
+        height: 600px;
+    }
+    .mobile {
+        width: 90vw;
+        height: 600px;
+    }
+</style>
+
+<MediaQuery query="(min-width: 1281px)" let:matches>
+    {#if matches}
+        <div class="map computer"> 
+            <Map renderedContacts={renderedContacts}/>   
+        </div>
+    {/if}
+</MediaQuery>
+
+<MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
+    {#if matches}
+        <div class="map tablet">    
+            <Map renderedContacts={renderedContacts}/>
+        </div>
+    {/if}
+</MediaQuery>
+
+<MediaQuery query="(max-width: 480px)" let:matches>
+    {#if matches}
+        <div class="map mobile">    
+            <Map renderedContacts={renderedContacts}/>
+        </div>
+    {/if}
+</MediaQuery>
