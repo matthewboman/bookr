@@ -1,14 +1,16 @@
-<script lang="ts">
+<script>
 	import { browser } from '$app/environment'
 	import { onMount } from 'svelte'
 
 	import MediaQuery from '../components/MediaQuery.svelte'
+	import About      from '../components/About.svelte'
+    // import LeafletContainer from '../components/Map.svelte';
 
 	let LeafletContainer
 
 	onMount(async () => {
 		if (browser) {
-			LeafletContainer = (await import('../components/Map.svelte')).default
+			LeafletContainer = (await import('../components/MapContainer.svelte')).default
 		}
 	})
 </script>
@@ -32,11 +34,11 @@
         height: 600px;
     }
 </style>
-
-{#if browser}
+<div>
+	{#if browser}
 	<MediaQuery query="(min-width: 1281px)" let:matches>
 		{#if matches}
-			<div class="map computer">    
+			<div class="map computer">
 				<svelte:component this={LeafletContainer} />
 			</div>
 		{/if}
@@ -58,3 +60,5 @@
 		{/if}
 	</MediaQuery>
 {/if}
+</div>
+

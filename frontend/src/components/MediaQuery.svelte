@@ -1,6 +1,5 @@
 <script>
-// @ts-nocheck
-
+    // @ts-nocheck
     import { onMount } from "svelte"
 
     export let query

@@ -1,12 +1,24 @@
 <script>
     // @ts-nocheck
+	import { onMount } from 'svelte'
+	import { browser } from '$app/environment'
+
+
     import { LeafletMap, Marker, Popup, TileLayer } from 'svelte-leafletjs'
     import { ApolloClient, InMemoryCache, gql } from "@apollo/client/core"
 	import { setClient, query } from "svelte-apollo"
 
     import ContactPopup    from './ContactPopup.svelte'
     import FilterContainer from './FilterContainer.svelte';
-	import About      from '../components/About.svelte'
+	import About           from './About.svelte'
+
+    let Map
+
+	onMount(async () => {
+		if (browser) {
+			Map = (await import('./Map.svelte')).default
+		}
+	})
 
 
     // GQL
@@ -67,7 +79,7 @@
 {:else if $contacts.error}
     error...
 {:else}
-    <LeafletMap bind:this={leafletMap} options={mapOptions}>
+    <!-- <LeafletMap bind:this={leafletMap} options={mapOptions}>
         <TileLayer url={tileUrl} options={tileLayerOptions}/>
         {#each renderedContacts as contact}
             <Marker latLng={[contact.latitude, contact.longitude]}>
@@ -76,9 +88,11 @@
                 </Popup>
             </Marker>
         {/each}
-    </LeafletMap>
+    </LeafletMap> -->
+    {#if browser}
+    <Map renderedContacts={filteredContacts} />
+    {/if}
     <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList}/>
 {/if}
-
 
 <About />
