@@ -14,23 +14,19 @@
 </script>
 
 <style>
-	.map-container {
-        text-align: center;
-    }
     .map {
         display: inline-block;
     }
 
+	/* Device-specific map layout */
 	.computer {
         width: 90vw;
         height: 800px;
     }
-
     .tablet {
         width: 90vw;
         height: 600px;
     }
-
     .mobile {
         width: 90vw;
         height: 600px;

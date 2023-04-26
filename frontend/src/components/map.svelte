@@ -92,13 +92,16 @@
 </script>
 
 <style>
+
     .filter-container {
         display: flex;
         flex-direction: row;
+		font-family: sans-serif;
     }
 
     .filter {
         padding: 10px;
+        flex-grow: 1;
     }
 
     .filter-title {
@@ -106,8 +109,51 @@
     }
 
     .filter-input {
-
+        margin-bottom: 0.5em;
     }
+
+    /* Checkboxes */
+    .checkbox-container {
+        line-height: 1.1;
+        display: grid;
+        grid-template-columns: 1em auto;
+        gap: 0.5em;
+    }
+    .checkbox-container:hover {
+        cursor: pointer;
+    }
+    input[type="checkbox"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background-color: #fff;
+        margin: 0;
+        font: inherit;
+        color: currentColor;
+        width: 1.15em;
+        height: 1.15em;
+        border: 0.1em solid currentColor;
+        border-radius: 0.15em;
+        transform: translateY(-0.075em);
+        display: grid;
+        place-content: center;
+    }
+    input[type="checkbox"]::before {
+        content: "";
+        width: 0.65em;
+        height: 0.65em;
+        transform: scale(0);
+        transition: 120ms transform ease-in-out;
+        box-shadow: inset 1em 1em rgb(49, 46, 232);
+        background-color: CanvasText;
+    }
+    input[type="checkbox"]:checked::before {
+        transform: scale(1);
+    }
+    input:focus {
+        outline: max(2px, 0.15em) solid grey;
+        outline-offset: max(2px, 0.15em);
+    }
+
 </style>
 
 {#if $contacts.loading}
@@ -141,8 +187,8 @@
             <input id="max" type="numer" bind:value={maxCapacity} on:change={update}/>       
         </div>
         <div class="filter-input">
-            <label for="null-capacity">
-                <input id="null-capacity" type="checkbox" bind:checked={allowNullCapacity} on:change={update}/>               
+            <label for="null-capacity" class="checkbox-container">
+                <input id="null-capacity" type="checkbox" bind:checked={allowNullCapacity} on:change={update}/>                     
                 allow for venues with unknown capacity
             </label>
         </div>
@@ -152,26 +198,26 @@
             Filter venues by age range
         </div>
         <div class="filter-input">
-            <label>
-                <input type=checkbox bind:checked={allAges} on:change={update}>
+            <label class="checkbox-container">
+                <input type=checkbox class="checkbox" bind:checked={allAges} on:change={update}>
                 All Ages
             </label>
         </div>
         <div class="filter-input">
-            <label>
-                <input type=checkbox bind:checked={eighteenPlus} on:change={update}>
+            <label class="checkbox-container">
+                <input type=checkbox class="checkbox" bind:checked={eighteenPlus} on:change={update}>
                 18+
             </label>
         </div>
         <div class="filter-input">
-            <label>
-                <input type=checkbox bind:checked={twentyonePlus} on:change={update}>
+            <label class="checkbox-container">
+                <input type=checkbox class="checkbox" bind:checked={twentyonePlus} on:change={update}>
                 21+
             </label>
         </div>
         <div class="filter-input">
-            <label>
-                <input type=checkbox bind:checked={allowNullAgeRange} on:change={update}>
+            <label class="checkbox-container">
+                <input type=checkbox class="checkbox" bind:checked={allowNullAgeRange} on:change={update}>
                 allow for venues with unknown age range
             </label>
         </div>
