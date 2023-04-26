@@ -1,30 +1,15 @@
 mod entities;
+mod routes;
 mod schema;
 mod setup;
-// mod types;
 
 use actix_cors::Cors;
-use actix_web::{guard, web, App, HttpResponse, HttpServer, Result};
-use async_graphql::{http::GraphiQLSource, EmptyMutation, EmptySubscription, Schema};
-use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
-use sea_orm::*;
+use actix_web::{guard, web, App, HttpServer};
+use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 
+use routes::{graphiql, graphql};
 use schema::*;
 use setup::connect_to_db;
-
-type SchemaType = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
-
-async fn graphiql() -> Result<HttpResponse> {
-    Ok(
-        HttpResponse::Ok()
-            .content_type("text/html; charset=uft-8")
-            .body(GraphiQLSource::build().endpoint("/").finish())
-    )
-}
-
-async fn graphql(schema: web::Data<SchemaType>, req: GraphQLRequest) -> GraphQLResponse {
-    schema.execute(req.into_inner()).await.into()
-}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

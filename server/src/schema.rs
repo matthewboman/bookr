@@ -1,9 +1,8 @@
-use async_graphql::{Context, Object};
-use sea_orm::*;
-
+use async_graphql::{Context, Object, EmptyMutation, EmptySubscription, Schema};
+use sea_orm::{DatabaseConnection, DbErr, EntityTrait};
 use crate::entities::{prelude::*, *};
 
-pub(crate) struct QueryRoot;
+pub struct QueryRoot;
 
 #[Object]
 impl QueryRoot {
@@ -12,6 +11,6 @@ impl QueryRoot {
 
         Contacts::find().all(db).await
     }
-
-
 }
+
+pub type SchemaType = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
