@@ -1,37 +1,26 @@
-mod entities;
-mod routes;
-mod schema;
-mod setup;
+use secrecy::ExposeSecret;
+use sea_orm::{ConnectOptions, Database};
+use std::net::TcpListener;
 
-use actix_cors::Cors;
-use actix_web::{guard, web, App, HttpServer};
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use byot_server::configuration::get_configuration;
+use byot_server::setup::{run};
+use byot_server::telemetry::{get_subscriber, init_subscriber};
 
-use routes::{graphiql, graphql};
-use schema::*;
-use setup::connect_to_db;
+#[tokio::main]
+async fn main() -> Result<(), std::io::Error> {
+    let subscriber = get_subscriber("byot_server".into(), "error".into(), std::io::stdout);
+    init_subscriber(subscriber);
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let db = match connect_to_db().await {
-        Ok(db) => db,
-        Err(err) => panic!("{}", err)
-    };
+    let config  = get_configuration().expect("Failed to read config");
 
-    let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
-        .data(db)
-        .finish();
+    let db_url  = config.database.connection_string().expose_secret().to_owned();
+    let db_info = ConnectOptions::new(db_url);
+    let db_pool = Database::connect(db_info)
+        .await
+        .expect("Failed to connect to db");
 
-    HttpServer::new(move || {
-        let cors = Cors::permissive();
+    let address  = format!("127.0.0.1:{}", config.application_port);
+    let listener = TcpListener::bind(address)?;
 
-        App::new()
-            .wrap(cors)
-            .app_data(crate::web::Data::new(schema.clone()))
-            .service(web::resource("/").guard(guard::Post()).to(graphql))
-            .service(web::resource("/").guard(guard::Get()).to(graphiql))
-    })
-    .bind("127.0.0.1:8000")?
-    .run()
-    .await
+    run(listener, db_pool)?.await
 }

@@ -19,7 +19,7 @@
 	// GQL
     // unfortunately this can't be extracted to a service w/o overhead
     // https://github.com/timhall/svelte-apollo/issues/99
-    const GQL_URL = "http://127.0.0.1:8000/"
+    const GQL_URL = "http://127.0.0.1:8000/graphql"
     const client  = new ApolloClient({
         uri:   GQL_URL,
 		cache: new InMemoryCache()

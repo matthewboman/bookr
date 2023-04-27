@@ -8,7 +8,7 @@ pub async fn graphiql() -> Result<HttpResponse> {
     Ok(
         HttpResponse::Ok()
             .content_type("text/html; charset=uft-8")
-            .body(GraphiQLSource::build().endpoint("/").finish())
+            .body(GraphiQLSource::build().endpoint("/graphql").finish())
     )
 }
 

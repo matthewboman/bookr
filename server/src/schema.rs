@@ -1,7 +1,9 @@
 use async_graphql::{Context, Object, EmptyMutation, EmptySubscription, Schema};
 use sea_orm::{DatabaseConnection, DbErr, EntityTrait};
+
 use crate::entities::{prelude::*, *};
 
+#[derive(Debug)]
 pub struct QueryRoot;
 
 #[Object]
