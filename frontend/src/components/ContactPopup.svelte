@@ -1,5 +1,5 @@
-<script>
-    export let contact
+<script lang="ts">
+    export let contact: any
 </script>
 
 <style>

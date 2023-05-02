@@ -18,20 +18,21 @@ const dbCredentials = {
     port:     process.env.DB_PORT,
 }
 
-// fetchGeoLocation :: String -> Promise (Err [{}])
-const fetchGeoLocation = address => new Promise((resolve, reject) => {
+// fetchGeoLocation :: Contact -> Promise (Err [{}])
+const fetchGeoLocation = contact => new Promise((resolve, reject) => {
+    const address       = `${contact.address} ${contact.state} ${contact.zip_code}`
     const gmAPI         = new GoogleMapsAPI(mapsConfig)
     const geocodeParams = { address, language: 'en' }
 
     gmAPI.geocode(geocodeParams, (err, res) => {
         if (err) {
-            console.log(`Geocoding Error with address ${address}:`, err)
+            console.log(`ID: ${contact.contact_id} -- Geocoding Error with address ${address}:`, err)
             reject(err)
         }
         if (res && res.results[0]) {
             resolve(res.results[0].geometry.location)
         }
-        console.log(`Could not find ${address}`)
+        console.log(`ID: ${contact.contact_id} -- Could not find ${address}`)
         console.log("Response", res)
         resolve(null)
     })
@@ -56,8 +57,7 @@ async function findGeolocations(pool) {
     let updates    = result.rows.length
 
     result.rows.forEach(async r => {
-        const address = `${r.address} ${r.state} ${r.zip_code}`
-        const latLng  = await fetchGeoLocation(address)
+        const latLng  = await fetchGeoLocation(r)
 
         if (latLng != null) {
             await addGeolocation(pool, r, latLng)

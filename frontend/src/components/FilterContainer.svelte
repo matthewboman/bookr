@@ -50,6 +50,12 @@
         display: flex;
         flex-direction: row;
 		font-family: sans-serif;
+
+        /* display: block; */
+        margin-left: auto;
+        margin-right: auto;
+
+        width: 90vw;
     }
     .filter {
         padding: 10px;

@@ -8,7 +8,9 @@
 
 <style>
     .map {
-        display: inline-block;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
 
 	/* Device-specific map layout */
