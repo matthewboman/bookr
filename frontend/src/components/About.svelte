@@ -3,7 +3,6 @@
         margin-bottom: 30px;
     }
     .info {
-        font-family: sans-serif;
         margin-left: auto;
         margin-right: auto;
         width: 90vw;
@@ -11,12 +10,17 @@
     .section {
         margin-bottom: 20px;
     }
+    .email {
+        color: grey;
+    }
 </style>
 
 <div class="info">
     <hr class="divider"/>
     <div class="section about">
-        Book Your Own Tour makes it easy for bands to route tours. Our goal is to keep this free and public.
+        Book Your Own Tour makes it easy for bands to route tours. 
+        Our goal is to keep this free and public. 
+        Is there a venue that needs added/removed/updated? email <span class="email">bookyourowntour [at] proton [dot] me</span>
     </div>
     <div class="section features">
         <p>

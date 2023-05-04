@@ -1,12 +1,13 @@
 <script lang="ts">
     import { LeafletMap, Marker, Popup, TileLayer } from 'svelte-leafletjs'
+    import type { LatLngExpression } from "leaflet"
     import ContactPopup from './ContactPopup.svelte'
+    import type { Contact } from '../types'
 
-    export let renderedContacts: any[]
+    export let renderedContacts: Contact[]
 
-    // Map
     const mapOptions = {
-        center: [ 37.09, -90.71 ],
+        center: [ 37.09, -90.71 ] as LatLngExpression,
         zoom:   3.5,
     }
     const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
+    import type { Contact } from '../types'
     
-    export let filteredContacts: any[]
-    export let contactList: any[]
+    export let filteredContacts: Contact[]
+    export let contactList: Contact[]
 
     // Filters
     let minCapacity         = 0
@@ -49,12 +50,8 @@
     .filter-container {
         display: flex;
         flex-direction: row;
-		font-family: sans-serif;
-
-        /* display: block; */
         margin-left: auto;
         margin-right: auto;
-
         width: 90vw;
     }
     .filter {

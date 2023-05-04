@@ -1,9 +1,9 @@
-<script>
-    // @ts-nocheck
+<script lang="ts">
     import Map        from './Map.svelte'
     import MediaQuery from './MediaQuery.svelte'
+    import type { Contact } from '../types'
 
-    export let renderedContacts = []
+    export let renderedContacts: Contact[]= []
 </script>
 
 <style>

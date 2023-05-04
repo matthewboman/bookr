@@ -35,9 +35,11 @@
     </div>
 
     <div class="contact-address">
-        {contact.address}
-        <br />
-        {contact.city}, {contact.state} {contact.zipCode}
+        {#if contact.address }
+            {(contact.address)}
+            <br />
+        {/if}     
+        {contact.city}, {contact.state} {#if contact.zipCode }{contact.zipCode}{/if}
     </div>
 
     <div class="venue-capacity">
