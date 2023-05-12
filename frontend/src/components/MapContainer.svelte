@@ -3,7 +3,7 @@
     import MediaQuery from './MediaQuery.svelte'
     import type { Contact } from '../types'
 
-    export let renderedContacts: Contact[]= []
+    export let renderedContacts: Contact[] = []
 </script>
 
 <style>
