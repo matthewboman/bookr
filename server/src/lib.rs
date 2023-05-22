@@ -1,6 +1,4 @@
 pub mod configuration;
-pub mod entities;
 pub mod routes;
-pub mod schema;
-pub mod setup;
+pub mod startup;
 pub mod telemetry;
