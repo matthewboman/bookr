@@ -13,7 +13,7 @@ name = "byot_server"
 [dependencies]
 actix-cors = "0.6.4"
 actix-web = {version = "4.3", default-features = false, features = ["macros"]}
-chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "serde"] }
 config = "0.13"
 secrecy = { version = "0.8", features = ["serde"]}
 serde = { version = "1", features = ["derive"] }
