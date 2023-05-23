@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import { onMount }      from 'svelte'
     import type { Contact } from '../types'
     
     export let filteredContacts: Contact[]

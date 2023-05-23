@@ -1,5 +1,5 @@
 use actix_cors::Cors;
-use actix_web::{guard, web, App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use actix_web::dev::Server;
 use sqlx::PgPool;
 use std::net::TcpListener;
