@@ -54,7 +54,7 @@ pub async fn login(
 }
 
 fn login_error(e: LoginError) -> InternalError<LoginError> {
-    let response = HttpResponse::ExpectationFailed().finish(); // idk if this is the right response
+    let response = HttpResponse::Unauthorized().finish(); // idk if this is the right response
 
     InternalError::from_response(e, response)
 }

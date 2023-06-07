@@ -31,6 +31,11 @@ static TRACING: Lazy<()> = Lazy::new(|| {
     }
 });
 
+pub struct ConfirmationLinks {
+    pub html:       reqwest::Url,
+    pub plain_text: reqwest::Url,
+}
+
 pub struct TestApp {
     pub address:      String,
     pub db_pool:      PgPool,
@@ -41,29 +46,48 @@ pub struct TestApp {
     pub email_client: EmailClient,
 }
 
-// pub struct ConfirmationLinks {
-//     pub html:       reqwest::Url,
-//     pub plain_text: reqwest::Url,
-// }
-
 impl TestApp {
-    pub async fn post_change_password<Json>(&self, json: Json) -> request::Response
+    pub fn get_confirmation_links(&self, email_request: &wiremock::Request) -> ConfirmationLinks {
+        let body: serde_json::Value = serde_json::from_slice(&email_request.body).unwrap();
+
+        let get_link = |s: &str| {
+            let links: Vec<_> = linkify::LinkFinder::new()
+                .links(s)
+                .filter(|l| *l.kind() == linkify::LinkKind::Url)
+                .collect();
+
+            let raw_link = links[0].as_str().to_owned();
+            let mut confirmation_link = reqwest::Url::parse(&raw_link).unwrap();
+
+            assert_eq!(confirmation_link.host_str().unwrap(), "127.0.0.1");
+            confirmation_link.set_port(Some(self.port)).unwrap();
+
+            confirmation_link
+        };
+
+        let html       = get_link(body["HtmlBody"].as_str().unwrap());
+        let plain_text = get_link(body["TextBody"].as_str().unwrap());
+        
+        ConfirmationLinks { html, plain_text }
+    }
+
+    pub async fn post_change_password<Json>(&self, json: Json) -> reqwest::Response
     where Json: serde::Serialize
     {
         self.api_client
             .post(&format!("{}/change-password", &self.address))
-            .form(json)
+            .form(&json)
             .send()
             .await
             .expect("Failed to execute request")
     }
 
-    pub async fn post_login<Json>(&self, json: Json) -> request::Response
+    pub async fn post_login<Json>(&self, json: Json) -> reqwest::Response
     where Json: serde::Serialize
     {
         self.api_client
             .post(&format!("{}/login", &self.address))
-            .json(json)
+            .json(&json)
             .send()
             .await
             .expect("Failed to execute request")
@@ -80,7 +104,7 @@ impl TestApp {
 
 pub struct TestUser {
     pub user_id:  Uuid,
-    pub username: String,
+    pub email:    String,
     pub password: String
 }
 
@@ -88,14 +112,14 @@ impl TestUser {
     pub fn generate() -> Self {
         Self {
             user_id:  Uuid::new_v4(),
-            username: Uuid::new_v4().to_string(),
+            email:    Uuid::new_v4().to_string(),
             password: Uuid::new_v4().to_string()
         }
     }
 
     pub async fn login(&self, app: &TestApp) {
         app.post_login(&serde_json::json!({
-            "username": &self.username,
+            "email":    &self.email,
             "password": &self.password,
         }))
         .await;
@@ -112,9 +136,9 @@ impl TestUser {
             .to_string();
         
         sqlx::query!(
-            "INSERT INTO users (user_id, username, password_hash) VALUES ($1, $2, $3)",
+            "INSERT INTO users (user_id, email, password_hash) VALUES ($1, $2, $3)",
             self.user_id,
-            self.username,
+            self.email,
             hash
         ).execute(pool)
             .await
@@ -123,7 +147,7 @@ impl TestUser {
 }
 
 pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
-    let mut connection = PgConnection::connect(&config.connection_string_without_db().expose_secret())
+    let mut connection = PgConnection::connect_with(&config.without_db())
         .await
         .expect("Failed to connect to Postgres");
     connection
@@ -131,7 +155,7 @@ pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .await
         .expect("Failed to create database.");
 
-    let connection_pool = PgPool::connect(&config.connection_string().expose_secret())
+    let connection_pool = PgPool::connect_with(config.with_db())
         .await
         .expect("Failed to connect to Postgres.");
     sqlx::migrate!("./migrations")
@@ -160,7 +184,7 @@ pub async fn spawn_app() -> TestApp {
     let application = Application::build(configuration.clone())
         .await
         .expect("Failed to build application");
-    let port        = listener.local_addr().unwrap().port();
+    let port        = application.port();
     let address     = format!("http://127.0.0.1:{}", port);
     let _           = tokio::spawn(application.run_until_stopped());
     let api_client  = reqwest::Client::builder()
