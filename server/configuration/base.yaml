@@ -1,0 +1,20 @@
+application: 
+  port: 8000
+  host: 0.0.0.0
+  hmac_secret: "super-long-and-secret-random-key-needed-to-verify-message-integrity"
+database:
+  host: "localhost"
+  port: 5432
+  username: "postgres"
+  password: "example"
+  database_name: "bookr"
+email_client: 
+  base_url: "localhost"
+  sender_email: "test@gmail.com"
+  auth_token: "my-secret-token"
+  timeout_millis: 10000
+redis_uri: "redis://127.0.0.1:6379"
+jwt_settings:
+  secret: "my_secret"
+  expires_in: "60m"
+  max_age: 60
