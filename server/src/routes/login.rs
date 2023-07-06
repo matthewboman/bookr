@@ -3,27 +3,16 @@ use actix_web::{
     web, HttpResponse
 };
 use actix_web::error::InternalError;
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Argon2,
-};
 use chrono::{prelude::*, Duration};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde_json::json;
-use secrecy::{ExposeSecret, Secret};
+use secrecy::ExposeSecret;
 use sqlx::PgPool;
 
-use crate::auth::{validate_credentials, AuthError, JwtMiddleware, TokenClaims, Credentials};
-use crate::utils::error_chain_fmt;
-use crate::session_state::TypedSession;
+use crate::auth::{validate_credentials, AuthError, TokenClaims, Credentials};
 use crate::configuration::JWTSettings;
-
-
-#[derive(serde::Deserialize)]
-pub struct UserLogin {
-    email:    String,
-    password: Secret<String>
-}
+use crate::domain::user::UserLogin;
+use crate::utils::error_chain_fmt;
 
 #[tracing::instrument(
     skip(json, pool, jwt_settings),
@@ -39,7 +28,7 @@ pub async fn login(
 ) -> Result<HttpResponse, InternalError<LoginError>> {
     let credentials = Credentials {
         email:    json.0.email,
-        password: json.0.password
+        password: json.0.password.into()
     };
 
     match validate_credentials(credentials, &pool).await {
@@ -55,8 +44,6 @@ pub async fn login(
                 exp,
                 iat,
             };
-
-           ;
 
             let token = encode(
                 &Header::default(),

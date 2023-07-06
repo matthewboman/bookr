@@ -1,47 +1,20 @@
 use actix_web::{
+    dev::Payload,
+    error::ErrorUnauthorized,
     http,
     web,
     Error as ActixWebError, 
     FromRequest, 
     HttpMessage, 
     HttpRequest,
-    HttpResponse
 };
-use actix_web::body::MessageBody;
-use actix_web::dev::{Payload, ServiceRequest, ServiceResponse};
-use actix_web::error::{ErrorUnauthorized, InternalError};
-use actix_web_lab::middleware::Next;
 use core::fmt;
-
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
 use std::future::{ready, Ready};
-use std::ops::Deref;
-use uuid::Uuid;
 
-use crate::session_state::TypedSession;
-use crate::utils::e500;
 use crate::configuration::JWTSettings;
-
-use actix_web::http::header::{self, HeaderMap, HeaderValue};
-
-#[derive(Copy, Clone, Debug)]
-pub struct UserId(Uuid);
-
-impl std::fmt::Display for UserId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl Deref for UserId {
-    type Target = Uuid;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenClaims {
@@ -65,7 +38,6 @@ impl fmt::Display for ErrorResponse {
     }
 }
 
-// TODO: update to be a service request
 impl FromRequest for JwtMiddleware { 
     type Error  = ActixWebError;
     type Future = Ready<Result<Self, Self::Error>>;
@@ -73,8 +45,6 @@ impl FromRequest for JwtMiddleware {
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
         let jwt_settings = req.app_data::<web::Data<JWTSettings>>().unwrap();
         let jwt_secret   = jwt_settings.secret.expose_secret();
-
-        println!("secret {}", jwt_secret.clone());
         
         let token = req.cookie("token")
             .map(|c| c.value().to_string())
@@ -118,35 +88,5 @@ impl FromRequest for JwtMiddleware {
         ready(
             Ok(JwtMiddleware { user_id })
         )
-    }
-}
-
-pub async fn reject_anonymous_users(
-    mut req: ServiceRequest,
-    next:    Next<impl MessageBody>,
-) -> Result<ServiceResponse<impl MessageBody>, actix_web::Error> {
-    let session = {
-        let headers = req.headers();
-        let keys = &headers.keys().cloned().collect::<Vec<_>>();
-
-        // println!("has cookie: {}", &keys.contains(&header::COOKIE));
-
-        let (http_request, payload) = req.parts_mut();
-        TypedSession::from_request(http_request, payload).await
-    }?;
-
-    match session.get_user_id().map_err(e500)? {
-        Some(user_id) => {
-            println!("user_id: {}", user_id);
-            req.extensions_mut().insert(UserId(user_id));
-            next.call(req).await
-        },
-        None => {
-            println!("none");
-            let response = HttpResponse::Unauthorized().finish();
-            let e = anyhow::anyhow!("The user has not logged in");
-
-            Err(InternalError::from_response(e, response).into())
-        }
     }
 }

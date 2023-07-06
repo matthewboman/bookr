@@ -1,13 +1,20 @@
 use actix_web::HttpResponse;
+use actix_web::cookie::{time::Duration, Cookie};
+use serde_json::json;
 
-use crate::session_state::TypedSession;
-use crate::utils::e500;
+use crate::auth::JwtMiddleware;
+// use crate::utils::e500;
 
-pub async fn log_out(session: TypedSession) -> Result<HttpResponse, actix_web::Error> {
-    if session.get_user_id().map_err(e500)?.is_none() {
-        Ok(HttpResponse::Ok().finish())
-    } else {
-        session.logout();
-        Ok(HttpResponse::Ok().finish())
-    }
+pub async fn log_out(
+    _: JwtMiddleware
+) -> HttpResponse {
+    let cookie = Cookie::build("token", "")
+        .path("/")
+        .max_age(Duration::new(-1, 0))
+        .http_only(true)
+        .finish();
+    
+    HttpResponse::Ok()
+        .cookie(cookie)
+        .json(json!({"status": "success"}))
 }

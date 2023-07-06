@@ -35,3 +35,19 @@ pub struct ContactResponse {
     pub contact_form: Option<String>,
     pub age_range:    Option<String>
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct NewContact {
+    pub display_name: String,
+    pub address:      Option<String>,
+    pub city:         String,
+    pub state:        Option<String>,
+    pub zip_code:     Option<String>,
+    pub country:      Option<String>,
+    pub latitude:     Option<f32>,
+    pub longitude:    Option<f32>,
+    pub capacity:     Option<i32>,
+    pub email:        Option<String>,
+    pub contact_form: Option<String>,
+    pub age_range:    Option<String>
+}

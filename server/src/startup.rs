@@ -3,17 +3,11 @@ use actix_session::{storage::RedisSessionStore, SessionMiddleware};
 use actix_web::{web, App, HttpServer};
 use actix_web::dev::Server;
 use actix_web::cookie::Key;
-use actix_web_lab::middleware::from_fn;
 use secrecy::{ExposeSecret, Secret};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
-// use argon2::password_hash::SaltString;
-// use argon2::{Algorithm, Argon2, Params, PasswordHasher, Version};
-// use uuid::Uuid;
-
-use crate::auth::reject_anonymous_users;
 use crate::configuration::{DatabaseSettings, JWTSettings, Settings};
 use crate::email_client::EmailClient;
 use crate::routes::{
@@ -112,7 +106,6 @@ async fn run(
             .route("/signup", web::post().to(sign_up))
             .service(
                 web::scope("/user")
-                    // .wrap(from_fn(reject_anonymous_users))
                     .route("/add-contact", web::post().to(add_contact))
                     .route("/change-password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out))

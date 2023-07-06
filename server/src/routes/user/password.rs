@@ -1,10 +1,10 @@
-use actix_web::{HttpResponse, web};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use anyhow::Context;
 use secrecy::Secret;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::auth::{validate_credentials, AuthError, Credentials, UserId};
+use crate::auth::{validate_credentials, AuthError, Credentials, JwtMiddleware};
 use crate::utils::e500;
 
 #[derive(serde::Deserialize)]
@@ -14,26 +14,19 @@ pub struct PasswordResetData {
 }
 
 pub async fn change_password(
-    json:    web::Json<PasswordResetData>,
-    pool:    web::Data<PgPool>,
-    user_id: web::ReqData<UserId>,
+    req:  HttpRequest,
+    json: web::Json<PasswordResetData>,
+    pool: web::Data<PgPool>,
+    _:    JwtMiddleware
 ) -> Result<HttpResponse, actix_web::Error> {
-    let user_id     = user_id.into_inner();
-
-    println!("\n changing password for user_id: {}\n", &user_id);
-
-    let email       = get_email(*user_id, &pool).await.map_err(e500)?;
-
-
-    println!("\nemail: {}\n", &email);
+    let ext     = req.extensions();
+    let user_id = ext.get::<uuid::Uuid>().unwrap();
+    let email   = get_email(*user_id, &pool).await.map_err(e500)?;
 
     let credentials = Credentials {
         email,
         password: json.0.current_password
     };
-
-
-    // println!("password: {}", json.0.current_password.expose_secret());
 
     if let Err(e) = validate_credentials(credentials, &pool).await {
         return match e {

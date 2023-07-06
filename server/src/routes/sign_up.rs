@@ -1,34 +1,12 @@
-use actix_web::{
-    cookie::{time::Duration as ActixWebDuration, Cookie},
-    get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder,
-};
+use actix_web::{web, HttpResponse};
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
-use chrono::{prelude::*, Duration};
-use jsonwebtoken::{encode, EncodingKey, Header};
-use secrecy::{ExposeSecret, Secret};
-
 use sqlx::PgPool;
-
-use serde_json::json;
 use uuid::Uuid;
 
-
-// TODO: make model
-#[derive(serde::Deserialize)]
-pub struct UserLogin {
-    email:    String,
-    password: String
-}
-
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct User {
-    user_id:  uuid::Uuid,
-    email:    String,
-    password_hash: String
-}
+use crate::domain::user::{User, UserLogin};
 
 #[tracing::instrument(
     skip(json, pool),
@@ -40,8 +18,9 @@ pub struct User {
 pub async fn sign_up(
     json:    web::Json<UserLogin>,
     pool:    web::Data<PgPool>
-) -> impl Responder {
+) -> HttpResponse {
     // TODO: check if user exists
+    // TODO: send email to user
 
     let salt = SaltString::generate(&mut OsRng);
     let hashed_password = Argon2::default()
