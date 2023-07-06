@@ -19,17 +19,27 @@ pub async fn change_password(
     user_id: web::ReqData<UserId>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let user_id     = user_id.into_inner();
+
+    println!("\n changing password for user_id: {}\n", &user_id);
+
     let email       = get_email(*user_id, &pool).await.map_err(e500)?;
+
+
+    println!("\nemail: {}\n", &email);
+
     let credentials = Credentials {
         email,
         password: json.0.current_password
     };
 
+
+    // println!("password: {}", json.0.current_password.expose_secret());
+
     if let Err(e) = validate_credentials(credentials, &pool).await {
         return match e {
             AuthError::InvalidCredentials(_) => {
                 Ok(
-                    HttpResponse::ExpectationFailed().finish()
+                    HttpResponse::Unauthorized().finish()
                 )
             }
             AuthError::UnexpectedError(_) => Err(e500(e))

@@ -14,3 +14,7 @@ email_client:
   auth_token: "my-secret-token"
   timeout_millis: 10000
 redis_uri: "redis://127.0.0.1:6379"
+jwt_settings:
+  secret: "my_secret"
+  expires_in: "60m"
+  max_age: 60

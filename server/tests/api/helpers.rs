@@ -75,7 +75,7 @@ impl TestApp {
     where Json: serde::Serialize
     {
         self.api_client
-            .post(&format!("{}/change-password", &self.address))
+            .post(&format!("{}/user/change-password", &self.address))
             .form(&json)
             .send()
             .await

@@ -1,11 +1,23 @@
-use actix_web::{web, HttpResponse};
+use actix_web::{
+    cookie::{time::Duration as ActixWebDuration, Cookie},
+    web, HttpResponse
+};
 use actix_web::error::InternalError;
-use secrecy::Secret;
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
+use chrono::{prelude::*, Duration};
+use jsonwebtoken::{encode, EncodingKey, Header};
+use serde_json::json;
+use secrecy::{ExposeSecret, Secret};
 use sqlx::PgPool;
 
-use crate::auth::{validate_credentials, AuthError, Credentials};
+use crate::auth::{validate_credentials, AuthError, JwtMiddleware, TokenClaims, Credentials};
 use crate::utils::error_chain_fmt;
 use crate::session_state::TypedSession;
+use crate::configuration::JWTSettings;
+
 
 #[derive(serde::Deserialize)]
 pub struct UserLogin {
@@ -14,33 +26,58 @@ pub struct UserLogin {
 }
 
 #[tracing::instrument(
-    skip(json, pool, session),
+    skip(json, pool, jwt_settings),
     fields(
         email=tracing::field::Empty,
         user_id=tracing::field::Empty
     )
 )]
 pub async fn login(
-    json:    web::Json<UserLogin>,
-    pool:    web::Data<PgPool>,
-    session: TypedSession,
+    json:         web::Json<UserLogin>,
+    pool:         web::Data<PgPool>,
+    jwt_settings: web::Data<JWTSettings>,
 ) -> Result<HttpResponse, InternalError<LoginError>> {
     let credentials = Credentials {
         email:    json.0.email,
         password: json.0.password
     };
 
-    tracing::Span::current().record("email", &tracing::field::display(&credentials.email));
-
     match validate_credentials(credentials, &pool).await {
         Ok(user_id) => {
-            tracing::Span::current().record("uesr_id", &tracing::field::display(&user_id));
+            println!("validated for {}", user_id);
 
-            session.renew();
-            session.insert_user_id(user_id)
-                .map_err(|e| login_error(LoginError::UnexpectedError(e.into())))?;
+            let now  = Utc::now();
+            let iat  = now.timestamp() as usize;
+            let exp  = (now + Duration::minutes(60)).timestamp() as usize;
+
+            let claims: TokenClaims = TokenClaims {
+                sub: user_id.to_string(),
+                exp,
+                iat,
+            };
+
+           ;
+
+            let token = encode(
+                &Header::default(),
+                &claims,
+                &EncodingKey::from_secret(jwt_settings.secret.expose_secret().as_ref())
+            ).unwrap();
+
+            let cookie = Cookie::build("token", token.to_owned())
+                .path("/")
+                .max_age(ActixWebDuration::new(60 * 60, 0))
+                .http_only(true)
+                .finish();
             
-            Ok(HttpResponse::Ok().finish())
+            Ok(
+                HttpResponse::Ok()
+                    .cookie(cookie)
+                    .json(json!({
+                        "status": "success",
+                        "token": token
+                    }))
+            )
         }
         Err(e) => {
             let e = match e {

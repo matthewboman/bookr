@@ -14,6 +14,7 @@ pub struct Settings {
     pub application:  ApplicationSettings,
     pub email_client: EmailClientSettings,
     pub redis_uri:    Secret<String>,
+    pub jwt_settings: JWTSettings
 }
 
 #[derive(serde::Deserialize)]
@@ -89,6 +90,14 @@ impl EmailClientSettings {
             timeout
         )
     }
+}
+
+#[derive(serde::Deserialize)]
+#[derive(Clone)]
+pub struct JWTSettings {
+    pub secret:     Secret<String>,
+    pub expires_in: String,
+    pub max_age:    u64
 }
 
 pub enum Environment {

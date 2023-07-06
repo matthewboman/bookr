@@ -9,17 +9,22 @@ use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
+// use argon2::password_hash::SaltString;
+// use argon2::{Algorithm, Argon2, Params, PasswordHasher, Version};
+// use uuid::Uuid;
+
 use crate::auth::reject_anonymous_users;
-use crate::configuration::{DatabaseSettings, Settings};
+use crate::configuration::{DatabaseSettings, JWTSettings, Settings};
 use crate::email_client::EmailClient;
 use crate::routes::{
+    add_contact,
     change_password,
     // confirm,
     get_contacts,
     health_check, 
     login,
     log_out,
-    // sign_up
+    sign_up
 };
 
 pub struct Application {
@@ -50,7 +55,8 @@ impl Application {
             email_client,
             configuration.application.base_url,
             configuration.application.hmac_secret,
-            configuration.redis_uri
+            configuration.redis_uri,
+            configuration.jwt_settings
         ).await?;
 
         Ok(Self { port, server })
@@ -80,12 +86,17 @@ async fn run(
     base_url:     String,
     hmac_secret:  Secret<String>,
     redis_uri:    Secret<String>,
+    jwt_settings: JWTSettings,
 ) -> Result<Server, anyhow::Error> {
     let base_url     = web::Data::new(ApplicationBaseUrl(base_url));
     let db_pool      = web::Data::new(db_pool);
     let email_client = web::Data::new(email_client);
+    let jwt_settings = web::Data::new(jwt_settings);
     let secret_key   = Key::from(hmac_secret.expose_secret().as_bytes());
-    let redis_store   = RedisSessionStore::new(redis_uri.expose_secret()).await?;
+    let redis_store  = RedisSessionStore::new(redis_uri.expose_secret()).await?;
+
+    // let test_user = TestUser::generate();
+    // test_user.store(&db_pool).await;
     
     let server       = HttpServer::new(move || {
         let cors = Cors::permissive();
@@ -98,15 +109,17 @@ async fn run(
             // .route("/confirm", web::get().to(confirm))
             .route("/contacts", web::get().to(get_contacts))
             .route("/login", web::post().to(login))
-            // .route("/signup", web::post().to(sign_up))
+            .route("/signup", web::post().to(sign_up))
             .service(
                 web::scope("/user")
-                    .wrap(from_fn(reject_anonymous_users))
+                    // .wrap(from_fn(reject_anonymous_users))
+                    .route("/add-contact", web::post().to(add_contact))
                     .route("/change-password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out))
             )
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
+            .app_data(jwt_settings.clone())
             .app_data(base_url.clone())
     })
     .listen(listener)?
@@ -114,3 +127,41 @@ async fn run(
 
     Ok(server)
 }
+
+// pub struct TestUser {
+//     pub user_id:  Uuid,
+//     pub email:    String,
+//     pub password: String
+// }
+
+
+// TEMP
+// impl TestUser {
+//     pub fn generate() -> Self {
+//         Self {
+//             user_id:  Uuid::new_v4(),
+//             email:    "ccrsh@riseup.net".to_string(),
+//             password: "password".to_string()
+//         }
+//     }
+
+//     pub async fn store(&self, pool: &PgPool) {
+//         let salt = SaltString::generate(&mut rand::thread_rng());
+//         let hash = Argon2::new(
+//             Algorithm::Argon2id,
+//             Version::V0x13,
+//             Params::new(15000, 2, 1, None).unwrap()
+//         ).hash_password(self.password.as_bytes(), &salt)
+//             .unwrap()
+//             .to_string();
+        
+//         sqlx::query!(
+//             "INSERT INTO users (user_id, email, password_hash) VALUES ($1, $2, $3)",
+//             self.user_id,
+//             self.email,
+//             hash
+//         ).execute(pool)
+//             .await
+//             .expect("Failed to store test user");
+//     }
+// }
