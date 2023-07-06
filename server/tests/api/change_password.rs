@@ -9,8 +9,8 @@ async fn must_be_logged_in_to_change_password() {
     let new_password = Uuid::new_v4().to_string();
     let response     = app.post_change_password(&serde_json::json!({
         "current_password":   Uuid::new_v4().to_string(),
-            "new_password":       &new_password,
-            "new_password_check": &new_password
+        "new_password":       &new_password,
+        "new_password_check": &new_password
     })).await;
 
     assert_eq!(response.status().as_u16(), 401);

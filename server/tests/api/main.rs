@@ -1,5 +1,5 @@
 mod change_password;
-// mod contacts;
+mod contacts;
 mod helpers;
-// mod health_check;
-// mod login;
+mod health_check;
+mod login;

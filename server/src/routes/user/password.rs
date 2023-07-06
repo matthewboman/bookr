@@ -9,8 +9,9 @@ use crate::utils::e500;
 
 #[derive(serde::Deserialize)]
 pub struct PasswordResetData {
-    current_password: Secret<String>,
-    new_password:     Secret<String>,
+    current_password:  Secret<String>,
+    new_password:       Secret<String>,
+    new_password_check: Secret<String>,
 }
 
 pub async fn change_password(
@@ -27,6 +28,8 @@ pub async fn change_password(
         email,
         password: json.0.current_password
     };
+
+    // TODO: server-side validation to test passwords
 
     if let Err(e) = validate_credentials(credentials, &pool).await {
         return match e {

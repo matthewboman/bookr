@@ -5,7 +5,7 @@ use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use wiremock::MockServer;
 
-use byot_server::configuration::{get_configuration, DatabaseSettings};
+use byot_server::configuration::{get_configuration, DatabaseSettings, JWTSettings};
 use byot_server::email_client::EmailClient;
 use byot_server::startup::{Application, get_connection_pool};
 use byot_server::telemetry::{get_subscriber, init_subscriber};
@@ -44,9 +44,21 @@ pub struct TestApp {
     pub test_user:    TestUser,
     pub api_client:   reqwest::Client,
     pub email_client: EmailClient,
+    pub jwt_settings: JWTSettings,
 }
 
 impl TestApp {
+    pub async fn add_contact<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/user/add-contact", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub fn get_confirmation_links(&self, email_request: &wiremock::Request) -> ConfirmationLinks {
         let body: serde_json::Value = serde_json::from_slice(&email_request.body).unwrap();
 
@@ -76,7 +88,7 @@ impl TestApp {
     {
         self.api_client
             .post(&format!("{}/user/change-password", &self.address))
-            .form(&json)
+            .json(&json)
             .send()
             .await
             .expect("Failed to execute request")
@@ -95,7 +107,7 @@ impl TestApp {
 
     pub async fn post_logout(&self) -> reqwest::Response {
         self.api_client
-            .post(&format!("{}/logout", &self.address))
+            .post(&format!("{}/user/logout", &self.address))
             .send()
             .await
             .expect("Failed to execute request")
@@ -200,7 +212,8 @@ pub async fn spawn_app() -> TestApp {
         port,
         test_user: TestUser::generate(),
         api_client,
-        email_client: configuration.email_client.client()
+        email_client: configuration.email_client.client(),
+        jwt_settings: configuration.jwt_settings
     };
 
     test_app.test_user.store(&test_app.db_pool).await;
