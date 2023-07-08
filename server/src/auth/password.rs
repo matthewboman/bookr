@@ -78,14 +78,15 @@ fn verify_password_hash(
 )]
 async fn get_stored_credentials(
     email: &str,
-    pool:  &PgPool,
+    pool:  &PgPool
 ) -> Result<Option<(uuid::Uuid, Secret<String>)>, anyhow::Error> {
     let row = sqlx::query!(
         r#"SELECT user_id, password_hash FROM users WHERE email = $1"#,
-        email
-    ).fetch_optional(pool)
+        email,
+    )
+    .fetch_optional(pool)
     .await
-    .context("Failed to perform a query to retrieve stored credentials")?
+    .context("Failed to performed a query to retrieve stored credentials.")?
     .map(|row| (row.user_id, Secret::new(row.password_hash)));
 
     Ok(row)
@@ -115,7 +116,7 @@ pub async fn change_password(
     Ok(())
 }
 
-fn compute_password_hash(password: Secret<String>) -> Result<Secret<String>, anyhow::Error> {
+pub fn compute_password_hash(password: Secret<String>) -> Result<Secret<String>, anyhow::Error> {
     let salt = SaltString::generate(&mut rand::thread_rng());
     let password_hash = Argon2::new(
         Algorithm::Argon2id,

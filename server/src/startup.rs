@@ -13,7 +13,7 @@ use crate::email_client::EmailClient;
 use crate::routes::{
     add_contact,
     change_password,
-    // confirm,
+    confirm,
     get_contacts,
     health_check, 
     login,
@@ -29,16 +29,16 @@ pub struct Application {
 impl Application {
     pub async fn build(configuration: Settings) -> Result<Self, anyhow::Error> {
         let connection_pool = get_connection_pool(&configuration.database);
-
-        let sender_email = configuration.email_client.sender()
-            .expect("Invalid sender email address.");
-        let timeout      = configuration.email_client.timeout();
-        let email_client = EmailClient::new(
-            configuration.email_client.base_url,
-            sender_email,
-            configuration.email_client.auth_token,
-            timeout
-        );
+        let email_client    = configuration.email_client.client();
+        // let sender_email = configuration.email_client.sender()
+        //     .expect("Invalid sender email address.");
+        // let timeout      = configuration.email_client.timeout();
+        // let email_client = EmailClient::new(
+        //     configuration.email_client.base_url,
+        //     sender_email,
+        //     configuration.email_client.auth_token,
+        //     timeout
+        // );
 
         let address  = format!("{}:{}", configuration.application.host, configuration.application.port);
         let listener = TcpListener::bind(address)?;
@@ -88,10 +88,8 @@ async fn run(
     let jwt_settings = web::Data::new(jwt_settings);
     let secret_key   = Key::from(hmac_secret.expose_secret().as_bytes());
     let redis_store  = RedisSessionStore::new(redis_uri.expose_secret()).await?;
-
     // let test_user = TestUser::generate();
     // test_user.store(&db_pool).await;
-    
     let server       = HttpServer::new(move || {
         let cors = Cors::permissive();
 
@@ -100,7 +98,7 @@ async fn run(
             .wrap(TracingLogger::default())
             .wrap(cors)
             .route("/health_check", web::get().to(health_check))
-            // .route("/confirm", web::get().to(confirm))
+            .route("/confirm", web::get().to(confirm))
             .route("/contacts", web::get().to(get_contacts))
             .route("/login", web::post().to(login))
             .route("/signup", web::post().to(sign_up))
