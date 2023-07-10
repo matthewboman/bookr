@@ -7,18 +7,17 @@ use std::convert::{TryFrom, TryInto};
 use crate::domain::UserEmail;
 use crate::email_client::EmailClient;
 
-#[derive(serde::Deserialize)]
-#[derive(Clone)]
+#[derive(serde::Deserialize, Clone)]
 pub struct Settings {
     pub database:     DatabaseSettings,
     pub application:  ApplicationSettings,
     pub email_client: EmailClientSettings,
     pub redis_uri:    Secret<String>,
-    pub jwt_settings: JWTSettings
+    pub jwt_settings: JWTSettings,
+    pub frontend_url: String,
 }
 
-#[derive(serde::Deserialize)]
-#[derive(Clone)]
+#[derive(serde::Deserialize, Clone)]
 pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port:        u16,
@@ -27,8 +26,7 @@ pub struct ApplicationSettings {
     pub hmac_secret: Secret<String>,
 }
 
-#[derive(serde::Deserialize)]
-#[derive(Clone)]
+#[derive(serde::Deserialize, Clone)]
 pub struct DatabaseSettings {
     pub username:      String, 
     pub password:      Secret<String>, 
@@ -61,12 +59,12 @@ impl DatabaseSettings {
     }
 }
 
-#[derive(serde::Deserialize)]
-#[derive(Clone)]
+#[derive(serde::Deserialize, Clone)]
 pub struct EmailClientSettings {
     pub base_url:       String,
     pub sender_email:   String,
     pub auth_token:     Secret<String>,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
     pub timeout_millis: u64
 }
 
@@ -92,8 +90,7 @@ impl EmailClientSettings {
     }
 }
 
-#[derive(serde::Deserialize)]
-#[derive(Clone)]
+#[derive(serde::Deserialize, Clone)]
 pub struct JWTSettings {
     pub secret:     Secret<String>,
     pub expires_in: String,

@@ -112,6 +112,17 @@ impl TestApp {
             .await
             .expect("Failed to execute request")
     }
+
+    pub async fn sign_up<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/signup", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
 }
 
 pub struct TestUser {
@@ -185,8 +196,8 @@ pub async fn spawn_app() -> TestApp {
     let configuration = {
         let mut c = get_configuration().expect("Failed to read configuration.");
         c.database.database_name = Uuid::new_v4().to_string();
-        c.application.port = 0;
-        c.email_client.base_url = email_server.uri();
+        c.application.port       = 0;
+        c.email_client.base_url  = email_server.uri();
 
         c
     };

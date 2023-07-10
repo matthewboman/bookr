@@ -44,14 +44,17 @@ impl EmailClient {
             html_body: html_body,
             text_body: text_body
         };
-        let _ = self.http_client
+        self.http_client
             .post(&url)
-            .header("X-Postmark-Server-Token", self.auth_token.expose_secret())
+            .header(
+                "X-Postmark-Server-Token",
+                self.auth_token.expose_secret()
+            )
             .json(&body)
             .send()
             .await?
             .error_for_status()?;
-        
+
         Ok(())
     }
 }
@@ -85,7 +88,7 @@ mod tests {
         fn matches(&self, request: &Request) -> bool {
             let result: Result<serde_json::Value, _> = serde_json::from_slice(&request.body);
             if let Ok(body) = result { 
-                dbg!(&body);
+
                 body.get("From").is_some()
                     && body.get("To").is_some()
                     && body.get("From").is_some()

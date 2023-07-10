@@ -1,8 +1,13 @@
 use actix_cors::Cors;
 use actix_session::{storage::RedisSessionStore, SessionMiddleware};
-use actix_web::{web, App, HttpServer};
-use actix_web::dev::Server;
-use actix_web::cookie::Key;
+use actix_web::{
+    web,
+    cookie::Key,
+    dev::Server,
+    http::header, 
+    App, 
+    HttpServer
+};
 use secrecy::{ExposeSecret, Secret};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::net::TcpListener;
@@ -13,7 +18,7 @@ use crate::email_client::EmailClient;
 use crate::routes::{
     add_contact,
     change_password,
-    // confirm,
+    confirm,
     get_contacts,
     health_check, 
     login,
@@ -29,16 +34,7 @@ pub struct Application {
 impl Application {
     pub async fn build(configuration: Settings) -> Result<Self, anyhow::Error> {
         let connection_pool = get_connection_pool(&configuration.database);
-
-        let sender_email = configuration.email_client.sender()
-            .expect("Invalid sender email address.");
-        let timeout      = configuration.email_client.timeout();
-        let email_client = EmailClient::new(
-            configuration.email_client.base_url,
-            sender_email,
-            configuration.email_client.auth_token,
-            timeout
-        );
+        let email_client    = configuration.email_client.client();
 
         let address  = format!("{}:{}", configuration.application.host, configuration.application.port);
         let listener = TcpListener::bind(address)?;
@@ -50,7 +46,8 @@ impl Application {
             configuration.application.base_url,
             configuration.application.hmac_secret,
             configuration.redis_uri,
-            configuration.jwt_settings
+            configuration.jwt_settings,
+            configuration.frontend_url,
         ).await?;
 
         Ok(Self { port, server })
@@ -81,6 +78,7 @@ async fn run(
     hmac_secret:  Secret<String>,
     redis_uri:    Secret<String>,
     jwt_settings: JWTSettings,
+    frontend_url: String,
 ) -> Result<Server, anyhow::Error> {
     let base_url     = web::Data::new(ApplicationBaseUrl(base_url));
     let db_pool      = web::Data::new(db_pool);
@@ -88,19 +86,25 @@ async fn run(
     let jwt_settings = web::Data::new(jwt_settings);
     let secret_key   = Key::from(hmac_secret.expose_secret().as_bytes());
     let redis_store  = RedisSessionStore::new(redis_uri.expose_secret()).await?;
-
     // let test_user = TestUser::generate();
     // test_user.store(&db_pool).await;
-    
     let server       = HttpServer::new(move || {
-        let cors = Cors::permissive();
+        let cors = Cors::default()
+            .allowed_origin(&frontend_url)
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![
+                header::CONTENT_TYPE,
+                header::AUTHORIZATION,
+                header::ACCEPT,
+            ])
+            .supports_credentials();
 
         App::new()
             .wrap(SessionMiddleware::new(redis_store.clone(), secret_key.clone()))
             .wrap(TracingLogger::default())
             .wrap(cors)
             .route("/health_check", web::get().to(health_check))
-            // .route("/confirm", web::get().to(confirm))
+            .route("/confirm", web::get().to(confirm))
             .route("/contacts", web::get().to(get_contacts))
             .route("/login", web::post().to(login))
             .route("/signup", web::post().to(sign_up))
