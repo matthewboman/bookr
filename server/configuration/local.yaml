@@ -3,3 +3,4 @@ application:
   base_url: "http://127.0.0.1"
 database:
   require_ssl: false
+frontend_url: "http://localhost:3000"

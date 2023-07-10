@@ -13,7 +13,8 @@ pub struct Settings {
     pub application:  ApplicationSettings,
     pub email_client: EmailClientSettings,
     pub redis_uri:    Secret<String>,
-    pub jwt_settings: JWTSettings
+    pub jwt_settings: JWTSettings,
+    pub frontend_url: String,
 }
 
 #[derive(serde::Deserialize, Clone)]
