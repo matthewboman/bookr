@@ -1,7 +1,7 @@
 // mod change_password;
-mod confirmation;
+// mod confirmation;
 // mod contacts;
 mod helpers;
-mod health_check;
+// mod health_check;
 // mod login;
-mod sign_up;
+// mod sign_up;
