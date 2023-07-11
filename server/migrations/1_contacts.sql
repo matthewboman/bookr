@@ -16,3 +16,6 @@ create table contacts (
     created_at timestamp(3) default current_timestamp not null,
     updated_at timestamp(3) default current_timestamp not null
 );
+
+-- TODO: migration to create privateContact Bool
+-- TODO: migration to create user_id foreign key

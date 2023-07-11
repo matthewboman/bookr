@@ -37,6 +37,7 @@ pub struct ContactResponse {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NewContact {
     pub display_name: String,
     pub address:      Option<String>,

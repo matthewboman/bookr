@@ -1,5 +1,5 @@
 use actix_web::{
-    cookie::{time::Duration as ActixWebDuration, Cookie},
+    cookie::{time::Duration as ActixWebDuration, Cookie, SameSite},
     web, HttpResponse
 };
 use actix_web::error::InternalError;
@@ -55,6 +55,7 @@ pub async fn login(
                 .path("/")
                 .max_age(ActixWebDuration::new(60 * 60, 0))
                 .http_only(true)
+                .same_site(SameSite::None) // TODO: is this safe?
                 .finish();
             
             Ok(

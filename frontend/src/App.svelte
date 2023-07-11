@@ -20,8 +20,17 @@
 	let filteredContacts: Contact[] = []
     $: renderedContacts = filteredContacts
 
+    // TODO: send message from modal w which to close
+    // TODO: refactor to single function
+    function closeAuthModal() {
+        authModal = false
+    }
+    function closeContactModal() {
+        contactModal = false
+    }
+
     onMount(async () => {
-        contactList = await fetch(CONTACTS).then(r => r.json())
+        contactList = await fetch(CONTACTS).then(r => r.json()) // TODO: move method to API, use token
     })
 </script>
 
@@ -32,12 +41,12 @@
     <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
     <About/>
 
-    <Modal bind:open={authModal} size="xs" autoclose={true} outsideclose class="w-full">
-        <AuthModal apiUrl={API_URL} />
+    <Modal bind:open={authModal} size="xs" outsideclose class="w-full">
+        <AuthModal on:close={closeAuthModal}/>
     </Modal>
 
-    <Modal bind:open={contactModal} size="xs" autoclose={true} outsideclose class="w-full">
-        <ContactModal apiUrl={API_URL} />
+    <Modal bind:open={contactModal} size="xs" outsideclose class="w-full">
+        <ContactModal on:close={closeContactModal} />
     </Modal>
 {:else}
     loading

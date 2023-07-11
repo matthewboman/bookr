@@ -22,6 +22,10 @@ export type NewContact = {
     capacity:    number | null,
     email:       string | null,
     contactForm: string | null,
-    ageRange:    string | null
+    ageRange:    string
 }
 
+export type User = {
+    email:    String,
+    password: String
+}

@@ -3,6 +3,8 @@ use sqlx::PgPool;
 
 use crate::domain::contact::ContactResponse;
 
+// TODO: private contacts for authenticated users
+
 pub async fn get_contacts(pool: web::Data<PgPool>) -> HttpResponse {
     match query_contacts(&pool).await {
         Ok(contacts) => {
