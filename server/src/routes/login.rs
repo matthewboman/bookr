@@ -33,8 +33,6 @@ pub async fn login(
 
     match validate_credentials(credentials, &pool).await {
         Ok(user_id) => {
-            println!("validated for {}", user_id);
-
             let now  = Utc::now();
             let iat  = now.timestamp() as usize;
             let exp  = (now + Duration::minutes(60)).timestamp() as usize;

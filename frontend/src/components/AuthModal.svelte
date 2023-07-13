@@ -1,8 +1,10 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte'
     import { Button, Label, Input } from 'flowbite-svelte'
+
     import { type User } from '../types' // TODO: verify w types
-    import { post } from '../api'
+    import { post }          from '../api'
+    import { authenticated } from '../store'
 
     const dispatch = createEventDispatcher()
 
@@ -59,6 +61,8 @@
             const json = await res.json()
 
             sessionStorage.setItem('byotoken', json.token)
+
+            authenticated.update(() => true)
 
             dispatch('close')
         }

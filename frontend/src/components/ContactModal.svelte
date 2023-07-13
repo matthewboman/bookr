@@ -28,7 +28,7 @@
     let capacity: number | null
     let email: string | null
     let contactForm: string | null
-    // let isPrivate: boolean = false // TODO: ability for contacts to be private
+    let isPrivate: boolean = false 
 
     async function submit() {
         if (currentAction === 'add') {
@@ -50,10 +50,10 @@
             state,
             zipCode,
             ageRange,
-            capacity,
+            capacity: 10,
             email,
             contactForm,
-            // isPrivate
+            isPrivate
         }
 
         const res = await post("/user/add-contact", contact)
@@ -115,7 +115,7 @@
         <span>Contact link</span>
         <Input type="text" name="contactForm" placeholder="" bind:value={contactForm} />
     </Label>
-    <!-- <Checkbox checked={isPrivate}>Default checkbox</Checkbox> -->
+    <Checkbox checked={isPrivate}>Default checkbox</Checkbox>
 
     <Button type="submit" class="w-full1">Add contact</Button>
 </form>

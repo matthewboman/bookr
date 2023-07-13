@@ -22,13 +22,15 @@ async fn query_contacts(pool: &PgPool) -> Result<Vec<ContactResponse>, sqlx::Err
     let contacts = sqlx::query_as!(
         ContactResponse,
         r#"
-        SELECT contact_id, display_name, address, city, state, zip_code, capacity, latitude, longitude, email, contact_form, age_range
+        SELECT contact_id, display_name, address, city, state, zip_code, capacity, latitude, longitude, email, contact_form, age_range, country, is_private, user_id
         FROM contacts
+        WHERE is_private = false
+        AND verified = true
         "#
     ).fetch_all(pool)
     .await
     .map_err(|e| {
-        tracing::error!("Failed to execture query: {:?}", e);
+        tracing::error!("Failed to execute query: {:?}", e);
         e
     })?;
 

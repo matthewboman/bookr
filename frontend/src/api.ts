@@ -5,7 +5,7 @@ export async function post(endpoint: String, body: Object) {
     let headers = token
         ? {
             "Content-type": "application/json; charset=UTF-8",
-            "Authentication": `Bearer ${token}`
+            "Authorization": `Bearer ${token}`
         }
         : { "Content-type": "application/json; charset=UTF-8" }
 
