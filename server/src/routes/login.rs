@@ -1,5 +1,5 @@
 use actix_web::{
-    cookie::{time::Duration as ActixWebDuration, Cookie},
+    cookie::{time::Duration as ActixWebDuration, Cookie, SameSite},
     web, HttpResponse
 };
 use actix_web::error::InternalError;
@@ -33,8 +33,6 @@ pub async fn login(
 
     match validate_credentials(credentials, &pool).await {
         Ok(user_id) => {
-            println!("validated for {}", user_id);
-
             let now  = Utc::now();
             let iat  = now.timestamp() as usize;
             let exp  = (now + Duration::minutes(60)).timestamp() as usize;
@@ -55,6 +53,7 @@ pub async fn login(
                 .path("/")
                 .max_age(ActixWebDuration::new(60 * 60, 0))
                 .http_only(true)
+                .same_site(SameSite::None) // TODO: is this safe?
                 .finish();
             
             Ok(

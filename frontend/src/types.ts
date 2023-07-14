@@ -5,10 +5,31 @@ export type Contact = {
     city:        string,
     state:       string,
     zipCode:     string,
+    country:     string | null,
     capacity:    number | null,
     latitude:    number | null,
     longitude:   number | null,
     email:       string | null,
     contactForm: string | null,
-    ageRange:    string | null
+    ageRange:    string | null,
+    isPrivate:   boolean
+}
+
+export type NewContact = {
+    displayName: string,
+    address:     string | null,
+    city:        string,
+    state:       string,
+    zipCode:     string,
+    // country:     string,
+    capacity:    number | null,
+    email:       string | null,
+    contactForm: string | null,
+    ageRange:    string,
+    isPrivate:   boolean
+}
+
+export type User = {
+    email:    String,
+    password: String
 }

@@ -91,11 +91,13 @@ async fn run(
     let server       = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin(&frontend_url)
-            .allowed_methods(vec!["GET", "POST"])
+            .allowed_methods(vec!["GET", "POST", "OPTIONS"])
             .allowed_headers(vec![
                 header::CONTENT_TYPE,
                 header::AUTHORIZATION,
+                // header::AUTHENTICATION,
                 header::ACCEPT,
+                header::ACCESS_CONTROL_ALLOW_ORIGIN,
             ])
             .supports_credentials();
 

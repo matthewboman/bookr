@@ -119,7 +119,7 @@
         </div>
         <div class="filter-input">
             <label for="max">max:</label>
-            <input id="max" type="numer" bind:value={maxCapacity} on:change={update}/>       
+            <input id="max" type="number" bind:value={maxCapacity} on:change={update}/>       
         </div>
         <div class="filter-input">
             <label for="null-capacity" class="checkbox-container">

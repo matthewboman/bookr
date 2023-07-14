@@ -49,6 +49,7 @@ impl FromRequest for JwtMiddleware {
         let token = req.cookie("token")
             .map(|c| c.value().to_string())
             .or_else(|| {
+                // TODO: app isn't getting authorization header from frontend...
                 req.headers()
                     .get(http::header::AUTHORIZATION)
                     .map(|h| h.to_str().unwrap().split_at(7).1.to_string())
