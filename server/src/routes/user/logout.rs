@@ -1,4 +1,4 @@
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::{HttpRequest, HttpResponse};
 use actix_web::cookie::{time::Duration, Cookie};
 use serde_json::json;
 
@@ -20,5 +20,5 @@ pub async fn log_out(
     
     HttpResponse::Ok()
         .cookie(cookie)
-        .json(json!({"status": "success"}))
+        .finish()
 }

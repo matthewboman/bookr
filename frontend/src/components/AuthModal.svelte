@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte'
-    import { Button, Label, Input } from 'flowbite-svelte'
+    import { Alert, Button, Label, Input } from 'flowbite-svelte'
 
     import { type User } from '../types' // TODO: verify w types
     import { post }          from '../api'
@@ -33,10 +33,14 @@
     let email          = ''
     let password       = ''
     let verifyPassword = ''
-    let errorText      = null
+    let errorMessage   = ''
+    let successMessage = ''
     let disabled       = false // TODO: disable button if passwords don't match
 
     async function submit() {
+        errorMessage   = ''
+        successMessage = ''
+
         if (currentAction === 'signIn') {
             await login()
         } else if (currentAction === 'signUp') {
@@ -49,21 +53,17 @@
     }
 
     async function login() {
-        errorText = ''
-
         const res = await post("/login", { email, password})
         
         if (res.status === 401) {
-            errorText = "Incorrect email or password"
+            errorMessage = "Incorrect email or password"
         }
 
         if (res.status === 200) {
             const json = await res.json()
 
             sessionStorage.setItem('byotoken', json.token)
-
             authenticated.update(() => true)
-
             dispatch('close')
         }
 
@@ -71,19 +71,19 @@
     }
 
     async function register() {
-        errorText = ''
-
         // TODO: make reactive to user input
         if (password.length && verifyPassword.length && password != verifyPassword) {
-            errorText = "Passwords do not match"
+            errorMessage = "Passwords do not match"
         }
 
         const res = await post("/signup", { email, password, verifyPassword})
 
         if (res.status === 200) {
-            // TODO: open success modal w/ instructions to check email
+            successMessage = "Please check your email to verify your account."
 
-            dispatch('close')
+            setTimeout(() => {
+                dispatch('close')
+            }, 2000)
         }
 
         // TODO: handle errors where email is taken
@@ -92,29 +92,34 @@
     }
 
     async function resetPassword() {
-        errorText = ''
-
         const res = await post("/reset-password-link", { email })
         
         if (res.status === 200) {
-            // TODO: open success modal w/ instructions to check email
+            successMessage = "Please check your email for a password reset link."
             
-            dispatch('close')
+            setTimeout(() => {
+                dispatch('close')
+            }, 2000)
         }
 
         // TODO: handle errors
     }
- 
-
 </script>
 
 
 <form class="flex flex-col space-y-6" action="" on:submit|preventDefault={submit}>
     <h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">{ actions[currentAction].text }</h3>
-    {#if errorText}
-    <p>
-        {errorText}
-    </p>
+    {#if errorMessage}
+        <Alert border color="red">
+            <svg slot="icon" aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+            <span class="font-medium">Error</span> { errorMessage }
+        </Alert>
+    {/if}
+    {#if successMessage}
+        <Alert border color="blue">
+            <svg slot="icon" aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+            <span class="font-medium">Success</span> { successMessage }
+        </Alert>
     {/if}
     <Label class="space-y-2">
         <span>Email</span>
@@ -139,7 +144,9 @@
     {/if }
     <Button type="submit" class="w-full1">{ actions[currentAction].buttonText }</Button>
 
-    <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
-        Not registered? <a on:click={() => currentAction = "signUp"} class="text-primary-700 hover:underline dark:text-primary-500">Create account</a>
-    </div>
+    {#if actions[currentAction].action !== "signUp"}
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
+            Not registered? <a on:click={() => currentAction = "signUp"} class="text-primary-700 hover:underline dark:text-primary-500">Create account</a>
+        </div>
+    {/if}
 </form>

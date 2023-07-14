@@ -34,7 +34,6 @@
         let token = sessionStorage.getItem('byotoken')
 
         if (token != null) {
-            console.log('updating')
             authenticated.update(() => true)
         }
     }

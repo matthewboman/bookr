@@ -1,23 +1,19 @@
 <script lang="ts">
-    import { Button, Label, Input, Checkbox, Select } from 'flowbite-svelte'
-    import { type NewContact } from '../types'
-    import { post } from '../api';
+    import { createEventDispatcher } from 'svelte'
+    import { Alert, Button, Label, Input, Checkbox, Select } from 'flowbite-svelte'
+
+    import { type NewContact }   from '../types'
+    import { post }              from '../api'
+    import { ageRanges, states } from '../constants'
+    import { authenticated }     from '../store'
+
+    const dispatch = createEventDispatcher()
 
     // TODO: move to store in case modal gets closed while entering info
 
-    // TODO: move to store or library of constants 
-    const states = [
-        { name: "North Carolina", value: "NC" }
-    ]
-    const ageRanges = [
-        { name: "All Ages", value: "allAges" },
-        { name: "18+",      value: "eighteenPlus" },
-        { name: "21+",      value: "twentyonePlus" },
-        { name: "Unknown",  value: "unknown" }
-    ]
-
-    let currentAction = 'add' // TODO: ability to edit contacts
-    let errorText     = ''
+    let currentAction  = 'add' // TODO: ability to edit contacts
+    let errorMessage   = ''
+    let successMessage = ''
 
     let displayName: string
     let address: string | null
@@ -41,7 +37,7 @@
     }
 
     async function addNewContact() {
-        errorText = ''
+        errorMessage = ''
 
         const contact: NewContact = {
             displayName,
@@ -59,28 +55,47 @@
         const res = await post("/user/add-contact", contact)
 
         if (res.status === 200) {
-            // TODO: success message
-            // TODO: add contact to list
-            
-            // const json = await res.json() // TODO: update server to return contact
+            successMessage = "Contact has successfully added and will appear once approved."
 
-            console.log(res)
+            setTimeout(() => {
+                dispatch('close')
+            }, 2000)
         }
 
-        if (res.status === 400 || res.status === 401) {
-            // TODO: log in
+        if (res.status === 401) {
             // shouldn't happen but user could try faking token
+            // TODO: bug with token expiration
+            sessionStorage.removeItem('byotoken')
+            authenticated.update(() => false)
+            errorMessage = "Please log in again."
+        }
+
+        if (res.status === 400) {
+            // shouldn't happen. input validators and tests on API
+            // TODO: log content if it does, create report
+            errorMessage = "There was an error adding the contact. Please try again."
         }
 
         if (res.status === 500) {
-            // TODO: log error
+            errorMessage = "There was an error adding the contact. Please try again."
         }
     }
-
 </script>
 
 <form class="flex flex-col space-y-6" on:submit|preventDefault={submit}>
     <h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Add new contact</h3>
+    {#if errorMessage}
+        <Alert border color="red">
+            <svg slot="icon" aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+            <span class="font-medium">Error</span> { errorMessage }
+        </Alert>
+    {/if}
+    {#if successMessage}
+        <Alert border color="blue">
+            <svg slot="icon" aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+            <span class="font-medium">Success</span> { successMessage }
+        </Alert>
+    {/if} 
     <Label class="space-y-2">
         <span>Display Name</span>
         <Input type="text" name="displayName" placeholder="" bind:value={displayName} required />
@@ -91,14 +106,14 @@
     </Label>
     <Label class="space-y-2">
         <span>City</span>
-        <Input type="text" name="city" placeholder="" required bind:value={city}/>
+        <Input type="text" name="city" placeholder="" bind:value={city} required/>
     </Label>
     <Label>State/Province
         <Select class="mt-2" items={states} bind:value={state} required/>
     </Label>
     <Label class="space-y-2">
         <span>Zip code</span>
-        <Input type="text" name="zipCode" placeholder="" bind:value={zipCode} required />
+        <Input type="text" name="zipCode" placeholder="" bind:value={zipCode} />
     </Label>
     <Label>Age range
         <Select class="mt-2" items={ageRanges} bind:value={ageRange} required/>
@@ -115,7 +130,7 @@
         <span>Contact link</span>
         <Input type="text" name="contactForm" placeholder="" bind:value={contactForm} />
     </Label>
-    <Checkbox checked={isPrivate}>Default checkbox</Checkbox>
+    <Checkbox checked={isPrivate}>Contact is private</Checkbox>
 
     <Button type="submit" class="w-full1">Add contact</Button>
 </form>

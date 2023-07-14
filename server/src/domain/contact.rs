@@ -41,33 +41,17 @@ pub struct ContactResponse {
     pub is_private:   bool
 }
 
-// #[derive(Debug, Deserialize, Serialize)]
-// #[serde(rename_all = "camelCase")]
-// pub struct NewContact {
-//     pub display_name: String,
-//     pub address:      Option<String>,
-//     pub city:         String,
-//     pub state:        Option<String>,
-//     pub zip_code:     Option<String>,
-//     pub capacity:     Option<i32>,
-//     pub email:        Option<String>,
-//     pub contact_form: Option<String>,
-//     pub age_range:    Option<String>,
-//     pub is_private:   bool,
-//     pub user_id:      Option<uuid::Uuid>,
-// }
-
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NewContact {
     pub display_name: String,
-    pub address:      String,
+    pub address:      Option<String>,
     pub city:         String,
-    pub state:        String,
-    pub zip_code:     String,
-    pub capacity:     i32,
-    pub email:        String,
-    pub contact_form: String,
-    pub age_range:    String,
+    pub state:        Option<String>,
+    pub zip_code:     Option<String>,
+    pub capacity:     Option<i32>,
+    pub email:        Option<String>,
+    pub contact_form: Option<String>,
+    pub age_range:    Option<String>,
     pub is_private:   bool,
 }
