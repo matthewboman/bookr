@@ -45,18 +45,24 @@
     })
 </script>
 
+<style>
+    /* Leaflet map has a z-index of 400, so set modal over it */
+    .z-500 {
+        z-index: 500;
+    }
+</style>
+
 {#if contactList}
     <Menu bind:authModal={authModal} bind:contactModal={contactModal} />
-    <!-- TODO: why is the container a higher z value?-->
-    <!-- <LeafletContainer renderedContacts={renderedContacts} /> -->
+    <LeafletContainer renderedContacts={renderedContacts} />
     <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
     <About/>
 
-    <Modal bind:open={authModal} size="xs" outsideclose class="w-full">
+    <Modal bind:open={authModal} size="xs" outsideclose class="w-full z-500">
         <AuthModal on:close={closeAuthModal}/>
     </Modal>
 
-    <Modal bind:open={contactModal} size="xs" outsideclose class="w-full">
+    <Modal bind:open={contactModal} size="xs" outsideclose class="w-full z-500">
         <ContactModal on:close={closeContactModal} />
     </Modal>
 {:else}
