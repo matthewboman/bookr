@@ -11,6 +11,8 @@
         display: block;
         margin-left: auto;
         margin-right: auto;
+        z-index: 5;
+        position: sticky; /* no idea what is setting this to `static` */
     }
 
 	/* Device-specific map layout */
