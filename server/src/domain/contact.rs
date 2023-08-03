@@ -23,6 +23,7 @@ pub struct Contact {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ContactResponse {
     pub contact_id:   i32,
     pub display_name: String,

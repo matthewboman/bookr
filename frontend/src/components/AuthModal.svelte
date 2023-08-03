@@ -30,12 +30,12 @@
         }
     }
 
-    let email          = ''
-    let password       = ''
-    let verifyPassword = ''
-    let errorMessage   = ''
-    let successMessage = ''
-    let disabled       = false // TODO: disable button if passwords don't match
+    let email: string
+    let password: string
+    let verifyPassword: string
+    let errorMessage: string
+    let successMessage: string
+    let disabled = false // TODO: disable button if passwords don't match
 
     async function submit() {
         errorMessage   = ''
