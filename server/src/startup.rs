@@ -97,11 +97,12 @@ async fn run(
             .allowed_headers(vec![
                 header::CONTENT_TYPE,
                 header::AUTHORIZATION,
-                // header::AUTHENTICATION,
                 header::ACCEPT,
                 header::ACCESS_CONTROL_ALLOW_ORIGIN,
             ])
             .supports_credentials();
+
+        // let cors = Cors::permissive(); // For debugging
 
         App::new()
             .wrap(SessionMiddleware::new(redis_store.clone(), secret_key.clone()))

@@ -18,6 +18,7 @@ pub struct ResetRequest {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ResetPasswordData {
     reset_token:        Secret<String>,
     new_password:       Secret<String>,
@@ -49,6 +50,7 @@ pub async fn generate_reset_token(
         .await
         .context("Failed to insert token")?;
 
+    // This won't work in local environment
     send_password_reset_email(
         &email_client,
         email,
@@ -83,6 +85,7 @@ pub async fn reset_password(
         }
     };
 
+    // TODO: Use transaction. Delete reset token.
     update_password(&pool, user_id, password_hash)
         .await
         .context("Failed to update password in database")?;

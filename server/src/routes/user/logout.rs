@@ -3,9 +3,7 @@ use actix_web::cookie::{time::Duration, Cookie};
 
 use crate::auth::JwtMiddleware;
 
-#[tracing::instrument(
-    skip(req),
-)]
+#[tracing::instrument()]
 pub async fn log_out(
     _req:  HttpRequest,
     _:    JwtMiddleware
