@@ -1,5 +1,7 @@
 use actix_web::HttpResponse;
 use actix_web::http::header::LOCATION;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 
 pub fn e400<T>(e: T) -> actix_web::Error
 where
@@ -31,9 +33,18 @@ pub fn error_chain_fmt(
     Ok(())
 }
 
-// TODO: is this useful for REST?
-pub fn see_other(location: &str) -> HttpResponse {
-    HttpResponse::SeeOther()
-        .insert_header((LOCATION, location))
-        .finish()
+pub fn generate_token() -> String {
+    let mut rng = thread_rng();
+
+    std::iter::repeat_with(|| rng.sample(Alphanumeric))
+        .map(char::from)
+        .take(25)
+        .collect()
 }
+
+// TODO: is this useful for REST?
+// pub fn see_other(location: &str) -> HttpResponse {
+//     HttpResponse::SeeOther()
+//         .insert_header((LOCATION, location))
+//         .finish()
+// }

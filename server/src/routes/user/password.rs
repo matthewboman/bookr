@@ -9,7 +9,7 @@ use crate::utils::e500;
 
 #[derive(serde::Deserialize)]
 pub struct PasswordResetData {
-    current_password:  Secret<String>,
+    current_password:   Secret<String>,
     new_password:       Secret<String>,
     new_password_check: Secret<String>,
 }

@@ -1,7 +1,5 @@
 use actix_web::{web, HttpResponse, ResponseError, http::StatusCode};
 use anyhow::Context;
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
 use secrecy::{Secret, ExposeSecret};
 use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
@@ -11,6 +9,7 @@ use crate::domain::UserEmail;
 use crate::email_client::EmailClient;
 use crate::startup::ApplicationBaseUrl;
 use crate::telemetry::spawn_blocking_with_tracing;
+use crate::utils::{error_chain_fmt, generate_token};
 
 #[derive(serde::Deserialize)]
 pub struct JsonData {
@@ -54,7 +53,7 @@ pub async fn sign_up(
         .await
         .context("A user with the provided email already exists")?;
 
-    let confirmation_token = generate_confirmation_token();
+    let confirmation_token = generate_token();
 
     store_token(&mut transaction, user_id, &confirmation_token)
         .await
@@ -197,29 +196,4 @@ impl std::error::Error for StoreTokenError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         Some(&self.0)
     }
-}
-
-pub fn error_chain_fmt(
-    e: &impl std::error::Error,
-    f: &mut std::fmt::Formatter<'_>,
-) -> std::fmt::Result {
-    writeln!(f, "{}\n", e)?;
-
-    let mut current = e.source();
-
-    while let Some(cause) = current {
-        writeln!(f, "Caused by:\n\t{}", cause)?;
-        current = cause.source();
-    }
-
-    Ok(())
-}
-
-fn generate_confirmation_token() -> String {
-    let mut rng = thread_rng();
-
-    std::iter::repeat_with(|| rng.sample(Alphanumeric))
-        .map(char::from)
-        .take(25)
-        .collect()
 }
