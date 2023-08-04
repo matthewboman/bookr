@@ -66,8 +66,6 @@ async fn password_reset_link_returns_200_for_correct_token() {
     let confirmation_links = app.get_confirmation_links(&email_request);
     let reset_token        = app.get_token_from_links(confirmation_links);
 
-println!("token is {}", &reset_token);
-
     let body = serde_json::json!({
         "reset_token":        reset_token,
         "new_password":       "password",

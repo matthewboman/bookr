@@ -1,5 +1,3 @@
-use actix_web::HttpResponse;
-use actix_web::http::header::LOCATION;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 
