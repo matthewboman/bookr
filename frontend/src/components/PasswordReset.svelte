@@ -9,6 +9,7 @@
     let loggedIn       = false
     let disabled       = true
     let passowordsMatch = true
+    let currentPassword: string
     let newPassword: string
     let newPasswordCheck: string
     let errorMessage: string
@@ -24,6 +25,7 @@
 
         const body = loggedIn 
             ? {
+                currentPassword,
                 newPassword,
                 newPasswordCheck
             } 
@@ -49,8 +51,12 @@
             errorMessage = "Please re-check the link and make sure there is a token."
         }
 
-        if (res.status === 401) {
+        if (res.status === 401 && !loggedIn) {
             errorMessage = "Invalid token in password reset link."
+        }
+
+        if (res.status === 401 && loggedIn) {
+            errorMessage = "The current password you entered was incorrect."
         }
 
         if (res.status === 500) {
@@ -96,18 +102,23 @@
             <span class="font-medium">Success</span> { successMessage }
         </Alert>
     {/if}
+    {#if loggedIn}
+
+    {/if}
+    <Label class="space-y-2">
+        <span>Current password</span>
+        <Input type="password" name="password" placeholder="•••••" bind:value={currentPassword} required/>
+    </Label>
     <Label class="space-y-2">
         <span>New password</span>
         <Input type="password" name="password" placeholder="•••••" bind:value={newPassword} on:input={comparePasswords} required/>
     </Label>
-    <div class="mb-6">
-        <Label class="space-y-2">
-            <span>Confirm new password</span>
-            <Input type="password" name="password" placeholder="•••••" bind:value={newPasswordCheck} on:input={comparePasswords} required/>
-        </Label>
-        {#if !passowordsMatch}
-            <Helper class='mt-2' color='red'><span class="font-medium">Passwords do not match</span></Helper>
-        {/if}
-    </div>
+    <Label class="space-y-2">
+        <span>Confirm new password</span>
+        <Input type="password" name="password" placeholder="•••••" bind:value={newPasswordCheck} on:input={comparePasswords} required/>
+    </Label>
+    {#if !passowordsMatch}
+        <Helper class='mt-2' color='red'><span class="font-medium">Passwords do not match</span></Helper>
+    {/if}
     <Button type="submit" class="w-full1" disabled={disabled}>Reset password</Button>
 </form>
