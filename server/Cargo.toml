@@ -36,6 +36,7 @@ unicode-segmentation = "1"
 urlencoding = "2"
 uuid = { version = "1", features = ["serde", "v4"] }
 validator = "0.16"
+regex = "1.9.1"
 
 [dependencies.reqwest]
 version = "0.11"
@@ -56,7 +57,8 @@ features = [
     "uuid",
     "chrono",
     "migrate",
-    "offline"
+    "offline",
+    "uuid"
 ]
 
 [dev-dependencies]

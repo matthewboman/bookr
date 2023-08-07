@@ -92,7 +92,7 @@
     }
 
     async function resetPassword() {
-        const res = await post("/reset-password-link", { email })
+        const res = await post("/generate-reset-token", { email })
         
         if (res.status === 200) {
             successMessage = "Please check your email for a password reset link."

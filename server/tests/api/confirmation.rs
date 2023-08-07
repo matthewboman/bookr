@@ -15,7 +15,7 @@ async fn confirmations_without_token_are_rejected_with_a_400() {
 }
 
 #[tokio::test]
-async fn the_link_returned_by_subscribe_returns_a_200_if_called() {
+async fn the_link_returned_by_signup_returns_a_200_if_called() {
     let app  = spawn_app().await;
     let json = serde_json::json!({
         "email": "test@test.test",

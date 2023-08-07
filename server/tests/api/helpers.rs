@@ -1,6 +1,9 @@
 use argon2::password_hash::SaltString;
 use argon2::{Algorithm, Argon2, Params, PasswordHasher, Version};
+use fake::Fake;
+use fake::faker::internet::en::SafeEmail;
 use once_cell::sync::Lazy;
+use regex::Regex;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use wiremock::MockServer;
@@ -59,6 +62,17 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
+    pub async fn generate_reset_token<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/generate-reset-token", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub fn get_confirmation_links(&self, email_request: &wiremock::Request) -> ConfirmationLinks {
         let body: serde_json::Value = serde_json::from_slice(&email_request.body).unwrap();
 
@@ -81,6 +95,19 @@ impl TestApp {
         let plain_text = get_link(body["TextBody"].as_str().unwrap());
         
         ConfirmationLinks { html, plain_text }
+    }
+
+    pub fn get_token_from_links(&self, confirmation_links: ConfirmationLinks) -> String {
+        let re = Regex::new(
+            r#"=(?<token>.*)"#
+        ).expect("failed to compile regex");
+    
+        let link = confirmation_links.plain_text.into_string();
+        let Some(result) = re.captures(&link) else {
+            return "".to_string();
+        };
+        
+        result["token"].to_string()
     }
 
     pub async fn post_change_password<Json>(&self, json: Json) -> reqwest::Response
@@ -113,6 +140,17 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
+    pub async fn reset_password<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/reset-password", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub async fn sign_up<Json>(&self, json: Json) -> reqwest::Response
     where Json: serde::Serialize
     {
@@ -133,9 +171,12 @@ pub struct TestUser {
 
 impl TestUser {
     pub fn generate() -> Self {
-        Self {
+        let email = SafeEmail().fake();
+
+        Self { 
             user_id:  Uuid::new_v4(),
-            email:    Uuid::new_v4().to_string(),
+            // email:    Uuid::new_v4().to_string(),
+            email,
             password: Uuid::new_v4().to_string()
         }
     }

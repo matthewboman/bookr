@@ -8,8 +8,9 @@ use crate::auth::{validate_credentials, AuthError, Credentials, JwtMiddleware};
 use crate::utils::e500;
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PasswordResetData {
-    current_password:  Secret<String>,
+    current_password:   Secret<String>,
     new_password:       Secret<String>,
     new_password_check: Secret<String>,
 }

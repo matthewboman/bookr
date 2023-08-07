@@ -11,14 +11,6 @@ export async function get(endpoint: String) {
 }
 
 export async function post(endpoint: String, body: Object) {
-    // let token   = sessionStorage.getItem('byotoken')
-    // let headers = token
-    //     ? {
-    //         "Content-type": "application/json; charset=UTF-8",
-    //         "Authorization": `Bearer ${token}`
-    //     }
-    //     : { "Content-type": "application/json; charset=UTF-8" }
-
     let headers = setHeaders()
 
     return await fetch(`${API_URL}${endpoint}`, {
@@ -31,7 +23,7 @@ export async function post(endpoint: String, body: Object) {
 
 const setHeaders = () => {
     const token = sessionStorage.getItem('byotoken')
-    token 
+    return token
         ? {
             "Content-type": "application/json; charset=UTF-8",
             "Authorization": `Bearer ${token}`

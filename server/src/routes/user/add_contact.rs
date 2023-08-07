@@ -33,15 +33,16 @@ pub async fn add_contact(
     let user_id = ext.get::<uuid::Uuid>().unwrap();
 
     // TODO: Do I need to verify that the user exists?
+    // TODO: Better error handling
 
-    // match insert_contact(json, &pool, user_id).await {
-    //     Ok(_) => {
+    match insert_contact(json, &pool, user_id).await {
+        Ok(_) => {
             HttpResponse::Ok().finish()
-    //     },
-    //     Err(_e) => {
-    //         HttpResponse::InternalServerError().finish()
-    //     }
-    // }
+        },
+        Err(_e) => {
+            HttpResponse::InternalServerError().finish()
+        }
+    }
 }
 
 #[tracing::instrument(
