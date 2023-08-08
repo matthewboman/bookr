@@ -8,9 +8,9 @@ async fn must_be_logged_in_to_change_password() {
     
     let new_password = Uuid::new_v4().to_string();
     let response     = app.post_change_password(&serde_json::json!({
-        "current_password":   Uuid::new_v4().to_string(),
-        "new_password":       &new_password,
-        "new_password_check": &new_password
+        "currentPassword":  Uuid::new_v4().to_string(),
+        "newPassword":      &new_password,
+        "newPasswordCheck": &new_password
     })).await;
 
     assert_eq!(response.status().as_u16(), 401);
@@ -29,13 +29,13 @@ async fn current_password_must_be_valid() {
     })).await;
 
     let response = app.post_change_password(&serde_json::json!({
-        "current_password":   &wrong_password,
-        "new_password":       &new_password,
-        "new_password_check": &new_password
+        "currentPassword":  &wrong_password,
+        "newPassword":      &new_password,
+        "newPasswordCheck": &new_password
     }))
     .await;
 
-    assert_eq!(response.status().as_u16(), 401);
+    assert_eq!(response.status().as_u16(), 401); // Returns 400
 }
 
 #[tokio::test]
@@ -54,9 +54,9 @@ async fn changing_password_works() {
 
     // Change password
     let response = app.post_change_password(&serde_json::json!({
-        "current_password":   &app.test_user.password,
-        "new_password":       &new_password,
-        "new_password_check": &new_password
+        "currentPassword":  &app.test_user.password,
+        "newPassword":      &new_password,
+        "newPasswordCheck": &new_password
     }))
     .await;
 
@@ -72,5 +72,5 @@ async fn changing_password_works() {
     });
     let response   = app.post_login(&login_body).await;
 
-    assert_eq!(response.status().as_u16(), 200);
+    assert_eq!(response.status().as_u16(), 200); // Returns 400
 }

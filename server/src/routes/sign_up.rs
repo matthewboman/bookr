@@ -1,15 +1,16 @@
-use actix_web::{web, HttpResponse, ResponseError, http::StatusCode};
+use actix_web::{web, HttpResponse};
 use anyhow::Context;
 use secrecy::{Secret, ExposeSecret};
 use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
 
-use crate::auth::{compute_password_hash};
+use crate::auth::compute_password_hash;
 use crate::domain::UserEmail;
 use crate::email_client::EmailClient;
+use crate::error::{RegisterError, TokenError};
 use crate::startup::ApplicationBaseUrl;
 use crate::telemetry::spawn_blocking_with_tracing;
-use crate::utils::{error_chain_fmt, generate_token};
+use crate::utils::generate_token;
 
 #[derive(serde::Deserialize)]
 pub struct JsonData {
@@ -33,17 +34,10 @@ pub async fn sign_up(
     let email = UserEmail::parse(json.email.clone())
         .map_err(RegisterError::ValidationError)?;
 
-    // TODO: use error chain
     let password      = json.password.clone();
-    let password_hash = match spawn_blocking_with_tracing(move || compute_password_hash(password))
-        .await
-        .context("Failed to hash password")?
-    {
-        Ok(s) => s,
-        Err(_e) => {
-            return Ok(HttpResponse::InternalServerError().finish())
-        }
-    };
+    let password_hash = spawn_blocking_with_tracing(move || compute_password_hash(password))
+        .await?
+        .context("Failed to hash password")?;
         
     let mut transaction = pool.begin()
         .await
@@ -107,7 +101,7 @@ pub async fn store_token(
     transaction:        &mut Transaction<'_, Postgres>,
     user_id:            Uuid,
     confirmation_token: &str
-) -> Result<(), StoreTokenError> {
+) -> Result<(), TokenError> {
     sqlx::query!(
         r#"
         INSERT INTO confirmation_tokens (confirmation_token, user_id)
@@ -117,7 +111,7 @@ pub async fn store_token(
         user_id
     ).execute(transaction)
     .await
-    .map_err(StoreTokenError)?;
+    .map_err(TokenError::DatabaseError)?;
 
     Ok(())
 }
@@ -149,51 +143,4 @@ pub async fn send_confirmation_email(
         &plain_body,
         &html_body
     ).await
-}
-
-#[derive(thiserror::Error)]
-pub enum RegisterError {
-    #[error("{0}")]
-    ValidationError(String),
-
-    #[error(transparent)]
-    UnexpectedError(#[from] anyhow::Error),
-}
-
-impl ResponseError for RegisterError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            RegisterError::ValidationError(_) => StatusCode::BAD_REQUEST,
-            RegisterError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
-
-impl std::fmt::Debug for RegisterError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        error_chain_fmt(self, f)
-    }
-}
-
-pub struct StoreTokenError(sqlx::Error);
-
-impl std::fmt::Debug for StoreTokenError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        error_chain_fmt(self, f)
-    }
-}
-
-impl std::fmt::Display for StoreTokenError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "A database error was encountered while trying to store a subscription token"
-        )
-    }
-}
-
-impl std::error::Error for StoreTokenError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(&self.0)
-    }
 }

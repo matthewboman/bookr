@@ -20,7 +20,7 @@ pub async fn change_password(
     json: web::Json<PasswordResetData>,
     pool: web::Data<PgPool>,
     _:    JwtMiddleware
-) -> Result<HttpResponse, actix_web::Error> {
+) -> Result<HttpResponse, actix_web::Error> { // TODO: custom error 
     let ext     = req.extensions();
     let user_id = ext.get::<uuid::Uuid>().unwrap();
     let email   = get_email(*user_id, &pool).await.map_err(e500)?;

@@ -37,9 +37,9 @@ async fn resetting_password_returns_a_200_if_email_exists() {
 async fn password_reset_link_returns_401_if_no_token_exists() {
     let app  = spawn_app().await;
     let body = serde_json::json!({
-        "reset_token":        "YOLO",
-        "new_password":       "password",
-        "new_password_check": "password"
+        "resetToken":       "YOLO",
+        "newPassword":      "password",
+        "newPasswordCheck": "password"
     });
 
     let response = app.reset_password(body).await;
@@ -67,9 +67,9 @@ async fn password_reset_link_returns_200_for_correct_token() {
     let reset_token        = app.get_token_from_links(confirmation_links);
 
     let body = serde_json::json!({
-        "reset_token":        reset_token,
-        "new_password":       "password",
-        "new_password_check": "password"
+        "resetToken":       reset_token,
+        "newPassword":      "password",
+        "newPasswordCheck": "password"
     });
 
     let response = app.reset_password(body).await;

@@ -20,10 +20,10 @@ use crate::routes::{
     change_password,
     confirm,
     generate_reset_token,
-    get_contacts,
     health_check, 
     login,
     log_out,
+    public_contacts,
     reset_password,
     sign_up
 };
@@ -110,7 +110,7 @@ async fn run(
             .wrap(cors)
             .route("/health_check", web::get().to(health_check))
             .route("/confirm", web::get().to(confirm))
-            .route("/contacts", web::get().to(get_contacts))
+            .route("/contacts", web::get().to(public_contacts))
             .route("/generate-reset-token", web::post().to(generate_reset_token))
             .route("/login", web::post().to(login))
             .route("/reset-password", web::post().to(reset_password))

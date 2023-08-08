@@ -1,9 +1,11 @@
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use anyhow::Context;
 use sqlx::{PgPool, postgres::{PgQueryResult}};
 use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
 use crate::domain::input_validator::{OptionalStringInput, StringInput};
+use crate::error::ContactError;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -28,21 +30,18 @@ pub async fn add_contact(
     json: web::Json<JsonData>,
     pool: web::Data<PgPool>,
     _:    JwtMiddleware
-) -> HttpResponse {
+) -> Result<HttpResponse, ContactError> {
     let ext     = req.extensions();
     let user_id = ext.get::<uuid::Uuid>().unwrap();
 
     // TODO: Do I need to verify that the user exists?
-    // TODO: Better error handling
+    // API won't be public && middleware verifies user is authenticated
 
-    match insert_contact(json, &pool, user_id).await {
-        Ok(_) => {
-            HttpResponse::Ok().finish()
-        },
-        Err(_e) => {
-            HttpResponse::InternalServerError().finish()
-        }
-    }
+    insert_contact(json, &pool, user_id)
+        .await
+        .context("Failed to insert new contact into database")?;
+
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[tracing::instrument(

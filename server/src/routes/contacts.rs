@@ -1,17 +1,19 @@
 use actix_web::{web, HttpResponse};
+use anyhow::Context;
 use sqlx::PgPool;
 
 use crate::domain::contact::ContactResponse;
+use crate::error::ContactError;
 
-// TODO: private contacts for authenticated users
-
-pub async fn get_contacts(pool: web::Data<PgPool>) -> HttpResponse {
-    match query_contacts(&pool).await {
-        Ok(contacts) => {
-            HttpResponse::Ok().json(contacts)
-        },
-        Err(_) => HttpResponse::InternalServerError().finish()
-    }
+#[tracing::instrument(
+    skip(pool),
+)]
+pub async fn public_contacts(pool: web::Data<PgPool>) -> Result<HttpResponse, ContactError> {
+    let contacts = query_contacts(&pool)
+        .await
+        .context("Failed to query contacts for guest")?;
+     
+    Ok(HttpResponse::Ok().json(contacts))   
 }
 
 #[tracing::instrument(
@@ -28,11 +30,7 @@ async fn query_contacts(pool: &PgPool) -> Result<Vec<ContactResponse>, sqlx::Err
         AND verified = true
         "#
     ).fetch_all(pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to execute query: {:?}", e);
-        e
-    })?;
+    .await?;
 
     Ok(contacts)
 }

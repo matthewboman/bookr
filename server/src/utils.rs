@@ -39,10 +39,3 @@ pub fn generate_token() -> String {
         .take(25)
         .collect()
 }
-
-// TODO: is this useful for REST?
-// pub fn see_other(location: &str) -> HttpResponse {
-//     HttpResponse::SeeOther()
-//         .insert_header((LOCATION, location))
-//         .finish()
-// }
