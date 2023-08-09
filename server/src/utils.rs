@@ -1,5 +1,7 @@
+use chrono::{Duration, Utc};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
+use sqlx::types::chrono::NaiveDateTime;
 
 pub fn e400<T>(e: T) -> actix_web::Error
 where
@@ -38,4 +40,38 @@ pub fn generate_token() -> String {
         .map(char::from)
         .take(25)
         .collect()
+}
+
+pub fn is_token_expired(created_at: NaiveDateTime, expiration_duration: Duration) -> bool {
+    let current_time = Utc::now().naive_utc();
+
+    // Token shouldn't be from the future
+    if created_at > current_time {
+        return false;
+    }
+
+    created_at + expiration_duration <= current_time
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_token_is_not_expired() {
+        let current_time        = Utc::now().naive_utc();
+        let expiration_duration = Duration::minutes(30);
+        let created_at          = current_time - Duration::minutes(25);
+
+        assert_eq!(is_token_expired(created_at, expiration_duration), false);
+    }
+
+    #[test]
+    fn test_token_is_expired() {
+        let current_time        = Utc::now().naive_utc();
+        let expiration_duration = Duration::minutes(30);
+        let created_at          = current_time - Duration::minutes(35);
+
+        assert_eq!(is_token_expired(created_at, expiration_duration), true);
+    }
 }

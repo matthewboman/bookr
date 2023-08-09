@@ -1,7 +1,8 @@
 use actix_web::{web, HttpResponse};
 use anyhow::Context;
+use chrono::Duration;
 use secrecy::{Secret, ExposeSecret};
-use sqlx::PgPool;
+use sqlx::{PgPool, Postgres, Transaction, types::chrono::NaiveDateTime};
 use uuid::Uuid;
 
 use crate::auth::{compute_password_hash};
@@ -11,7 +12,7 @@ use crate::email_client::EmailClient;
 use crate::error::TokenError;
 use crate::startup::ApplicationBaseUrl;
 use crate::telemetry::spawn_blocking_with_tracing;
-use crate::utils::generate_token;
+use crate::utils::{generate_token, is_token_expired};
 
 #[derive(serde::Deserialize)]
 pub struct ResetRequest {
@@ -67,11 +68,16 @@ pub async fn reset_password(
     json: web::Json<ResetPasswordData>,
     pool: web::Data<PgPool>
 ) -> Result<HttpResponse, TokenError> {
-    let reset_token = StringInput::parse(json.reset_token.expose_secret().to_string());
-    let user_id     = get_user_id_from_reset_token(&pool, reset_token)
+    let reset_token    = StringInput::parse(json.reset_token.expose_secret().to_string());
+    let token_duration = Duration::minutes(60);
+    let (user_id, exp) = get_details_from_reset_token(&pool, &reset_token)
         .await
         .context("Unable to find user with provided token")?
         .ok_or(TokenError::InvalidToken)?;
+    
+    if is_token_expired(exp, token_duration) {
+        return Err(TokenError::InvalidToken)
+    }
 
     // TODO: server-side validation to test new passwords
 
@@ -80,11 +86,45 @@ pub async fn reset_password(
         .await?
         .context("Failed to hash password")?;
 
-    update_password(&pool, user_id, password_hash)
+    let mut transaction = pool
+        .begin()
+        .await
+        .context("Failed to acquire a Postgres connection from the pool")?;
+    update_password(&mut transaction, user_id, password_hash)
         .await
         .context("Failed to update password in database")?;
 
+    delete_token(&mut transaction, user_id, reset_token)
+        .await
+        .context("Failed to delete password reset token")?;
+
+    transaction
+        .commit()
+        .await
+        .context("Failed to commit SQL transaction to reset user's password")?;
+
     Ok(HttpResponse::Ok().finish())
+}
+
+#[tracing::instrument(
+    name = "Deleting token from database",
+    skip(transaction, uuid, reset_token)
+)]
+async fn delete_token(
+    transaction: &mut Transaction<'_, Postgres>,
+    uuid:        Uuid,
+    reset_token: String
+) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+        DELETE FROM reset_tokens WHERE user_id = $1 AND reset_token = $2
+        "#,
+        uuid,
+        reset_token
+    ).execute(transaction)
+    .await?;
+
+    Ok(())
 }
 
 #[tracing::instrument(
@@ -109,18 +149,19 @@ async fn get_user_id_from_email(
     name = "Looking up user_id from reset_token",
     skip(reset_token, pool)
 )]
-async fn get_user_id_from_reset_token(
+async fn get_details_from_reset_token(
     pool:        &PgPool,
-    reset_token: String,
-) -> Result<Option<Uuid>, sqlx::Error> {
+    reset_token: &String,
+) -> Result<Option<(Uuid, NaiveDateTime)>, sqlx::Error> {
     let result = sqlx::query!(
-        r#"SELECT user_id FROM reset_tokens WHERE reset_token = $1"#,
+        r#"SELECT user_id, created_at FROM reset_tokens WHERE reset_token = $1"#,
         reset_token
     )
     .fetch_optional(pool)
     .await?;
 
-    Ok(result.map(|r| r.user_id))
+    // Ok(result.map(|r| r.user_id))
+    Ok(result.map(|r| (r.user_id, r.created_at)))
 }
 
 #[tracing::instrument(
@@ -180,10 +221,10 @@ async fn store_token(
 
 #[tracing::instrument(
     name = "Update user password hash in database",
-    skip(pool, uuid, new_password)
+    skip(transaction, uuid, new_password)
 )]
 async fn update_password(
-    pool:         &PgPool,
+    transaction:  &mut Transaction<'_, Postgres>,
     uuid:         Uuid,
     new_password: Secret<String>
 ) -> Result<(), sqlx::Error> {
@@ -193,7 +234,7 @@ async fn update_password(
         "#,
         new_password.expose_secret(),
         uuid
-    ).execute(pool)
+    ).execute(transaction)
     .await?;
 
     Ok(())

@@ -21,14 +21,12 @@ Database migrations are under `/server`
 - move node `addr_to_geo` script to rust backend
     - run on admin approval or as cron?
 - JWT expiration
-- reset_password token expiration
-- consistent error handling in API
 - UI theme, usability
 - response messages for: signing up, logging in, logging out, adding contacts, errors
 
 ## Potential Features
 - authenticated users should be able to....
-    - users create public contacts--what's the verification process?
+    - create public contacts--what's the verification process?
     - add notes/rating/feeback--public or private?
 - filter by genre
 - venue/contact type
