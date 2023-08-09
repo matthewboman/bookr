@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { onMount }      from 'svelte'
+	import { onMount }                from 'svelte'
+    import { Label, Input, Checkbox } from 'flowbite-svelte'
+
     import type { Contact } from '../types'
     
     export let filteredContacts: Contact[]
@@ -14,8 +16,7 @@
     let twentyonePlus       = true
     let allowNullAgeRange   = true
 
-
-    const capacityFilter = (contact: any) => {
+    const capacityFilter = (contact: Contact) => {
         if (allowNullCapacity && contact.capacity == null) return true
         if (!allowNullCapacity && contact.capacity == null) return false
 
@@ -24,7 +25,7 @@
         return false
     }
 
-    const ageRangeFilter = (contact: any) => {
+    const ageRangeFilter = (contact: Contact) => {
         if (allAges && contact.ageRange == 'all') return true
         if (eighteenPlus && contact.ageRange == '18+') return true
         if (twentyonePlus && contact.ageRange == '21+') return true
@@ -46,115 +47,19 @@
     })
 </script>
 
-<style>
-    .filter-container {
-        display: flex;
-        flex-direction: row;
-        margin-left: auto;
-        margin-right: auto;
-        width: 90vw;
-    }
-    .filter {
-        padding: 10px;
-        flex-grow: 1;
-    }
-    .filter-title {
-        margin-bottom: 10px;
-    }
-    .filter-input {
-        margin-bottom: 0.5em;
-    }
+<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
+<Label class="space-y-2">
+    <span>Min</span>
+    <Input type="number" name="displayName" placeholder="" bind:value={minCapacity} on:change={update}/>
+</Label>
+<Label class="space-y-2">
+    <span>Max</span>
+    <Input type="number" name="displayName" placeholder="" bind:value={maxCapacity} on:change={update}/>
+</Label>
+<Checkbox bind:checked={allowNullCapacity} on:change={update}>Allow for venues with unknown capacity</Checkbox>
 
-    /* Checkboxes */
-    .checkbox-container {
-        line-height: 1.1;
-        display: grid;
-        grid-template-columns: 1em auto;
-        gap: 0.5em;
-    }
-    .checkbox-container:hover {
-        cursor: pointer;
-    }
-    input[type="checkbox"] {
-        -webkit-appearance: none;
-        appearance: none;
-        background-color: #fff;
-        margin: 0;
-        font: inherit;
-        color: currentColor;
-        width: 1.15em;
-        height: 1.15em;
-        border: 0.1em solid currentColor;
-        border-radius: 0.15em;
-        transform: translateY(-0.075em);
-        display: grid;
-        place-content: center;
-    }
-    input[type="checkbox"]::before {
-        content: "";
-        width: 0.65em;
-        height: 0.65em;
-        transform: scale(0);
-        transition: 120ms transform ease-in-out;
-        box-shadow: inset 1em 1em rgb(49, 46, 232);
-        background-color: CanvasText;
-    }
-    input[type="checkbox"]:checked::before {
-        transform: scale(1);
-    }
-    input:focus {
-        outline: max(2px, 0.15em) solid grey;
-        outline-offset: max(2px, 0.15em);
-    }
-</style>
-
-<div class="filter-container">
-    <div class="filter">
-        <div class="filter-title">
-            Filter venues by capacity
-        </div>
-        <div class="filter-input">
-            <label for="min">min</label>
-            <input id="min" type="number" bind:value={minCapacity} on:change={update}/>
-        </div>
-        <div class="filter-input">
-            <label for="max">max:</label>
-            <input id="max" type="number" bind:value={maxCapacity} on:change={update}/>       
-        </div>
-        <div class="filter-input">
-            <label for="null-capacity" class="checkbox-container">
-                <input id="null-capacity" type="checkbox" bind:checked={allowNullCapacity} on:change={update}/>                     
-                allow for venues with unknown capacity
-            </label>
-        </div>
-    </div>
-    <div class="filter">
-        <div class="filter-title">
-            Filter venues by age range
-        </div>
-        <div class="filter-input">
-            <label class="checkbox-container">
-                <input type=checkbox class="checkbox" bind:checked={allAges} on:change={update}>
-                All Ages
-            </label>
-        </div>
-        <div class="filter-input">
-            <label class="checkbox-container">
-                <input type=checkbox class="checkbox" bind:checked={eighteenPlus} on:change={update}>
-                18+
-            </label>
-        </div>
-        <div class="filter-input">
-            <label class="checkbox-container">
-                <input type=checkbox class="checkbox" bind:checked={twentyonePlus} on:change={update}>
-                21+
-            </label>
-        </div>
-        <div class="filter-input">
-            <label class="checkbox-container">
-                <input type=checkbox class="checkbox" bind:checked={allowNullAgeRange} on:change={update}>
-                allow for venues with unknown age range
-            </label>
-        </div>
-    </div>
-</div>
+<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Filter venues by age range</h3>
+<Checkbox bind:checked={allAges} on:change={update}>All ages</Checkbox>
+<Checkbox bind:checked={eighteenPlus} on:change={update}>18+</Checkbox>
+<Checkbox bind:checked={twentyonePlus} on:change={update}>21+</Checkbox>
+<Checkbox bind:checked={allowNullAgeRange} on:change={update}>Allow for venues with unknown age range</Checkbox>

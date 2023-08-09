@@ -1,14 +1,18 @@
-<script>
+<script lang="ts">
     import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte'
-    import { Button } from 'flowbite-svelte'
+    import { Button, Modal } from 'flowbite-svelte'
+    import { goto }          from '$app/navigation'
 
     import { post }          from '../api'
     import { authenticated } from '../store'
+    import AuthModal         from "../components/AuthModal.svelte"
+    import ContactModal      from '../components/ContactModal.svelte'
 
-    export let authModal    = false
-    export let contactModal = false
-
-    let userExists
+    export let onAuthClose = null
+    
+    let authModal    = false
+    let contactModal = false
+    let userExists: boolean
 
     authenticated.subscribe((val) => {userExists = val})
 
@@ -19,6 +23,18 @@
             sessionStorage.removeItem('byotoken')
             authenticated.update(() => false)
         }
+    }
+
+    function closeAuthModal() {
+        authModal = false
+
+        if (onAuthClose === 'redirect') {
+            goto("/")
+        }
+    }
+
+    function closeContactModal() {
+        contactModal = false
     }
 </script>
   
@@ -38,3 +54,10 @@
         {/if}
     </NavUl>
 </Navbar>
+
+<Modal bind:open={authModal} size="xs" outsideclose class="w-full">
+    <AuthModal on:close={closeAuthModal}/>
+</Modal>
+<Modal bind:open={contactModal} size="xs" outsideclose class="w-full">
+    <ContactModal on:close={closeContactModal} />
+</Modal>

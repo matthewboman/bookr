@@ -15,6 +15,12 @@ export type Contact = {
     isPrivate:   boolean
 }
 
+export type Jwt = {
+    sub: string,
+    iat: number,
+    exp: number
+}
+
 export type NewContact = {
     displayName: string,
     address:     string | null,

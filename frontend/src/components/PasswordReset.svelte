@@ -39,7 +39,6 @@
         const res = await post(url, body)
 
         if (res.status === 200) {
-            console.log(res)
             successMessage = "Your password has successfully been updated."
             
             setTimeout(() => {
@@ -103,12 +102,11 @@
         </Alert>
     {/if}
     {#if loggedIn}
-
+        <Label class="space-y-2">
+            <span>Current password</span>
+            <Input type="password" name="password" placeholder="•••••" bind:value={currentPassword} required/>
+        </Label>
     {/if}
-    <Label class="space-y-2">
-        <span>Current password</span>
-        <Input type="password" name="password" placeholder="•••••" bind:value={currentPassword} required/>
-    </Label>
     <Label class="space-y-2">
         <span>New password</span>
         <Input type="password" name="password" placeholder="•••••" bind:value={newPassword} on:input={comparePasswords} required/>

@@ -1,20 +1,12 @@
 <script lang="ts">
     import { browser } from '$app/environment'
-    import { goto }    from '$app/navigation'
     import { onMount } from 'svelte'
-	import { Modal }   from 'flowbite-svelte'
 
-    import AuthModal   from "../../components/AuthModal.svelte"
-    import Menu        from '../../components/Menu.svelte'
-    import { get }     from "../../api"
+    import Menu    from '../../components/Menu.svelte'
+    import { get } from "../../api"
 
-    let authModal: any
+    export let onAuthClose = 'redirect'
     let message: string = "verifying"
-
-    function closeAuthModal() {
-        authModal = false
-        goto("/")
-    }
 
     async function verifyEmail() {
         const params = new URLSearchParams(window.location.search)
@@ -32,7 +24,7 @@
         }
 
         if (response.status === 401) {
-            message = "Invalid token. Please check your email and verify the link is correct."
+            message = "Invalid token. Please check your email and verify the link is correct and token not expired."
         }
 
         if (response.status === 500) {
@@ -49,12 +41,7 @@
 
 </script>
 
-<Menu bind:authModal={authModal} />
-
-<Modal bind:open={authModal} size="xs" outsideclose class="w-full">
-    <AuthModal on:close={closeAuthModal} />
-</Modal>
-
+<Menu bind:onAuthClose={onAuthClose}/>
 <div>
     { message }
 </div>

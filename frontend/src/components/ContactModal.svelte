@@ -30,7 +30,7 @@
         if (currentAction === 'add') {
             await addNewContact()
         } else if (currentAction === 'edit') {
-            // TODO
+            // TODO: build ability for user to edit their contacts
         } else {
             // This shouldn't happen
         }

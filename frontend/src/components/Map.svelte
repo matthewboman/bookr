@@ -1,7 +1,8 @@
 <script lang="ts">
     import { LeafletMap, Marker, Popup, TileLayer } from 'svelte-leafletjs'
     import type { LatLngExpression } from "leaflet"
-    import ContactPopup from './ContactPopup.svelte'
+
+    import ContactPopup     from './ContactPopup.svelte'
     import type { Contact } from '../types'
 
     export let renderedContacts: Contact[]
