@@ -9,7 +9,7 @@
 
     const mapOptions = {
         center: [ 37.09, -90.71 ] as LatLngExpression,
-        zoom:   3.5,
+        zoom:   4,
     }
     const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     const tileLayerOptions = {

@@ -17,15 +17,15 @@
 
 	/* Device-specific map layout */
 	.computer {
-        width: 90vw;
+        /* width: 90%; */
         height: 800px;
     }
     .tablet {
-        width: 90vw;
+        width: 85vw;
         height: 600px;
     }
     .mobile {
-        width: 90vw;
+        width: 85vw;
         height: 600px;
     }
 </style>

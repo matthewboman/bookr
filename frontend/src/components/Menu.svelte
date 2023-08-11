@@ -38,19 +38,20 @@
     }
 </script>
   
-<Navbar let:hidden let:toggle>
-<NavBrand href="/">
-    <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
-        Book your own tour
-    </span>
-</NavBrand>
-<NavHamburger on:click={toggle} />
+<Navbar let:hidden let:toggle color="primary">
+    <NavBrand href="/">
+        <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+            Book your own tour
+        </span>
+    </NavBrand>
+    <NavHamburger on:click={toggle} />
     <NavUl {hidden}>
+        <NavLi href="/about">About</NavLi>
         {#if userExists}
-            <Button on:click={() => contactModal = true}>Add contact</Button>
-            <Button on:click={signOut}>Sign Out</Button>
+            <Button size="sm" on:click={() => contactModal = true}>Add contact</Button>
+            <Button size="sm" on:click={signOut}>Sign Out</Button>
         {:else}           
-            <Button on:click={() => authModal = true}>Sign in</Button>
+            <Button size="sm" on:click={() => authModal = true}>Sign in</Button>
         {/if}
     </NavUl>
 </Navbar>
