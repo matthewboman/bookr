@@ -51,11 +51,34 @@ pub struct TestApp {
 }
 
 impl TestApp {
+    // Routes
     pub async fn add_contact<Json>(&self, json: Json) -> reqwest::Response
     where Json: serde::Serialize
     {
         self.api_client
             .post(&format!("{}/user/add-contact", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn approve_contact<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/admin/approve-contact", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn delete_pending_contact<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/admin/delete-pending-contact", &self.address))
             .json(&json)
             .send()
             .await
@@ -73,49 +96,12 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
-    pub fn get_confirmation_links(&self, email_request: &wiremock::Request) -> ConfirmationLinks {
-        let body: serde_json::Value = serde_json::from_slice(&email_request.body).unwrap();
-
-        let get_link = |s: &str| {
-            let links: Vec<_> = linkify::LinkFinder::new()
-                .links(s)
-                .filter(|l| *l.kind() == linkify::LinkKind::Url)
-                .collect();
-
-            let raw_link = links[0].as_str().to_owned();
-            let mut confirmation_link = reqwest::Url::parse(&raw_link).unwrap();
-
-            assert_eq!(confirmation_link.host_str().unwrap(), "127.0.0.1");
-            confirmation_link.set_port(Some(self.port)).unwrap();
-
-            confirmation_link
-        };
-
-        let html       = get_link(body["HtmlBody"].as_str().unwrap());
-        let plain_text = get_link(body["TextBody"].as_str().unwrap());
-        
-        ConfirmationLinks { html, plain_text }
-    }
-
     pub async fn get_pending_contacts(&self) -> reqwest::Response {
         self.api_client
             .get(&format!("{}/admin/pending-contacts", &self.address))
             .send()
             .await
             .expect("Failed to execute request")
-    }
-
-    pub fn get_token_from_links(&self, confirmation_links: ConfirmationLinks) -> String {
-        let re = Regex::new(
-            r#"=(?<token>.*)"#
-        ).expect("failed to compile regex");
-    
-        let link = confirmation_links.plain_text.into_string();
-        let Some(result) = re.captures(&link) else {
-            return "".to_string();
-        };
-        
-        result["token"].to_string()
     }
 
     pub async fn post_change_password<Json>(&self, json: Json) -> reqwest::Response
@@ -168,6 +154,44 @@ impl TestApp {
             .send()
             .await
             .expect("Failed to execute request")
+    }
+
+    // Public methods
+    pub fn get_confirmation_links(&self, email_request: &wiremock::Request) -> ConfirmationLinks {
+        let body: serde_json::Value = serde_json::from_slice(&email_request.body).unwrap();
+
+        let get_link = |s: &str| {
+            let links: Vec<_> = linkify::LinkFinder::new()
+                .links(s)
+                .filter(|l| *l.kind() == linkify::LinkKind::Url)
+                .collect();
+
+            let raw_link = links[0].as_str().to_owned();
+            let mut confirmation_link = reqwest::Url::parse(&raw_link).unwrap();
+
+            assert_eq!(confirmation_link.host_str().unwrap(), "127.0.0.1");
+            confirmation_link.set_port(Some(self.port)).unwrap();
+
+            confirmation_link
+        };
+
+        let html       = get_link(body["HtmlBody"].as_str().unwrap());
+        let plain_text = get_link(body["TextBody"].as_str().unwrap());
+        
+        ConfirmationLinks { html, plain_text }
+    }
+
+    pub fn get_token_from_links(&self, confirmation_links: ConfirmationLinks) -> String {
+        let re = Regex::new(
+            r#"=(?<token>.*)"#
+        ).expect("failed to compile regex");
+    
+        let link = confirmation_links.plain_text.into_string();
+        let Some(result) = re.captures(&link) else {
+            return "".to_string();
+        };
+        
+        result["token"].to_string()
     }
 }
 
