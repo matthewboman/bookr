@@ -1,5 +1,5 @@
 ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'pending';
-ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'standard';
+ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'standard';
 ALTER TABLE users ADD COLUMN created_at timestamp(3) DEFAULT current_timestamp NOT NULL;
 
 CREATE TABLE confirmation_tokens(

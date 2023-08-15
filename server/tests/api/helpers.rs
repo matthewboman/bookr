@@ -97,6 +97,14 @@ impl TestApp {
         ConfirmationLinks { html, plain_text }
     }
 
+    pub async fn get_pending_contacts(&self) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/admin/pending-contacts", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub fn get_token_from_links(&self, confirmation_links: ConfirmationLinks) -> String {
         let re = Regex::new(
             r#"=(?<token>.*)"#
@@ -175,7 +183,6 @@ impl TestUser {
 
         Self { 
             user_id:  Uuid::new_v4(),
-            // email:    Uuid::new_v4().to_string(),
             email,
             password: Uuid::new_v4().to_string()
         }
@@ -187,6 +194,19 @@ impl TestUser {
             "password": &self.password,
         }))
         .await;
+    }
+
+    pub async fn make_admin(&self, pool: &PgPool) {
+        sqlx::query!(
+            r#"
+            UPDATE users
+            SET role = 'admin'
+            WHERE user_id = $1
+            "#,
+            self.user_id
+        ).execute(pool)
+            .await
+            .expect("Failed to update test user to admin");
     }
 
     pub async fn store(&self, pool: &PgPool) {

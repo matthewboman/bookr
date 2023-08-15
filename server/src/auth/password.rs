@@ -4,6 +4,7 @@ use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVe
 use secrecy::{Secret, ExposeSecret};
 use sqlx::PgPool;
 
+use crate::domain::{CleanUser, User};
 use crate::telemetry::spawn_blocking_with_tracing;
 
 pub struct Credentials {
@@ -27,8 +28,8 @@ pub enum AuthError {
 pub async fn validate_credentials(
     credentials: Credentials,
     pool:        &PgPool
-) -> Result<uuid::Uuid, AuthError> {
-    let mut user_id = None;
+) -> Result<CleanUser, AuthError> {
+    let mut user = None;
     // Default hashed password if no user is found to prevent timing attacks
     let mut expected_password_hash = Secret::new(
         "$argon2id$v=19$m=15000,t=2,p=1$\
@@ -37,19 +38,24 @@ pub async fn validate_credentials(
             .to_string(),
     );
 
-    if let Some((stored_user_id, stored_password_hash)) = get_stored_credentials(
+    if let Some(stored_user) = get_stored_credentials(
         &credentials.email,
         &pool
     ).await? {
-        user_id = Some(stored_user_id);
-        expected_password_hash = stored_password_hash;
+        expected_password_hash = stored_user.password_hash;
+        user = Some(CleanUser {
+            user_id: stored_user.user_id,
+            email:   stored_user.email,
+            role:    stored_user.role
+        });
     }
 
     spawn_blocking_with_tracing(move || {
         verify_password_hash(expected_password_hash, credentials.password)
     }).await.context("Failed to spawn blocking task")??;
 
-    user_id.ok_or_else(|| anyhow::anyhow!("Unknown email"))
+    user
+        .ok_or_else(|| anyhow::anyhow!("Unknown email"))
         .map_err(AuthError::InvalidCredentials)
 }
 
@@ -79,17 +85,22 @@ fn verify_password_hash(
 async fn get_stored_credentials(
     email: &str,
     pool:  &PgPool
-) -> Result<Option<(uuid::Uuid, Secret<String>)>, anyhow::Error> {
-    let row = sqlx::query!(
-        r#"SELECT user_id, password_hash FROM users WHERE email = $1"#,
+) -> Result<Option<User>, anyhow::Error> {
+    let user = sqlx::query!(
+        r#"SELECT user_id, password_hash, role FROM users WHERE email = $1"#,
         email,
     )
     .fetch_optional(pool)
     .await
     .context("Failed to perform a query to retrieve stored credentials.")?
-    .map(|row| (row.user_id, Secret::new(row.password_hash)));
+    .map(|row| User {
+        user_id: row.user_id,
+        email: email.to_string(),
+        password_hash: row.password_hash.into(),
+        role: row.role
+    });
 
-    Ok(row)
+    Ok(user)
 }
 
 #[tracing::instrument(

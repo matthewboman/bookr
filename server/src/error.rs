@@ -6,6 +6,34 @@ use crate::auth::AuthError;
 use crate::utils::error_chain_fmt;
 
 #[derive(thiserror::Error)]
+pub enum AdminError {
+    #[error("{0}")]
+    DatabaseError(#[from] sqlx::Error),
+
+    #[error("Invalid token")]
+    InvalidToken,
+
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+impl ResponseError for AdminError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::InvalidToken => StatusCode::UNAUTHORIZED,
+            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR
+        }
+    }
+}
+
+impl std::fmt::Debug for AdminError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        error_chain_fmt(self, f)
+    }
+}
+
+#[derive(thiserror::Error)]
 pub enum ContactError {
     #[error("{0}")]
     DatabaseError(#[from] sqlx::Error),

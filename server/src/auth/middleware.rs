@@ -18,13 +18,15 @@ use crate::configuration::JWTSettings;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenClaims {
-    pub sub: String,
-    pub iat: usize,
-    pub exp: usize
+    pub sub:  String,
+    pub iat:  usize,
+    pub exp:  usize,
+    pub role: String,
 }
 
 pub struct JwtMiddleware {
-    pub user_id: uuid::Uuid
+    pub user_id: uuid::Uuid,
+    pub role:    String,
 }
 
 #[derive(Debug, Serialize)]
@@ -83,11 +85,13 @@ impl FromRequest for JwtMiddleware {
         };
 
         let user_id = uuid::Uuid::parse_str(claims.sub.as_str()).unwrap();
+        let role    = claims.role.to_string();
 
         req.extensions_mut().insert::<uuid::Uuid>(user_id.to_owned());
+        req.extensions_mut().insert::<String>(role.clone());
 
         ready(
-            Ok(JwtMiddleware { user_id })
+            Ok(JwtMiddleware { user_id, role })
         )
     }
 }

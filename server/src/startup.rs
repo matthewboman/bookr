@@ -17,12 +17,14 @@ use crate::configuration::{DatabaseSettings, JWTSettings, Settings};
 use crate::email_client::EmailClient;
 use crate::routes::{
     add_contact,
+    // approve_contact,
     change_password,
     confirm,
     generate_reset_token,
     health_check, 
     login,
     log_out,
+    pending_contacts,
     public_contacts,
     reset_password,
     sign_up
@@ -120,6 +122,11 @@ async fn run(
                     .route("/add-contact", web::post().to(add_contact))
                     .route("/change-password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out))
+            )
+            .service(
+                web::scope("/admin")
+                    .route("/pending-contacts", web::get().to(pending_contacts))
+                    // .route("/approve-contact", web::post().to(approve_contact))
             )
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
