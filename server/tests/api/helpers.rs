@@ -67,7 +67,7 @@ impl TestApp {
     where Json: serde::Serialize
     {
         self.api_client
-            .post(&format!("{}/admin/approve-contact", &self.address))
+            .post(&format!("{}/admin/approve-pending-contact", &self.address))
             .json(&json)
             .send()
             .await

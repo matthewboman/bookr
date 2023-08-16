@@ -92,7 +92,11 @@ async fn admin_approve_pending_contact() {
 
     // Approve contact
     let json = serde_json::json!({
-        "contactId": contact.contact_id
+        "contactId": contact.contact_id,
+        "address":   contact.address,
+        "city":      contact.city,
+        "state":     contact.state,
+        "zipCode":   contact.zip_code
     });
     let response = app.approve_contact(&json).await;
 
@@ -138,7 +142,11 @@ async fn admin_can_delete_pending_contact() {
 
     // Delete contact
     let json = serde_json::json!({
-        "contactId": contact.contact_id
+        "contactId": contact.contact_id,
+        "address":   contact.address,
+        "city":      contact.city,
+        "state":     contact.state,
+        "zipCode":   contact.zip_code
     });
     let response = app.delete_pending_contact(&json).await;
 

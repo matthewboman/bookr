@@ -6,12 +6,14 @@ use std::convert::{TryFrom, TryInto};
 
 use crate::domain::UserEmail;
 use crate::email_client::EmailClient;
+use crate::gmaps_api_client::GoogleMapsAPIClient;
 
 #[derive(serde::Deserialize, Clone)]
 pub struct Settings {
     pub database:     DatabaseSettings,
     pub application:  ApplicationSettings,
     pub email_client: EmailClientSettings,
+    pub gmaps_client: GoogleMapsAPIClient,
     pub redis_uri:    Secret<String>,
     pub jwt_settings: JWTSettings,
     pub frontend_url: String,
@@ -20,10 +22,10 @@ pub struct Settings {
 #[derive(serde::Deserialize, Clone)]
 pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
-    pub port:        u16,
-    pub host:        String,
-    pub base_url:    String,
-    pub hmac_secret: Secret<String>,
+    pub port:           u16,
+    pub host:           String,
+    pub base_url:       String,
+    pub hmac_secret:    Secret<String>,
 }
 
 #[derive(serde::Deserialize, Clone)]

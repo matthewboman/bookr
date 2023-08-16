@@ -3,6 +3,7 @@ pub mod configuration;
 pub mod domain;
 pub mod email_client;
 pub mod error;
+pub mod gmaps_api_client;
 // pub mod idempotency;
 pub mod routes;
 pub mod startup;

@@ -15,6 +15,7 @@ use tracing_actix_web::TracingLogger;
 
 use crate::configuration::{DatabaseSettings, JWTSettings, Settings};
 use crate::email_client::EmailClient;
+use crate::gmaps_api_client::GoogleMapsAPIClient;
 use crate::routes::{
     add_contact,
     approve_contact,
@@ -53,6 +54,7 @@ impl Application {
             configuration.redis_uri,
             configuration.jwt_settings,
             configuration.frontend_url,
+            configuration.gmaps_client
         ).await?;
 
         Ok(Self { port, server })
@@ -84,11 +86,13 @@ async fn run(
     redis_uri:    Secret<String>,
     jwt_settings: JWTSettings,
     frontend_url: String,
+    gmaps_client: GoogleMapsAPIClient,
 ) -> Result<Server, anyhow::Error> {
     let base_url     = web::Data::new(ApplicationBaseUrl(base_url));
     let db_pool      = web::Data::new(db_pool);
     let email_client = web::Data::new(email_client);
     let jwt_settings = web::Data::new(jwt_settings);
+    let gmaps_client = web::Data::new(gmaps_client);
     let secret_key   = Key::from(hmac_secret.expose_secret().as_bytes());
     let redis_store  = RedisSessionStore::new(redis_uri.expose_secret()).await?;
     // let test_user = TestUser::generate();
@@ -128,11 +132,12 @@ async fn run(
                 web::scope("/admin")
                     .route("/pending-contacts", web::get().to(get_pending_contacts))
                     .route("/delete-pending-contact", web::post().to(delete_pending_contact))
-                    .route("/approve-contact", web::post().to(approve_contact))
+                    .route("/approve-pending-contact", web::post().to(approve_contact))
             )
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
             .app_data(jwt_settings.clone())
+            .app_data(gmaps_client.clone())
             .app_data(base_url.clone())
     })
     .listen(listener)?

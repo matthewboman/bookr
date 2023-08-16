@@ -19,3 +19,6 @@ jwt_settings:
   secret: "my_secret"
   expires_in: "60m"
   max_age: 60
+gmaps_client:
+  api_url: "https://maps.googleapis.com/maps/api/geocode/json"
+  api_key: "my-secret-token"

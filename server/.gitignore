@@ -2,3 +2,4 @@
 .env
 configuration.yml
 docker-compose.yml
+/configuration/local.yaml

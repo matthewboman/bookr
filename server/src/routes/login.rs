@@ -10,7 +10,7 @@ use sqlx::PgPool;
 
 use crate::auth::{validate_credentials, TokenClaims, Credentials};
 use crate::configuration::JWTSettings;
-use crate::domain::user::{User, UserLogin};
+use crate::domain::user::UserLogin;
 use crate::error::LoginError;
 
 #[tracing::instrument(

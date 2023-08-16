@@ -1,25 +1,36 @@
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, ResponseError};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use anyhow::Context;
-use sqlx::{PgPool, postgres::{PgQueryResult}};
+use sqlx::PgPool;
 
 use crate::auth::JwtMiddleware;
 use crate::domain::PendingContact;
 use crate::error::AdminError;
+use crate::gmaps_api_client::{get_latlng_from_address, GoogleMapsAPIClient, Location};
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JsonData {
-    contact_id: i32
+    contact_id: i32,
+    address:    String,
+    city:       String,
+    state:      String,
+    zip_code:   String,
+}
+
+#[derive(serde::Serialize)]
+struct JsonResponse {
+    message: String,
 }
 
 #[tracing::instrument(
-    skip(req, json, pool),
+    skip(req, json, pool, g_client),
 )]
 pub async fn approve_contact(
-    req:  HttpRequest,
-    json: web::Json<JsonData>,
-    pool: web::Data<PgPool>,
-    _:    JwtMiddleware
+    req:      HttpRequest,
+    json:     web::Json<JsonData>,
+    pool:     web::Data<PgPool>,
+    g_client: web::Data<GoogleMapsAPIClient>,
+    _:        JwtMiddleware,
 ) -> Result<HttpResponse, AdminError> {
     let ext     = req.extensions();
     let role    = ext.get::<String>().unwrap();
@@ -29,14 +40,42 @@ pub async fn approve_contact(
         return Err(AdminError::InvalidToken)
     }
 
-    // TODO: should this be a transaction as part of the lat/lng script?
-    mark_contact_as_verified(json.contact_id, &pool)
+    // TODO: Would it be better to only send `contact_id` from API and return the Contact here?
+    // Or allow admin to edit address, updating in database here or on successful Google API response?
+    mark_contact_as_verified(&json.contact_id, &pool)
         .await
         .context("Failed to delete contact")?;
+
+    let address = format!(
+        "{} {}, {} {}",
+        &json.address,
+        &json.city,
+        &json.state,
+        &json.zip_code,
+    );
+    let mut msg = format!("Location of {} successfully added", &address);
+
+    // Don't fail if location can't be found from address.
+    // Instead, let admin know there was an error.
+    match get_latlng_from_address(&g_client, &address).await {
+        Ok(lat_lng) => {
+            add_lat_lng_to_contact(&json.contact_id, lat_lng, &pool)
+                .await
+                .context("Failed to update contact lat/lng")?;
+        }
+        Err(e) => {
+            msg = format!("{}", e);
+        }
+    }
+
+    let json_response = JsonResponse {
+        message: msg.to_string()
+    };
     
-    // TODO: run script to fetch lat/lng and update contact
-    
-    Ok(HttpResponse::Ok().finish())
+    Ok(
+        HttpResponse::Ok()
+            .json(json_response)
+    )
 }
 
 #[tracing::instrument(
@@ -56,7 +95,7 @@ pub async fn delete_pending_contact(
         return Err(AdminError::InvalidToken)
     }
 
-    admin_delete_contact(json.contact_id, &pool)
+    admin_delete_contact(&json.contact_id, &pool)
         .await
         .context("Failed to delete contact")?;
     
@@ -92,7 +131,7 @@ pub async fn get_pending_contacts(
     skip(contact_id, pool)
 )]
 pub async fn admin_delete_contact(
-    contact_id: i32,
+    contact_id: &i32,
     pool:       &PgPool
 ) -> Result<(), sqlx::Error> {
     sqlx::query!(
@@ -111,7 +150,7 @@ pub async fn admin_delete_contact(
     skip(contact_id, pool)
 )]
 pub async fn mark_contact_as_verified(
-    contact_id: i32,
+    contact_id: &i32,
     pool:       &PgPool
 ) -> Result<(), sqlx::Error> {
     sqlx::query!(
@@ -145,4 +184,28 @@ pub async fn query_pending_contacts(
     .await?;
 
     Ok(contacts)
+}
+
+#[tracing::instrument(
+    name = "Updating contact latitude and longitude in the database",
+    skip(contact_id, pool, lat_lng)
+)]
+pub async fn add_lat_lng_to_contact(
+    contact_id: &i32,
+    lat_lng:    Location,
+    pool:       &PgPool
+) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+        UPDATE contacts
+        SET latitude = $1, longitude = $2
+        WHERE contact_id = $3
+        "#,
+        lat_lng.lat,
+        lat_lng.lng,
+        contact_id
+    ).execute(pool)
+    .await?;
+
+    Ok(())
 }
