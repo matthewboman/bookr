@@ -3,6 +3,18 @@ import type { Jwt } from './types'
 /*
  * Public
  */
+export function isAdmin(): boolean {
+    let token = sessionStorage.getItem('byotoken')
+
+    if (token != null) {
+        let jwt = parseJwt(token)
+
+        return jwt.role === 'admin'
+    }
+
+    return false
+}
+
 export function isAuthenticated(): boolean {
     let token = sessionStorage.getItem('byotoken')
 
@@ -40,6 +52,3 @@ function parseJwt(token: string): Jwt {
 
     return JSON.parse(jsonPayload)
 }
-
-
-

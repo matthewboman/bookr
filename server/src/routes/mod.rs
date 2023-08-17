@@ -1,3 +1,4 @@
+mod admin;
 mod confirmation;
 mod contacts;
 mod health_check;
@@ -6,6 +7,7 @@ mod reset_password;
 mod sign_up;
 mod user;
 
+pub use admin::*;
 pub use confirmation::*;
 pub use contacts::*;
 pub use health_check::*;

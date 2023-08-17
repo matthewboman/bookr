@@ -1,0 +1,9 @@
+application:
+  host: 127.0.0.1
+  base_url: "http://127.0.0.1"
+database:
+  require_ssl: false
+frontend_url: "http://localhost:5173"
+gmaps_client:
+  api_url: "https://maps.googleapis.com/maps/api/geocode/json"
+  api_key: "my-secret-token"

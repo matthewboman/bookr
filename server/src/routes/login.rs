@@ -32,15 +32,16 @@ pub async fn login(
 
     tracing::Span::current().record("email", &tracing::field::display(&credentials.email));
 
-    let user_id = validate_credentials(credentials, &pool).await?;
-    let now     = Utc::now();
-    let iat     = now.timestamp() as usize;
-    let exp     = (now + Duration::minutes(60)).timestamp() as usize;
+    let user = validate_credentials(credentials, &pool).await?;
+    let now  = Utc::now();
+    let iat  = now.timestamp() as usize;
+    let exp  = (now + Duration::minutes(60)).timestamp() as usize;
 
     let claims: TokenClaims = TokenClaims {
-        sub: user_id.to_string(),
+        sub: user.user_id.to_string(),
         exp,
         iat,
+        role: user.role.to_string()
     };
     let token = encode(
         &Header::default(),
