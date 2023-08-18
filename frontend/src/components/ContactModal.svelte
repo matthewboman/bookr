@@ -10,8 +10,6 @@
 
     const dispatch = createEventDispatcher()
 
-    // TODO: move to store in case modal gets closed while entering info
-
     let currentAction  = 'add' // TODO: ability to edit contacts
     let errorMessage   = ''
     let successMessage = ''

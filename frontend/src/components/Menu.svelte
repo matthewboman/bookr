@@ -59,6 +59,6 @@
 <Modal bind:open={authModal} size="xs" outsideclose class="w-full">
     <AuthModal on:close={closeAuthModal}/>
 </Modal>
-<Modal bind:open={contactModal} size="xs" outsideclose class="w-full">
+<Modal bind:open={contactModal} size="xs" class="w-full">
     <ContactModal on:close={closeContactModal} />
 </Modal>

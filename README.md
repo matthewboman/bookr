@@ -16,7 +16,6 @@ Database migrations are under `/server`
     - need to implement: https://github.com/jmoiron/sqlx/issues/129
 - UI theme, usability
 - response messages for: signing up, logging in, logging out, adding contacts, errors
-- use svelte stote for contact modal content to prevent losing data when clicked outside
 
 ## Potential Features
 - authenticated users should be able to....
