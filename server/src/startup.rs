@@ -27,6 +27,7 @@ use crate::routes::{
     health_check, 
     login,
     log_out,
+    private_contacts,
     public_contacts,
     reset_password,
     sign_up
@@ -127,6 +128,7 @@ async fn run(
                     .route("/add-contact", web::post().to(add_contact))
                     .route("/change-password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out))
+                    .route("/private-contacts", web::get().to(private_contacts))
             )
             .service(
                 web::scope("/admin")

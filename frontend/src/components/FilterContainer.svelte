@@ -42,9 +42,7 @@
     }
 
     // Workaround to reload when data is fetched
-    onMount(() => {
-        setTimeout(()=> { update() }, 1) 
-    })
+    onMount(update)
 </script>
 
 <div class="filter-block mb-4">

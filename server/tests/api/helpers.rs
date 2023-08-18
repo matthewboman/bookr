@@ -96,9 +96,25 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
+    pub async fn get_contacts(&self) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/contacts", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub async fn get_pending_contacts(&self) -> reqwest::Response {
         self.api_client
             .get(&format!("{}/admin/pending-contacts", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn get_private_contacts(&self) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/user/private-contacts", &self.address))
             .send()
             .await
             .expect("Failed to execute request")

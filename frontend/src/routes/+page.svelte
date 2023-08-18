@@ -10,10 +10,11 @@
     import type { Contact }    from '../types'
     import { authenticated }   from "../store"
 
-    const CONTACTS_URL = "/contacts"
+    const CONTACTS_URL     = "/contacts"
+    const PRIVATE_CONTACTS = "/user/private-contacts"
 
 	let LeafletContainer: any
-    let contactList: any
+    let contactList: Contact[] = []
 	let filteredContacts: Contact[] = []
     $: renderedContacts = filteredContacts
 
@@ -24,15 +25,29 @@
 		}
 	}
 
+    async function getPrivateContacts() {
+        let contacts = await get(PRIVATE_CONTACTS).then(r => r.json())
+        contactList = [...contactList, ...contacts]
+    }
+
+    async function getPublicContacts() {
+        let contacts = await get(CONTACTS_URL).then(r => r.json())
+        contactList = [...contactList, ...contacts]
+    }
+
     onMount(async () => {
         authenticated.update(() => isAuthenticated())
 		getMap()
 
-        contactList = await get(CONTACTS_URL).then(r => r.json())
+        await getPublicContacts()
+
+        if (isAuthenticated()) {
+            await getPrivateContacts()
+        }
     })
 </script>
 
-{#if contactList}
+{#if contactList.length}
     <Menu/>
     <!-- Desktop -->
     <MediaQuery query="(min-width: 1281px)" let:matches>
