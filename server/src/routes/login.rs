@@ -35,7 +35,8 @@ pub async fn login(
     let user = validate_credentials(credentials, &pool).await?;
     let now  = Utc::now();
     let iat  = now.timestamp() as usize;
-    let exp  = (now + Duration::minutes(60)).timestamp() as usize;
+    let week = Duration::weeks(1);
+    let exp  = (now + week).timestamp() as usize;
 
     let claims: TokenClaims = TokenClaims {
         sub: user.user_id.to_string(),

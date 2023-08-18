@@ -4,13 +4,14 @@
 
     import PasswordReset       from "../../../components/PasswordReset.svelte"
     import Menu                from '../../../components/Menu.svelte'
-    import { isAuthenticated } from '../../../functions'
+    import { isAuthenticated, clearExpiredToken } from '../../../functions'
     import { authenticated }   from "../../../store"
 
     function setAuthenticated() {
         if (isAuthenticated()) {
             authenticated.update(() => true)
         } else {
+            clearExpiredToken()
             goto("/")
         }
     }

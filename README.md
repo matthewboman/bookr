@@ -14,7 +14,6 @@ Database migrations are under `/server`
 - grouping map points
 - postgis
     - need to implement: https://github.com/jmoiron/sqlx/issues/129 
-- jwt bug where frontend thinks user is authenticated even though token is expired
 - joining public and private contacts for authenticated users
 - UI theme, usability
 - response messages for: signing up, logging in, logging out, adding contacts, errors

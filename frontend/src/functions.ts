@@ -3,11 +3,15 @@ import type { Jwt } from './types'
 /*
  * Public
  */
+export function clearExpiredToken() {
+    sessionStorage.removeItem('byotoken')
+}
+
 export function isAdmin(): boolean {
-    let token = sessionStorage.getItem('byotoken')
+    const token = sessionStorage.getItem('byotoken')
 
     if (token != null) {
-        let jwt = parseJwt(token)
+        const jwt = parseJwt(token)
 
         return jwt.role === 'admin'
     }
@@ -16,11 +20,11 @@ export function isAdmin(): boolean {
 }
 
 export function isAuthenticated(): boolean {
-    let token = sessionStorage.getItem('byotoken')
+    const token = sessionStorage.getItem('byotoken')
 
     if (token != null) {
-        let jwt     = parseJwt(token)
-        let expired = jwtIsExpired(jwt)
+        const jwt     = parseJwt(token)
+        const expired = jwtIsExpired(jwt)
 
         if (!expired) {
             return true
@@ -35,8 +39,9 @@ export function isAuthenticated(): boolean {
  */
 function jwtIsExpired(jwt: Jwt): boolean {
     const now = new Date()
+    const exp = jwt.exp * 1000 // convert milliseconds to seconds
 
-    return now.getTime() < jwt.exp
+    return now.getTime() > exp
 }
 
 function parseJwt(token: string): Jwt {

@@ -16,9 +16,10 @@ export type Contact = {
 }
 
 export type Jwt = {
-    sub: string,
-    iat: number,
-    exp: number
+    sub:  string,
+    iat:  number,
+    exp:  number,
+    role: string,
 }
 
 export type NewContact = {

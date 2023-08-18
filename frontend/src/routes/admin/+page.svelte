@@ -3,31 +3,34 @@
     import { Alert }   from 'flowbite-svelte'
     import { goto }    from '$app/navigation'
 
-    import Menu                         from '../../components/Menu.svelte'
-    import PendingContact               from '../../components/PendingContact.svelte'
-    import { get, post }                from '../../api'
-    import { isAdmin, isAuthenticated } from '../../functions'
-    import { admin, authenticated }     from "../../store"
-    import type { Contact }             from '../../types'
+    import Menu                     from '../../components/Menu.svelte'
+    import PendingContact           from '../../components/PendingContact.svelte'
+    import { get, post }            from '../../api'
+    import { clearExpiredToken, isAdmin, isAuthenticated } from '../../functions'
+    import { admin, authenticated } from "../../store"
+    import type { Contact }         from '../../types'
 
     const PENDING_CONTACTS_URL = "/admin/pending-contacts"
     const APPROVE_CONTACT_URL  = "/admin/approve-pending-contact"
     const DELETE_CONTACT_URL   = "/admin/delete-pending-contact"
 
-    let pendingContacts: Contact = []
+    let pendingContacts: Contact[] = []
     let errorMessage: String
 
-    // Endpoint is authorized so page would render blank anyway...
     function authenticateAndAuthorize() {
         if (isAuthenticated()) {
             authenticated.update(() => true)
         } else {
+            clearExpiredToken()
+            authenticated.update(() => false)
             goto("/")
         }
 
         if (isAdmin()) {
             admin.update(() => true)
+            return true
         } else {
+            admin.update(() => false)
             goto("/")
         }
     }
@@ -46,7 +49,12 @@
         handleResponse(res, contact.contactId)
     }
 
-    function formatContact(contact) {
+    async function getContacts() {
+        pendingContacts = await get(PENDING_CONTACTS_URL)
+            .then(r => r.json())
+    }
+
+    function formatContact(contact: Contact) {
         return {
             contactId: contact.contactId,
             address:   contact.address,
@@ -56,7 +64,7 @@
         }
     }
 
-    function handleResponse(res, contactId) {
+    function handleResponse(res: any, contactId: number) {
         if (res.status === 200) {
             removeContactFromList(contactId)
         }
@@ -70,15 +78,14 @@
         }
     }
 
-    function removeContactFromList(contactId) {
+    function removeContactFromList(contactId: number) {
         pendingContacts = pendingContacts.filter(c => c.contactId !== contactId)
     }
 
     onMount(async() => {
-        authenticateAndAuthorize()
-
-        pendingContacts = await get(PENDING_CONTACTS_URL)
-            .then(r => r.json())
+        if (authenticateAndAuthorize()) {
+            getContacts()
+        }
     })
 
 </script>

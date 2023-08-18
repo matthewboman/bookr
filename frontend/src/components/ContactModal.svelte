@@ -2,10 +2,11 @@
     import { createEventDispatcher } from 'svelte'
     import { Alert, Button, Label, Input, Checkbox, Select } from 'flowbite-svelte'
 
-    import { type NewContact }   from '../types'
     import { post }              from '../api'
     import { ageRanges, states } from '../constants'
+    import { clearExpiredToken } from '../functions'
     import { authenticated }     from '../store'
+    import type { NewContact }   from '../types'
 
     const dispatch = createEventDispatcher()
 
@@ -31,8 +32,6 @@
             await addNewContact()
         } else if (currentAction === 'edit') {
             // TODO: build ability for user to edit their contacts
-        } else {
-            // This shouldn't happen
         }
     }
 
@@ -63,9 +62,9 @@
         }
 
         if (res.status === 401) {
-            // shouldn't happen but user could try faking token
-            // TODO: bug with token expiration
-            sessionStorage.removeItem('byotoken')
+            // Shouldn't happen but user could try faking token
+            // Token might also expire
+            clearExpiredToken()
             authenticated.update(() => false)
             errorMessage = "Please log in again."
         }
