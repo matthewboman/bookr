@@ -30,6 +30,8 @@ use crate::routes::{
     private_contacts,
     public_contacts,
     reset_password,
+    review_contact,
+    reviews_for_contact,
     sign_up
 };
 
@@ -123,12 +125,14 @@ async fn run(
             .route("/login", web::post().to(login))
             .route("/reset-password", web::post().to(reset_password))
             .route("/signup", web::post().to(sign_up))
+            .route("/reviews", web::get().to(reviews_for_contact))
             .service(
                 web::scope("/user")
                     .route("/add-contact", web::post().to(add_contact))
                     .route("/change-password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out))
                     .route("/private-contacts", web::get().to(private_contacts))
+                    .route("/review-contact", web::post().to(review_contact))
             )
             .service(
                 web::scope("/admin")

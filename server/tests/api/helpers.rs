@@ -63,6 +63,17 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
+    pub async fn add_review<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/user/review-contact", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub async fn approve_contact<Json>(&self, json: Json) -> reqwest::Response
     where Json: serde::Serialize
     {
@@ -99,6 +110,14 @@ impl TestApp {
     pub async fn get_contacts(&self) -> reqwest::Response {
         self.api_client
             .get(&format!("{}/contacts", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn get_reviews(&self, id: &str) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/reviews?contactId={}", &self.address, id))
             .send()
             .await
             .expect("Failed to execute request")

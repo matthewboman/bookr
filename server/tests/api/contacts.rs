@@ -15,9 +15,9 @@ async fn contacts_returns_a_200() {
 
 #[tokio::test]
 async fn unauthenticated_user_cannot_add_contact() {
-    let app      = spawn_app().await;
-    let contact  = serde_json::json!({
-        "display_name": "test",
+    let app     = spawn_app().await;
+    let contact = serde_json::json!({
+        "displayName": "test",
         "city": "asheville"
     });
     let response = app.add_contact(&contact).await;
