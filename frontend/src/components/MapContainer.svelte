@@ -21,12 +21,14 @@
         height: 800px;
     }
     .tablet {
-        width: 85vw;
+        /* width: 85vw; */
         height: 600px;
+        width: 100vw;
     }
     .mobile {
-        width: 85vw;
+        /* width: 85vw; */
         height: 600px;
+        width: 100vw;
     }
 </style>
 

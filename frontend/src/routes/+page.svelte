@@ -28,7 +28,15 @@
         authenticated.update(() => isAuthenticated())
 		getMap()
 
-        contactList = await get(CONTACTS_URL).then(r => r.json())
+        //
+        //
+        //
+        // FOR TESTING PURPOSES
+        contactList = {}
+        //
+        // contactList = await get(CONTACTS_URL).then(r => r.json())
+        //
+        //
     })
 </script>
 
