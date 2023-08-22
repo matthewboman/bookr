@@ -47,30 +47,37 @@
     })
 </script>
 
-<div class="filter-block mb-4">
-    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
-    <Label class="space-y-2 mb-2">
-        <span>Min</span>
-        <Input type="number" name="displayName" placeholder="" bind:value={minCapacity} on:change={update}/>
-    </Label>
-    <Label class="space-y-2 mb-2">
-        <span>Max</span>
-        <Input type="number" name="displayName" placeholder="" bind:value={maxCapacity} on:change={update}/>
-    </Label>
-    <Checkbox bind:checked={allowNullCapacity} on:change={update}>Allow for venues with unknown capacity</Checkbox>
+<div class="filter-container">
+    <div class="filter-block mb-4">
+        <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
+        <Label class="space-y-2 mb-2">
+            <span>Min</span>
+            <Input type="number" name="displayName" placeholder="" bind:value={minCapacity} on:change={update}/>
+        </Label>
+        <Label class="space-y-2 mb-2">
+            <span>Max</span>
+            <Input type="number" name="displayName" placeholder="" bind:value={maxCapacity} on:change={update}/>
+        </Label>
+        <Checkbox bind:checked={allowNullCapacity} on:change={update}>Allow for venues with unknown capacity</Checkbox>
+    </div>
+    
+    <div class="filter-block">
+        <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by age range</h3>
+        <Checkbox bind:checked={allAges} on:change={update}>All ages</Checkbox>
+        <Checkbox bind:checked={eighteenPlus} on:change={update}>18+</Checkbox>
+        <Checkbox bind:checked={twentyonePlus} on:change={update}>21+</Checkbox>
+        <Checkbox bind:checked={allowNullAgeRange} on:change={update}>Allow for venues with unknown age range</Checkbox>
+    </div>
 </div>
 
-<div class="filter-block mb-4">
-    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by age range</h3>
-    <Checkbox bind:checked={allAges} on:change={update}>All ages</Checkbox>
-    <Checkbox bind:checked={eighteenPlus} on:change={update}>18+</Checkbox>
-    <Checkbox bind:checked={twentyonePlus} on:change={update}>21+</Checkbox>
-    <Checkbox bind:checked={allowNullAgeRange} on:change={update}>Allow for venues with unknown age range</Checkbox>
-</div>
 
 <style>
     
-        @font-face { font-family: 'Limelight'; src: local("Trickster");}
+    @font-face { font-family: 'Limelight'; src: local("Trickster");}
+
+    .filter-container {
+        padding: 14px;
+    }
     
 
     .filter-block {
