@@ -45,20 +45,27 @@
     // toggle filters animation
     let areFiltersShowing = true
     function toggleFilters(){
+        let easing = 'easeOutQuad'
+        let duration = 300
+        
         if(areFiltersShowing){
             // console.log('hello')
             // hide
             anime({
                 targets: '.filter-container',
                 height: 0,
-                padding: 0
+                padding: 0,
+                easing,
+                duration
             })
         } else {
             // show
             anime({
                 targets: '.filter-container',
                 height: 356,
-                padding: 16
+                padding: 16,
+                easing,
+                duration
             })
         }
 
