@@ -60,7 +60,7 @@
     <MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
         {#if matches}
             <svelte:component this={LeafletContainer} {renderedContacts}/> 
-            <div class="filter-container p-4">
+            <div class="filter-container p-4 border-primary-700">
                 <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
             </div>
         {/if}
@@ -70,7 +70,7 @@
     <MediaQuery query="(max-width: 480px)" let:matches>
         {#if matches}
             <svelte:component this={LeafletContainer} {renderedContacts}/> 
-            <div class="filter-container p-4">
+            <div class="filter-container p-4 border-primary-700">
                 <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
             </div>
         {/if}
@@ -100,10 +100,12 @@
 
     .filter-container {
         backdrop-filter: blur(2px);
+        border-style: solid;
+        border-top-width: 4px;
         position: absolute;
         bottom: 0px;
         z-index: 10;
-        background-color: rgba(0,0,0,0.8);
+        background-color: rgba(31, 41, 55,0.9);
         width: 100vw;
     }
 
