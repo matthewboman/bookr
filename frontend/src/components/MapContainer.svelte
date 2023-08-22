@@ -22,12 +22,14 @@
     }
     .tablet {
         /* width: 85vw; */
-        height: 600px;
+        flex-grow: 1;
+        min-height: 600px;
         width: 100vw;
     }
     .mobile {
         /* width: 85vw; */
-        height: 600px;
+        flex-grow: 1;
+        min-height: 400px;
         width: 100vw;
     }
 </style>

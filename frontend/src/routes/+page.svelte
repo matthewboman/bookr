@@ -32,7 +32,7 @@
         //
         //
         // FOR TESTING PURPOSES
-        contactList = {}
+        contactList = []
         //
         // contactList = await get(CONTACTS_URL).then(r => r.json())
         //

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount }                from 'svelte'
     import { Label, Input, Checkbox } from 'flowbite-svelte'
+    import anime from 'animejs'
 
     import type { Contact } from '../types'
     
@@ -41,12 +42,36 @@
             .filter(c => ageRangeFilter(c))
     }
 
+    // toggle filters animation
+    let areFiltersShowing = true
+    function toggleFilters(){
+        if(areFiltersShowing){
+            // console.log('hello')
+            // hide
+            anime({
+                targets: '.filter-container',
+                height: 0,
+                padding: 0
+            })
+        } else {
+            // show
+            anime({
+                targets: '.filter-container',
+                height: 356,
+                padding: 16
+            })
+        }
+
+        areFiltersShowing = !areFiltersShowing
+    }
+
     // Workaround to reload when data is fetched
     onMount(() => {
         setTimeout(()=> { update() }, 1) 
     })
 </script>
 
+<button on:click={toggleFilters} class="toggle-filters">toggle</button>
 <div class="filter-container p-4">
     <div class="filter-block mb-4">
         <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
@@ -77,6 +102,7 @@
 
     .filter-container {
         /* padding: 20px; */
+        overflow: hidden;
     }
     
 
