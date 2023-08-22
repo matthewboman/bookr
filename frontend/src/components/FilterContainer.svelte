@@ -47,7 +47,7 @@
     })
 </script>
 
-<div class="filter-container">
+<div class="filter-container p-4">
     <div class="filter-block mb-4">
         <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
         <Label class="space-y-2 mb-2">
@@ -76,7 +76,7 @@
     @font-face { font-family: 'Limelight'; src: local("Trickster");}
 
     .filter-container {
-        padding: 14px;
+        /* padding: 20px; */
     }
     
 
