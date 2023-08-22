@@ -79,7 +79,7 @@
 </script>
 
 <!-- <div class="filter-container p-4"> -->
-    <button on:click={toggleFilters} class="toggle-filters text-center w-full pb-2">toggle</button>
+    <button on:click={toggleFilters} class="toggle-filters xl:hidden md:block text-center w-full pb-2">toggle</button>
     <div class="filter-block mb-4">
         <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
         <div class="flex w-full gap-2">
