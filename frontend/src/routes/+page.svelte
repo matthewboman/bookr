@@ -60,7 +60,9 @@
     <MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
         {#if matches}
             <svelte:component this={LeafletContainer} {renderedContacts}/> 
-            <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
+            <div class="filter-container p-4">
+                <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
+            </div>
         {/if}
     </MediaQuery>
     
@@ -68,7 +70,9 @@
     <MediaQuery query="(max-width: 480px)" let:matches>
         {#if matches}
             <svelte:component this={LeafletContainer} {renderedContacts}/> 
-            <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
+            <div class="filter-container p-4">
+                <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
+            </div>
         {/if}
     </MediaQuery>
 
@@ -84,6 +88,21 @@
 
     .desktop-filter {
         
+    }
+
+    .filter-container {
+        backdrop-filter: blur(2px);
+        position: absolute;
+        bottom: 0px;
+        z-index: 10;
+        background-color: rgba(0,0,0,0.8);
+        width: 100vw;
+    }
+
+    .desktop-filter .filter-container {
+        /* background-color: rgba(0,0,0,0.0);
+        position: relative; */
+        /* bottom:  */
     }
 
     .desktop-map {

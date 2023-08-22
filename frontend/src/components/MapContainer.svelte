@@ -23,13 +23,15 @@
     .tablet {
         /* width: 85vw; */
         flex-grow: 1;
-        min-height: 600px;
+        /* min-height: 600px; */
+        height: 100vh;
         width: 100vw;
     }
     .mobile {
         /* width: 85vw; */
         flex-grow: 1;
-        min-height: 400px;
+        height: 100vh;
+        /* min-height: 400px; */
         width: 100vw;
     }
 </style>

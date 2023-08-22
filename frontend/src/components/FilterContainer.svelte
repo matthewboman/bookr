@@ -47,13 +47,13 @@
     function toggleFilters(){
         let easing = 'easeOutQuad'
         let duration = 300
-        
+
         if(areFiltersShowing){
             // console.log('hello')
             // hide
             anime({
                 targets: '.filter-container',
-                height: 0,
+                height: 28,
                 padding: 0,
                 easing,
                 duration
@@ -62,7 +62,7 @@
             // show
             anime({
                 targets: '.filter-container',
-                height: 356,
+                height: 314,
                 padding: 16,
                 easing,
                 duration
@@ -78,18 +78,20 @@
     })
 </script>
 
-<button on:click={toggleFilters} class="toggle-filters">toggle</button>
-<div class="filter-container p-4">
+<!-- <div class="filter-container p-4"> -->
+    <button on:click={toggleFilters} class="toggle-filters text-center w-full pb-2">toggle</button>
     <div class="filter-block mb-4">
         <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
-        <Label class="space-y-2 mb-2">
-            <span>Min</span>
-            <Input type="number" name="displayName" placeholder="" bind:value={minCapacity} on:change={update}/>
-        </Label>
-        <Label class="space-y-2 mb-2">
-            <span>Max</span>
-            <Input type="number" name="displayName" placeholder="" bind:value={maxCapacity} on:change={update}/>
-        </Label>
+        <div class="flex w-full gap-2">
+            <Label class="space-y-2 mb-2 flex-grow">
+                <span>Min</span>
+                <Input type="number" name="displayName" placeholder="" bind:value={minCapacity} on:change={update}/>
+            </Label>
+            <Label class="space-y-2 mb-2 flex-grow">
+                <span>Max</span>
+                <Input type="number" name="displayName" placeholder="" bind:value={maxCapacity} on:change={update}/>
+            </Label>
+        </div>
         <Checkbox bind:checked={allowNullCapacity} on:change={update}>Allow for venues with unknown capacity</Checkbox>
     </div>
     
@@ -100,7 +102,7 @@
         <Checkbox bind:checked={twentyonePlus} on:change={update}>21+</Checkbox>
         <Checkbox bind:checked={allowNullAgeRange} on:change={update}>Allow for venues with unknown age range</Checkbox>
     </div>
-</div>
+<!-- </div> -->
 
 
 <style>
@@ -110,6 +112,19 @@
     .filter-container {
         /* padding: 20px; */
         overflow: hidden;
+
+        backdrop-filter: blur(2px);
+        position: absolute;
+        bottom: 0px;
+        z-index: 10;
+        background-color: rgba(0,0,0,0.8);
+        width: 100vw;
+    }
+
+    .desktop-filter .filter-container {
+        background-color: rgba(0,0,0,0.0);
+        position: relative;
+        
     }
     
 
