@@ -3,12 +3,12 @@ use anyhow::Context;
 use sqlx::PgPool;
 
 use crate::domain::{ContactReview, ReviewResponse};
-use crate::error::ContactError;
+use crate::error::ContentError;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Params {
-    contact_id: i64
+    contact_id: i32
 }
 
 #[tracing::instrument(
@@ -17,7 +17,7 @@ pub struct Params {
 pub async fn reviews_for_contact(
     params: web::Query<Params>,
     pool:   web::Data<PgPool>
-) -> Result<HttpResponse, ContactError> {
+) -> Result<HttpResponse, ContentError> {
     let reviews = query_reviews_for_contact(&pool, &params.contact_id)
         .await
         .context("Failed to return reviews for the associated contact")?;
@@ -31,7 +31,7 @@ pub async fn reviews_for_contact(
 )]
 async fn query_reviews_for_contact(
     pool:       &PgPool,
-    contact_id: &i64,
+    contact_id: &i32,
 ) -> Result<Vec<ReviewResponse>, sqlx::Error> {
     let result = sqlx::query_as!(
         ReviewResponse,
@@ -51,7 +51,7 @@ async fn query_reviews_for_contact(
     skip(contact_id, reviews)
 )]
 fn average_reviews(
-    contact_id: i64,
+    contact_id: i32,
     reviews:    Vec<ReviewResponse>
 ) -> ContactReview {
     let mut ratings: Vec<i32> = Vec::new();

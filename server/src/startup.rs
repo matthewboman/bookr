@@ -18,6 +18,9 @@ use crate::email_client::EmailClient;
 use crate::gmaps_api_client::GoogleMapsAPIClient;
 use crate::routes::{
     add_contact,
+    admin_delete_review,
+    admin_get_all_reviews,
+    admin_get_reviews_by_user,
     approve_contact,
     change_password,
     confirm,
@@ -139,6 +142,9 @@ async fn run(
                     .route("/pending-contacts", web::get().to(get_pending_contacts))
                     .route("/delete-pending-contact", web::post().to(delete_pending_contact))
                     .route("/approve-pending-contact", web::post().to(approve_contact))
+                    .route("/all-reviews", web::get().to(admin_get_all_reviews))
+                    .route("/user-reviews", web::get().to(admin_get_reviews_by_user))
+                    .route("/delete-review", web::post().to(admin_delete_review))
             )
             .app_data(db_pool.clone())
             .app_data(email_client.clone())

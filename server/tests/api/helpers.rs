@@ -74,6 +74,25 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
+    pub async fn admin_get_reviews(&self) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/admin/all-reviews", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn admin_delete_review<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/admin/delete-review", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub async fn approve_contact<Json>(&self, json: Json) -> reqwest::Response
     where Json: serde::Serialize
     {

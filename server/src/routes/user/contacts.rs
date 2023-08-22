@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
 use crate::domain::contact::ContactResponse;
-use crate::error::ContactError;
+use crate::error::ContentError;
 
 #[tracing::instrument(
     skip(req, pool)
@@ -14,7 +14,7 @@ pub async fn private_contacts(
     req:  HttpRequest,
     pool: web::Data<PgPool>,
     _:    JwtMiddleware,
-) -> Result<HttpResponse, ContactError> {
+) -> Result<HttpResponse, ContentError> {
     let ext      = req.extensions();
     let user_id  = ext.get::<uuid::Uuid>().unwrap();
     let verified = true; // TODO: user's might want a list of their pending contacts. Created `pending_private_contacts` when building edit workflow.

@@ -3,12 +3,12 @@ use anyhow::Context;
 use sqlx::PgPool;
 
 use crate::domain::ContactResponse;
-use crate::error::ContactError;
+use crate::error::ContentError;
 
 #[tracing::instrument(
     skip(pool),
 )]
-pub async fn public_contacts(pool: web::Data<PgPool>) -> Result<HttpResponse, ContactError> {
+pub async fn public_contacts(pool: web::Data<PgPool>) -> Result<HttpResponse, ContentError> {
     let contacts = query_contacts(&pool)
         .await
         .context("Failed to query contacts for guest")?;

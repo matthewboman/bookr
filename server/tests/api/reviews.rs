@@ -1,8 +1,11 @@
-use byot_server::domain::PendingContact;
+use byot_server::domain::{PendingContact, Review};
 use crate::helpers::spawn_app;
 
 #[derive(serde::Deserialize)]
 struct PendingContacts(Vec<PendingContact>);
+
+#[derive(serde::Deserialize)]
+struct Reviews(Vec<Review>);
 
 #[tokio::test]
 async fn reviews_returns_a_400_if_no_contact_id() {
@@ -107,3 +110,71 @@ async fn authenticated_user_can_review_contact() {
 
     assert_eq!(200, response.status().as_u16());
 }
+
+#[tokio::test]
+async fn admin_can_delete_review() {
+    // Log in
+    let app        = spawn_app().await;
+    // Note: using admin user and pending contacts to bypass approval step
+    app.test_user.make_admin(&app.db_pool).await;
+    let login_body = serde_json::json!({
+        "email":    &app.test_user.email,
+        "password": &app.test_user.password
+    });
+    let response   = app.post_login(&login_body).await;
+
+    assert_eq!(response.status().as_u16(), 200);
+
+    // Create contact
+    let contact  = serde_json::json!({
+        "displayName": "test for pending",
+        "city": "asheville",
+        "state": "NC",
+        "zipCode": "28711",
+        "capacity": 100,
+        "ageRange": "allAges",
+        "isPrivate": false
+    });
+    let response = app.add_contact(&contact).await;
+    
+    assert_eq!(200, response.status().as_u16());
+
+    // Get contact
+    let contacts = app.get_pending_contacts()
+        .await
+        .json::<PendingContacts>()
+        .await
+        .unwrap();
+    let contact = contacts.0.first().unwrap();
+
+    // Review contact
+    let review = serde_json::json!({
+        "contactId": contact.contact_id,
+        "title":     "not half bad",
+        "body":      "it was all bad",
+        "rating":    1
+    });
+    let response = app.add_review(&review).await;
+
+    assert_eq!(200, response.status().as_u16());
+
+    // Get reviews
+    let reviews = app.admin_get_reviews()
+        .await
+        .json::<Reviews>()
+        .await
+        .unwrap();
+    let review  = reviews.0.first().unwrap();
+
+    // Delete review
+    let json = serde_json::json!({
+        "reviewId": review.review_id
+    });
+    let response = app.admin_delete_review(&json).await;
+
+    assert_eq!(200, response.status().as_u16());
+}
+
+// user can delete own review
+
+// user cannot delete another's review

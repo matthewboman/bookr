@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
 use crate::domain::input_validator::{OptionalStringInput, StringInput};
-use crate::error::ContactError;
+use crate::error::ContentError;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -30,7 +30,7 @@ pub async fn add_contact(
     json: web::Json<JsonData>,
     pool: web::Data<PgPool>,
     _:    JwtMiddleware
-) -> Result<HttpResponse, ContactError> {
+) -> Result<HttpResponse, ContentError> {
     let ext     = req.extensions();
     let user_id = ext.get::<uuid::Uuid>().unwrap();
 

@@ -95,6 +95,7 @@ pub async fn delete_pending_contact(
         return Err(AdminError::InvalidToken)
     }
 
+    // TODO: users may want to delete contacts. should they be allowed?
     admin_delete_contact(&json.contact_id, &pool)
         .await
         .context("Failed to delete contact")?;
