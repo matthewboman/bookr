@@ -83,7 +83,8 @@
 <style>
     .main-container {
         display: flex;
-        width: 90vw;
+        /* width: 90vw; */
+        width: 100vw;
     }
 
     .desktop-filter {
@@ -107,5 +108,6 @@
 
     .desktop-map {
         min-width: 65vw;
+        flex-grow: 1;
     }
 </style>
