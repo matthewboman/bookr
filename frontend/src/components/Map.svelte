@@ -33,3 +33,10 @@
     {/each}
 </LeafletMap>
 
+<style>
+    :global(.leaflet-popup-content-wrapper), :global(.leaflet-popup-tip) {
+        backdrop-filter: blur(2px);
+        background-color: rgba(31, 41, 55, 0.8);
+        color: #fff;
+    }
+</style>
