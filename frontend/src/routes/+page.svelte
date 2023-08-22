@@ -81,6 +81,13 @@
 {/if}
 
 <style>
+    /* @font-face { font-family: 'Limelight'; src: local("Trickster");} */
+    @font-face { font-family: 'Comfortaa'; src: local("Comfortaa");}
+
+    * {
+        font-family: Comfortaa;
+    }
+
     .main-container {
         display: flex;
         /* width: 90vw; */
@@ -98,12 +105,6 @@
         z-index: 10;
         background-color: rgba(0,0,0,0.8);
         width: 100vw;
-    }
-
-    .desktop-filter .filter-container {
-        /* background-color: rgba(0,0,0,0.0);
-        position: relative; */
-        /* bottom:  */
     }
 
     .desktop-map {

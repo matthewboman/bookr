@@ -62,3 +62,9 @@
 <Modal bind:open={contactModal} size="xs" outsideclose class="w-full">
     <ContactModal on:close={closeContactModal} />
 </Modal>
+
+<style>
+    * {
+        font-family: Comfortaa;
+    }
+</style>
