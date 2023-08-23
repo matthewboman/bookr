@@ -44,6 +44,9 @@ pub enum ContentError {
     // TODO
     #[error("{0}")]
     ValidationError(String),
+
+    #[error("User tried editting unauthorized content")]
+    AuthorizationError,
 }
 
 impl ResponseError for ContentError {
@@ -52,6 +55,7 @@ impl ResponseError for ContentError {
             ContentError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ContentError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ContentError::ValidationError(_) => StatusCode::BAD_REQUEST,
+            ContentError::AuthorizationError => StatusCode::UNAUTHORIZED,
         }
     }
 }

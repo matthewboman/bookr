@@ -4,16 +4,23 @@ use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
+use crate::domain::{delete_review, query_reviews_by_user, Review};
 use crate::domain::input_validator::OptionalStringInput;
 use crate::error::ContentError;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct JsonData {
+pub struct CreateData {
     contact_id: i32,
     title:      Option<String>,
     body:       Option<String>,
     rating:     i32,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeleteData {
+    review_id: Uuid,
 }
 
 #[tracing::instrument(
@@ -21,7 +28,7 @@ pub struct JsonData {
 )]
 pub async fn review_contact(
     req:  HttpRequest,
-    json: web::Json<JsonData>,
+    json: web::Json<CreateData>,
     pool: web::Data<PgPool>,
     _: JwtMiddleware
 ) -> Result<HttpResponse, ContentError> {
@@ -51,6 +58,43 @@ pub async fn review_contact(
 }
 
 #[tracing::instrument(
+    skip(req, json, pool)
+)]
+pub async fn user_delete_review(
+    req:  HttpRequest,
+    json: web::Json<DeleteData>,
+    pool: web::Data<PgPool>,
+    _:    JwtMiddleware,
+) -> Result<HttpResponse, ContentError> {
+    let ext     = req.extensions();
+    let user_id = ext.get::<uuid::Uuid>().unwrap();
+
+    delete_review(&json.review_id, user_id, &pool)
+        .await
+        .context("Failed to delete review")?;
+    
+    Ok(HttpResponse::Ok().finish())
+}
+
+#[tracing::instrument(
+    skip(req, pool)
+)]
+pub async fn user_get_reviews(
+    req:  HttpRequest,
+    pool: web::Data<PgPool>,
+    _:    JwtMiddleware,
+) -> Result<HttpResponse, ContentError> {
+    let ext     = req.extensions();
+    let user_id = ext.get::<uuid::Uuid>().unwrap();
+
+    let reviews = query_reviews_by_user(user_id, &pool)
+        .await
+        .context("Failed to get reviews for user")?;
+    
+    Ok(HttpResponse::Ok().json(reviews))
+}
+
+#[tracing::instrument(
     name = "Verifying contact exists for review",
     skip(contact_id, transaction)
 )]
@@ -74,7 +118,7 @@ async fn verify_contact_exists(
     skip(review, transaction)
 )]
 async fn insert_review(
-    review:      &web::Json<JsonData>,
+    review:      &web::Json<CreateData>,
     user_id:     &Uuid,
     transaction: &mut Transaction<'_, Postgres>,
 ) -> Result<Uuid, sqlx::Error> {

@@ -18,13 +18,13 @@ use crate::email_client::EmailClient;
 use crate::gmaps_api_client::GoogleMapsAPIClient;
 use crate::routes::{
     add_contact,
+    admin_delete_contact,
     admin_delete_review,
     admin_get_all_reviews,
     admin_get_reviews_by_user,
     approve_contact,
     change_password,
     confirm,
-    delete_pending_contact,
     generate_reset_token,
     get_pending_contacts,
     health_check, 
@@ -35,7 +35,10 @@ use crate::routes::{
     reset_password,
     review_contact,
     reviews_for_contact,
-    sign_up
+    sign_up,
+    user_delete_contact,
+    user_delete_review,
+    user_get_reviews
 };
 
 pub struct Application {
@@ -136,11 +139,14 @@ async fn run(
                     .route("/logout", web::post().to(log_out))
                     .route("/private-contacts", web::get().to(private_contacts))
                     .route("/review-contact", web::post().to(review_contact))
+                    .route("/delete-contact", web::post().to(user_delete_contact))
+                    .route("/delete-review", web::post().to(user_delete_review))
+                    .route("/my-reviews", web::get().to(user_get_reviews))
             )
             .service(
                 web::scope("/admin")
                     .route("/pending-contacts", web::get().to(get_pending_contacts))
-                    .route("/delete-pending-contact", web::post().to(delete_pending_contact))
+                    .route("/delete-contact", web::post().to(admin_delete_contact))
                     .route("/approve-pending-contact", web::post().to(approve_contact))
                     .route("/all-reviews", web::get().to(admin_get_all_reviews))
                     .route("/user-reviews", web::get().to(admin_get_reviews_by_user))

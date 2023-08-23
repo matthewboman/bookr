@@ -3,7 +3,7 @@ use anyhow::Context;
 use sqlx::PgPool;
 
 use crate::auth::JwtMiddleware;
-use crate::domain::PendingContact;
+use crate::domain::{delete_contact, PendingContact};
 use crate::error::AdminError;
 use crate::gmaps_api_client::{get_latlng_from_address, GoogleMapsAPIClient, Location};
 
@@ -72,16 +72,13 @@ pub async fn approve_contact(
         message: msg.to_string()
     };
     
-    Ok(
-        HttpResponse::Ok()
-            .json(json_response)
-    )
+    Ok(HttpResponse::Ok().json(json_response))
 }
 
 #[tracing::instrument(
     skip(req, json, pool),
 )]
-pub async fn delete_pending_contact(
+pub async fn admin_delete_contact(
     req:  HttpRequest,
     json: web::Json<JsonData>,
     pool: web::Data<PgPool>,
@@ -95,8 +92,7 @@ pub async fn delete_pending_contact(
         return Err(AdminError::InvalidToken)
     }
 
-    // TODO: users may want to delete contacts. should they be allowed?
-    admin_delete_contact(&json.contact_id, &pool)
+    delete_contact(&json.contact_id, &pool)
         .await
         .context("Failed to delete contact")?;
     
@@ -127,24 +123,7 @@ pub async fn get_pending_contacts(
 }
 
 // TODO: This might later be shared for functionality to delete contact from map UI
-#[tracing::instrument(
-    name = "Deleting a contact from the database",
-    skip(contact_id, pool)
-)]
-pub async fn admin_delete_contact(
-    contact_id: &i32,
-    pool:       &PgPool
-) -> Result<(), sqlx::Error> {
-    sqlx::query!(
-        r#"
-        DELETE FROM contacts WHERE contact_id = $1
-        "#,
-        contact_id
-    ).execute(pool)
-    .await?;
 
-    Ok(())
-}
 
 #[tracing::instrument(
     name = "Marking a contact as verified in the database",

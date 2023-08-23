@@ -4,8 +4,15 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
-use crate::domain::contact::ContactResponse;
+use crate::domain::contact::{delete_contact, ContactResponse};
 use crate::error::ContentError;
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeleteData {
+    user_id:    Uuid,
+    contact_id: i32,
+}
 
 #[tracing::instrument(
     skip(req, pool)
@@ -24,6 +31,29 @@ pub async fn private_contacts(
         .context("Failed to get private contacts from database")?;
     
     Ok(HttpResponse::Ok().json(contacts))    
+}
+
+#[tracing::instrument(
+    skip(req, pool, json)
+)]
+pub async fn user_delete_contact(
+    req:  HttpRequest,
+    pool: web::Data<PgPool>,
+    json: web::Json<DeleteData>,
+    _:    JwtMiddleware
+) -> Result<HttpResponse, ContentError> {
+    let ext      = req.extensions();
+    let user_id  = ext.get::<uuid::Uuid>().unwrap();
+
+    if *user_id != json.user_id {
+        return Err(ContentError::AuthorizationError)
+    }
+
+    delete_contact(&json.contact_id, &pool)
+        .await
+        .context("Failed to delete contact")?;
+    
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[tracing::instrument(

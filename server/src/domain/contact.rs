@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Contact {
@@ -57,7 +58,7 @@ pub struct NewContact {
     pub is_private:   bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PendingContact {
     pub contact_id:   i32,
@@ -72,4 +73,23 @@ pub struct PendingContact {
     pub contact_form: Option<String>,
     pub age_range:    Option<String>,
     pub user_id:      Option<uuid::Uuid>,
+}
+
+#[tracing::instrument(
+    name = "Deleting a contact from the database",
+    skip(contact_id, pool)
+)]
+pub async fn delete_contact(
+    contact_id: &i32,
+    pool:       &PgPool
+) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+        DELETE FROM contacts WHERE contact_id = $1
+        "#,
+        contact_id
+    ).execute(pool)
+    .await?;
+
+    Ok(())
 }

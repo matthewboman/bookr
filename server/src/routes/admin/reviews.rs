@@ -4,13 +4,14 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
-use crate::domain::Review;
+use crate::domain::{delete_review, query_reviews, query_reviews_by_user, Review};
 use crate::error::AdminError;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReviewData {
-    review_id: Uuid
+    review_id: Uuid,
+    user_id:   Uuid,
 }
 
 #[derive(serde::Deserialize)]
@@ -36,7 +37,7 @@ pub async fn admin_delete_review(
         return Err(AdminError::InvalidToken)
     }
 
-    delete_review(&json.review_id, &pool)
+    delete_review(&json.review_id, &json.user_id, &pool)
         .await
         .context("Failed to delete review")?;
 
@@ -86,66 +87,9 @@ pub async fn admin_get_reviews_by_user(
         return Err(AdminError::InvalidToken)
     }
 
-    let reviews = query_reviews_by_user(params.user_id, &pool)
+    let reviews = query_reviews_by_user(&params.user_id, &pool)
         .await
         .context("Failed to get reviews for user")?;
     
     Ok(HttpResponse::Ok().json(reviews))
-}
-
-#[tracing::instrument(
-    skip(pool, review_id)
-)]
-async fn delete_review(
-    review_id: &Uuid,
-    pool:      &PgPool,
-) -> Result<(), sqlx::Error> {
-    sqlx::query!(
-        r#"
-        DELETE FROM reviews WHERE review_id = $1
-        "#,
-        review_id
-    ).execute(pool)
-    .await?;
-
-    Ok(())
-}
-
-#[tracing::instrument(
-    skip(pool, user_id)
-)]
-async fn query_reviews_by_user(
-    user_id: Uuid,
-    pool:    &PgPool
-) -> Result<Vec<Review>, sqlx::Error> {
-    let reviews = sqlx::query_as!(
-        Review,
-        r#"
-        SELECT review_id, user_id, contact_id, title, body, rating
-        FROM reviews
-        where user_id = $1
-        "#,
-        user_id
-    ).fetch_all(pool)
-    .await?;
-
-    Ok(reviews)
-}
-
-#[tracing::instrument(
-    skip(pool)
-)]
-async fn query_reviews(
-    pool:    &PgPool
-) -> Result<Vec<Review>, sqlx::Error> {
-    let reviews = sqlx::query_as!(
-        Review,
-        r#"
-        SELECT review_id, user_id, contact_id, title, body, rating
-        FROM reviews
-        "#
-    ).fetch_all(pool)
-    .await?;
-
-    Ok(reviews)
 }
