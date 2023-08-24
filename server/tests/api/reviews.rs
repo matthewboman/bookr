@@ -42,13 +42,8 @@ async fn unauthenticated_user_cannot_add_review() {
 #[tokio::test]
 async fn review_must_have_valid_contact_id() {
     // Log in
-    let app        = spawn_app().await;
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let app      = spawn_app().await;
+    let response = app.admin_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
     // Attempt to review non-existant contact
@@ -66,96 +61,36 @@ async fn review_must_have_valid_contact_id() {
 #[tokio::test]
 async fn authenticated_user_can_review_contact() {
     // Log in
-    let app        = spawn_app().await;
-    // Note: using admin user and pending contacts to bypass approval step
-    app.test_user.make_admin(&app.db_pool).await;
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let app      = spawn_app().await;
+    let response = app.admin_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
     // Create contact
-    let contact  = serde_json::json!({
-        "displayName": "test for pending",
-        "city": "asheville",
-        "state": "NC",
-        "zipCode": "28711",
-        "capacity": 100,
-        "ageRange": "allAges",
-        "isPrivate": false
-    });
-    let response = app.add_contact(&contact).await;
-    
+    let is_private = false;
+    let response   = app.create_contact(is_private).await;
     assert_eq!(200, response.status().as_u16());
 
-    // Get contact
-    let contacts = app.get_pending_contacts()
-        .await
-        .json::<PendingContacts>()
-        .await
-        .unwrap();
-    let contact = contacts.0.first().unwrap();
-
-    // Review contact
-    let review = serde_json::json!({
-        "contactId": contact.contact_id,
-        "title":     "not half bad",
-        "body":      "it was all bad",
-        "rating":    1
-    });
-    let response = app.add_review(&review).await;
-
+    // Get and review contact
+    let contact  = app.get_first_pending_contact().await;
+    let response = app.review_contact(contact).await;
     assert_eq!(200, response.status().as_u16());
 }
 
 #[tokio::test]
 async fn admin_can_delete_review() {
     // Log in
-    let app        = spawn_app().await;
-    // Note: using admin user and pending contacts to bypass approval step
-    app.test_user.make_admin(&app.db_pool).await;
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let app      = spawn_app().await;
+    let response = app.admin_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
     // Create contact
-    let contact  = serde_json::json!({
-        "displayName": "test for pending",
-        "city": "asheville",
-        "state": "NC",
-        "zipCode": "28711",
-        "capacity": 100,
-        "ageRange": "allAges",
-        "isPrivate": false
-    });
-    let response = app.add_contact(&contact).await;
-    
+    let is_private = false;
+    let response   = app.create_contact(is_private).await;
     assert_eq!(200, response.status().as_u16());
 
-    // Get contact
-    let contacts = app.get_pending_contacts()
-        .await
-        .json::<PendingContacts>()
-        .await
-        .unwrap();
-    let contact = contacts.0.first().unwrap();
-
-    // Review contact
-    let review = serde_json::json!({
-        "contactId": contact.contact_id,
-        "title":     "not half bad",
-        "body":      "it was all bad",
-        "rating":    1
-    });
-    let response = app.add_review(&review).await;
-
+    // Get and review contact
+    let contact  = app.get_first_pending_contact().await;
+    let response = app.review_contact(contact).await;
     assert_eq!(200, response.status().as_u16());
 
     // Get reviews
@@ -168,13 +103,99 @@ async fn admin_can_delete_review() {
 
     // Delete review
     let json = serde_json::json!({
-        "reviewId": review.review_id
+        "reviewId": review.review_id,
+        "userId":   review.user_id
     });
     let response = app.admin_delete_review(&json).await;
 
     assert_eq!(200, response.status().as_u16());
 }
 
-// user can delete own review
+#[tokio::test]
+async fn user_can_delete_own_review() {
+    // Log in
+    let app      = spawn_app().await;
+    let response = app.test_user_login().await;
+    assert_eq!(response.status().as_u16(), 200);
 
-// user cannot delete another's review
+    // Create contact
+    let is_private = false;
+    let response   = app.create_contact(is_private).await;
+    assert_eq!(200, response.status().as_u16());
+
+    // Admin login
+    let app      = spawn_app().await;
+    let response = app.admin_login().await;
+    assert_eq!(response.status().as_u16(), 200);
+
+    // Admin approve contact
+    let contact  = app.get_first_pending_contact().await;
+    let response = app.approve_contact(contact).await;
+    assert_eq!(200, response.status().as_u16());
+
+    // Get and review contact
+    let contact  = app.get_first_pending_contact().await;
+    let response = app.review_contact(contact).await;
+    assert_eq!(200, response.status().as_u16());
+
+    // Get reviews
+    let reviews = app.user_get_reviews()
+        .await
+        .json::<Reviews>()
+        .await
+        .unwrap();
+    let review  = reviews.0.first().unwrap();
+
+    // Delete review
+    let json = serde_json::json!({
+        "reviewId": review.review_id,
+        "userId":   app.test_user.user_id
+    });
+    let response = app.admin_delete_review(&json).await;
+
+    assert_eq!(200, response.status().as_u16());
+}
+
+#[tokio::test]
+async fn user_cannot_delete_another_users_review() {
+    // Admin login
+    let app      = spawn_app().await;
+    let response = app.admin_login().await;
+    assert_eq!(response.status().as_u16(), 200);
+
+    // Create contact
+    let is_private = false;
+    let response   = app.create_contact(is_private).await;
+    assert_eq!(200, response.status().as_u16());
+
+    // Admin approve contact
+    let contact  = app.get_first_pending_contact().await;
+    let response = app.approve_contact(contact).await;
+    assert_eq!(200, response.status().as_u16());
+
+    // Admin get and review contact
+    let contact  = app.get_first_pending_contact().await;
+    let response = app.review_contact(contact).await;
+    assert_eq!(200, response.status().as_u16());
+
+    // Get reviews
+    let reviews = app.user_get_reviews()
+        .await
+        .json::<Reviews>()
+        .await
+        .unwrap();
+    let review  = reviews.0.first().unwrap();
+
+    // User login
+    let response = app.test_user_login().await;
+    assert_eq!(response.status().as_u16(), 200);
+
+    // Attempt to delete review
+    let json = serde_json::json!({
+        "reviewId": review.review_id,
+        "userId":   app.test_user.user_id
+    });
+    let response = app.admin_delete_review(&json).await;
+
+    assert_eq!(401, response.status().as_u16());
+}

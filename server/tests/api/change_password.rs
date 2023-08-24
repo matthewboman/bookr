@@ -23,10 +23,7 @@ async fn current_password_must_be_valid() {
     let new_password   = Uuid::new_v4().to_string();
     let wrong_password = Uuid::new_v4().to_string();
 
-    app.post_login(&serde_json::json!({
-        "email": &app.test_user.email,
-        "password": &app.test_user.password
-    })).await;
+    app.test_user_login().await;
 
     let response = app.post_change_password(&serde_json::json!({
         "currentPassword":  &wrong_password,
@@ -35,7 +32,7 @@ async fn current_password_must_be_valid() {
     }))
     .await;
 
-    assert_eq!(response.status().as_u16(), 401); // Returns 400
+    assert_eq!(response.status().as_u16(), 401); 
 }
 
 #[tokio::test]
@@ -44,12 +41,7 @@ async fn changing_password_works() {
     let new_password = Uuid::new_v4().to_string();
 
     // Login with current password
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let response   = app.test_user_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
     // Change password
@@ -63,7 +55,7 @@ async fn changing_password_works() {
     assert_eq!(response.status().as_u16(), 200);
 
     // Log out
-    let response = app.post_logout().await;
+    app.post_logout().await;
 
     // Login with new password
     let login_body = serde_json::json!({
