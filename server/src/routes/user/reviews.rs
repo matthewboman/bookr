@@ -21,6 +21,7 @@ pub struct CreateData {
 #[serde(rename_all = "camelCase")]
 pub struct DeleteData {
     review_id: Uuid,
+    _user_id:   Uuid, // unused. keep consistent w/ "/admin/delete-review"
 }
 
 #[tracing::instrument(

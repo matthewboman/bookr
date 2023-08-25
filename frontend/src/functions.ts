@@ -7,6 +7,18 @@ export function clearExpiredToken() {
     sessionStorage.removeItem('byotoken')
 }
 
+export function getUserId(): string | null {
+    const token = sessionStorage.getItem('byotoken')
+
+    if (token != null) {
+        const jwt = parseJwt(token)
+
+        return jwt.sub
+    }
+
+    return null
+}
+
 export function isAdmin(): boolean {
     const token = sessionStorage.getItem('byotoken')
 

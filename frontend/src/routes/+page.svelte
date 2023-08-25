@@ -5,10 +5,11 @@
     import MediaQuery          from '../components/MediaQuery.svelte'
 	import FilterContainer     from '../components/FilterContainer.svelte'
     import Menu                from '../components/Menu.svelte'
+    import Reviews             from '../components/Reviews.svelte'
     import { get }             from '../api'
-    import { isAuthenticated } from '../functions'
+    import { getUserId, isAuthenticated } from '../functions'
     import type { Contact }    from '../types'
-    import { authenticated }   from "../store"
+    import { authenticated, userId }   from "../store"
 
     const CONTACTS_URL     = "/contacts"
     const PRIVATE_CONTACTS = "/user/private-contacts"
@@ -43,6 +44,7 @@
 
         if (isAuthenticated()) {
             await getPrivateContacts()
+            userId.update(() => getUserId())
         }
     })
 </script>
@@ -78,6 +80,8 @@
             <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
         {/if}
     </MediaQuery>
+
+    <Reviews/>
 
 {:else}
     loading

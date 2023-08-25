@@ -2,11 +2,14 @@
     import { LeafletMap, Marker, Popup, TileLayer } from 'svelte-leafletjs'
     import type { LatLngExpression } from "leaflet"
 
-    import ContactPopup     from './ContactPopup.svelte'
-    import type { Contact } from '../types'
+    import ContactPopup       from './ContactPopup.svelte'
+    import { get }            from '../api'
+    import type { Contact }   from '../types'
+    import { contactReviews, selectedContact } from '../store'
 
     export let renderedContacts: Contact[]
 
+    const REVIEWS_URL = "/reviews?contactId="
     const mapOptions = {
         center: [ 37.09, -90.71 ] as LatLngExpression,
         zoom:   4,
@@ -20,12 +23,20 @@
     }
 
     let leafletMap
+
+    async function showReviews(contact: Contact) {
+        let res = await get(`${REVIEWS_URL}${contact.contactId}`)
+            .then(r => r.json())
+
+        $contactReviews  = res.reviews // intentionally overwrite
+        $selectedContact = contact // intentionally overwrite
+    }
 </script>
 
 <LeafletMap bind:this={leafletMap} options={mapOptions}>
     <TileLayer url={tileUrl} options={tileLayerOptions}/>
     {#each renderedContacts as contact}
-        <Marker latLng={[contact.latitude, contact.longitude]}>
+        <Marker latLng={[contact.latitude, contact.longitude]} events={['click']} on:click={() => showReviews(contact)}>
             <Popup>
                 <ContactPopup contact={contact}/>
             </Popup>

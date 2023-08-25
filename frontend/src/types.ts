@@ -36,7 +36,24 @@ export type NewContact = {
     isPrivate:   boolean
 }
 
+export type NewReview = {
+    contactId: number,
+    userId:    string,
+    title:     string,
+    body:      string,
+    rating:    number,
+}
+
+export type Review = {
+    reviewId:  string,
+    contactId: number,
+    userId:    string,
+    title:     string,
+    body:      string,
+    rating:    number,
+}
+
 export type User = {
-    email:    String,
-    password: String
+    email:    string,
+    password: string
 }

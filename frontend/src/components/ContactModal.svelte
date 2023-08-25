@@ -8,6 +8,7 @@
     import { authenticated }     from '../store'
     import type { NewContact }   from '../types'
 
+    const ADD_CONTACT_URL = "/user/add-contact"
     const dispatch = createEventDispatcher()
 
     let currentAction  = 'add' // TODO: ability to edit contacts
@@ -49,7 +50,7 @@
             isPrivate
         }
 
-        const res = await post("/user/add-contact", contact)
+        const res = await post(ADD_CONTACT_URL, contact)
 
         if (res.status === 200) {
             successMessage = "Contact has successfully added and will appear once approved."

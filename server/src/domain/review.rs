@@ -3,6 +3,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Review {
     pub review_id:  Uuid,
     pub contact_id: i32,
@@ -26,7 +27,7 @@ pub struct ReviewResponse {
 pub struct ContactReview {
     pub contact_id: i32,
     pub rating:     f32,
-    pub reviews:    Vec<ReviewResponse>
+    pub reviews:    Vec<Review>
 }
 
 #[tracing::instrument(

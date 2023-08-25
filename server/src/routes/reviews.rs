@@ -2,7 +2,7 @@ use actix_web::{web, HttpResponse};
 use anyhow::Context;
 use sqlx::PgPool;
 
-use crate::domain::{ContactReview, ReviewResponse};
+use crate::domain::{ContactReview, Review};
 use crate::error::ContentError;
 
 #[derive(serde::Deserialize)]
@@ -32,11 +32,11 @@ pub async fn reviews_for_contact(
 async fn query_reviews_for_contact(
     pool:       &PgPool,
     contact_id: &i32,
-) -> Result<Vec<ReviewResponse>, sqlx::Error> {
+) -> Result<Vec<Review>, sqlx::Error> {
     let result = sqlx::query_as!(
-        ReviewResponse,
+        Review,
         r#"
-        SELECT review_id, title, body, rating
+        SELECT review_id, contact_id, user_id, title, body, rating
         FROM reviews
         WHERE contact_id = $1
         "#,
@@ -52,7 +52,7 @@ async fn query_reviews_for_contact(
 )]
 fn average_reviews(
     contact_id: i32,
-    reviews:    Vec<ReviewResponse>
+    reviews:    Vec<Review>
 ) -> ContactReview {
     let mut ratings: Vec<i32> = Vec::new();
 

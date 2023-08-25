@@ -1,0 +1,215 @@
+<script lang="ts">
+    import { onMount } from 'svelte'
+    import { 
+        Alert, 
+        Card, 
+        GradientButton, 
+        Label, 
+        Input, 
+        Textarea 
+    } from 'flowbite-svelte'
+
+    import { post } from '../api'
+    import { clearExpiredToken, isAdmin } from '../functions'
+    import { 
+        admin, 
+        authenticated, 
+        contactReviews, 
+        selectedContact, 
+        userId 
+    } from '../store'
+    import type { NewReview, Review } from '../types'
+    import StarRating from './StarRating.svelte'
+
+    const ADD_REVIEW_URL = "/user/review-contact"
+
+    let allowAddReview    = false
+    let allowDeleteReview = false
+    let editingReview: Review
+    let errorMessage: string
+    let title: string
+    let body: string
+    let rating: number | null
+
+    async function submit() {
+        errorMessage = ''
+
+        if (!rating) {
+            errorMessage = "The review must have a rating"
+            return
+        }
+
+        const review: NewReview = {
+            userId: $userId,
+            contactId: $selectedContact.contactId,
+            title,
+            body,
+            rating
+        }
+
+        let res = await post(ADD_REVIEW_URL, review)
+
+        if (res.status === 200) {
+            allowAddReview  = false
+            $contactReviews = [ review, ...$contactReviews ]
+        }
+
+        if (res.status === 401) {
+            // Shouldn't happen but user could try faking token
+            // Token might also expire
+            clearExpiredToken()
+            authenticated.update(() => false)
+            errorMessage = "Please log in again."
+        }
+
+        if (res.status === 400) {
+            // shouldn't happen. input validators and tests on API
+            // TODO: log content if it does, create report
+            errorMessage = "There was an error adding the contact. Please try again."
+        }
+
+        if (res.status === 500) {
+            errorMessage = "There was an error adding the contact. Please try again."
+        }
+    }
+
+    async function deleteReview(review: Review) {
+        const url  = $admin ? "/admin/delete-review" : "/user/delete-review"
+        const data = {
+            userId:   review.userId,
+            reviewId: review.reviewId,
+        }
+
+        let res = await post(url, review)
+
+        if (res.status === 200) {
+            $contactReviews = $contactReviews.filter((r) => r.reviewId !== review.reviewId)
+        }
+
+        if (res.status === 401) {
+            // Shouldn't happen but user could try faking token
+            // Token might also expire
+            clearExpiredToken()
+            authenticated.update(() => false)
+            errorMessage = "Please log in again."
+        }
+
+        if (res.status === 400) {
+            // shouldn't happen. input validators and tests on API
+            // TODO: log content if it does, create report
+            errorMessage = "There was an error adding the contact. Please try again."
+        }
+
+        if (res.status === 500) {
+            errorMessage = "There was an error adding the contact. Please try again."
+        }
+    }
+
+    async function submitEdit() {
+        const url = $admin ? "/admin/edit-review" : "/user/edit-review"
+        const review: Review = {
+            userId: $userId,
+            contactId: $selectedContact.contactId,
+            title,
+            body,
+            rating
+        }
+        
+        let res = await post(url, review)
+    }
+
+    function editReview(review) {
+        allowAddReview = true
+        title          = review.title
+        body           = review.body
+        rating         = review.rating
+        editingReview  = review
+
+        $contactReviews = $contactReviews.filter((r) => r.reviewId !== review.reviewId)
+    }
+
+    function cancelEdit() {
+        allowAddReview = false
+
+        $contactReviews = [ editingReview, ...$contactReviews ]
+    }
+
+    function updateRating(e) {
+        rating = e.detail.rating
+    }
+
+    // TODO: check list of reviews for current user ID to see if user has reviewed
+    // if so, push review to top w/ edit/delete buttons
+    // but also hide review modal
+    onMount(() => {
+        if (isAdmin()) {
+            admin.update(() => true)
+            allowDeleteReview = true
+        } else {
+            admin.update(() => false)
+        }
+    })
+</script>
+
+REVIEWS
+<div class="reviews">
+    {#if allowAddReview && $selectedContact}
+        <Card class="text-center m-4" size="xl" padding="lg">
+            {#if errorMessage}
+            <Alert border color="red">
+                <svg slot="icon" aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                <span class="font-medium">Error</span> { errorMessage }
+            </Alert>
+            {/if}
+            <form class="flex flex-col space-y-6" on:submit|preventDefault={submit}>
+                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex review-header">
+                    <Label for="title" class="space-y-2">
+                        <span>Review title</span>
+                        <Input type="text" name="title" placeholder="" bind:value={title} required />
+                    </Label>
+                    <StarRating currentRating={rating} active={true} on:updateRating={updateRating}></StarRating>
+                </h5>
+                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
+                    <Label for="body" class="mb-2">Review</Label>
+                    <Textarea id="body" placeholder="Your review" rows="4" name="body" bind:value={body}/>
+                </p>
+                <div>
+                    <GradientButton type="submit" class="w-full1">Submit review</GradientButton>
+                    {#if editingReview }
+                        <GradientButton type="submit" class="w-full1" on:click={submitEdit}>Submit review</GradientButton>
+                        <GradientButton class="w-full1" on:click={cancelEdit}>Cancel</GradientButton>
+                    {/if}
+                </div>
+            </form>
+        </Card>
+    {/if}
+    {#each $contactReviews as review}
+        <Card class="text-center m-4" size="xl" padding="lg">
+            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex review-header">
+                { review.title }
+                <StarRating currentRating={review.rating} active={false}></StarRating>
+            </h5>
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
+                { review.body }
+            </p>
+            <div>
+                {#if $admin || review.userId ===  $userId}
+                    <GradientButton type="submit" class="w-full1" on:click={() => deleteReview(review)}>Delete review</GradientButton>
+                {/if}
+                {#if $admin || review.userId ===  $userId}
+                    <GradientButton type="submit" class="w-full1" on:click={() => editReview(review)}>Edit review</GradientButton>
+                {/if}
+            </div>
+        </Card>
+    {/each}
+</div>
+
+<style>
+    .reviews {
+        display: flex;
+    }
+
+    .review-header {
+        justify-content: space-between;
+    }
+</style>
