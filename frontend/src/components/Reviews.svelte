@@ -10,7 +10,7 @@
     } from 'flowbite-svelte'
 
     import { post } from '../api'
-    import { clearExpiredToken, isAdmin } from '../functions'
+    import { handleResponse, isAdmin, isAuthenticated } from '../functions'
     import { 
         admin, 
         authenticated, 
@@ -26,7 +26,7 @@
     let allowAddReview    = false
     let allowDeleteReview = false
     let editingReview: Review
-    let errorMessage: string
+    let errorMessage: string | null
     let title: string
     let body: string
     let rating: number | null
@@ -47,29 +47,17 @@
             rating
         }
 
-        let res = await post(ADD_REVIEW_URL, review)
+        let response = await post(ADD_REVIEW_URL, review)
+        errorMessage = handleResponse(
+            response,
+            "There was an error adding the review. Please try again.",
+            logout
+        )
 
-        if (res.status === 200) {
+        // TODO: API shoudl return updated list
+        if (response.status === 200) {
             allowAddReview  = false
             $contactReviews = [ review, ...$contactReviews ]
-        }
-
-        if (res.status === 401) {
-            // Shouldn't happen but user could try faking token
-            // Token might also expire
-            clearExpiredToken()
-            authenticated.update(() => false)
-            errorMessage = "Please log in again."
-        }
-
-        if (res.status === 400) {
-            // shouldn't happen. input validators and tests on API
-            // TODO: log content if it does, create report
-            errorMessage = "There was an error adding the contact. Please try again."
-        }
-
-        if (res.status === 500) {
-            errorMessage = "There was an error adding the contact. Please try again."
         }
     }
 
@@ -80,28 +68,16 @@
             reviewId: review.reviewId,
         }
 
-        let res = await post(url, review)
+        let response = await post(url, review)
+        errorMessage = handleResponse(
+            response,
+            "There was an error deleting the review. Please try again.",
+            logout
+        )
 
-        if (res.status === 200) {
+        // TODO: API should return updated list
+        if (response.status === 200) {
             $contactReviews = $contactReviews.filter((r) => r.reviewId !== review.reviewId)
-        }
-
-        if (res.status === 401) {
-            // Shouldn't happen but user could try faking token
-            // Token might also expire
-            clearExpiredToken()
-            authenticated.update(() => false)
-            errorMessage = "Please log in again."
-        }
-
-        if (res.status === 400) {
-            // shouldn't happen. input validators and tests on API
-            // TODO: log content if it does, create report
-            errorMessage = "There was an error adding the contact. Please try again."
-        }
-
-        if (res.status === 500) {
-            errorMessage = "There was an error adding the contact. Please try again."
         }
     }
 
@@ -114,20 +90,23 @@
             body,
             rating
         }
-        
+
+        // TODO: API should return updated list
         let res = await post(url, review)
     }
 
-    function editReview(review) {
+    function editReview(review: Review) {
         allowAddReview = true
         title          = review.title
         body           = review.body
         rating         = review.rating
         editingReview  = review
 
-        $contactReviews = $contactReviews.filter((r) => r.reviewId !== review.reviewId)
+        // TODO: buggy. Need better way of handling
+        $contactReviews = $contactReviews.filter((r: Review) => r.reviewId !== review.reviewId)
     }
 
+    // TODO: buggy. Need better way of handling
     function cancelEdit() {
         allowAddReview = false
 
@@ -138,16 +117,29 @@
         rating = e.detail.rating
     }
 
-    // TODO: check list of reviews for current user ID to see if user has reviewed
-    // if so, push review to top w/ edit/delete buttons
-    // but also hide review modal
+    function logout() {
+        authenticated.update(() => false)
+    }
+
     onMount(() => {
-        if (isAdmin()) {
+        let hasReviewed = $contactReviews
+                .map((r: Review) => r.userId)
+                .includes($userId)
+
+        // if (isAdmin() && !hasReviewed) { // actually use this
+        if (isAdmin()) { // testing by adding multiple reviews
             admin.update(() => true)
             allowDeleteReview = true
+            allowAddReview    = true
         } else {
             admin.update(() => false)
         }
+
+        if (isAuthenticated() && !hasReviewed) {
+            allowAddReview = true
+        }
+
+        allowAddReview = true
     })
 </script>
 
@@ -167,7 +159,7 @@ REVIEWS
                         <span>Review title</span>
                         <Input type="text" name="title" placeholder="" bind:value={title} required />
                     </Label>
-                    <StarRating currentRating={rating} active={true} on:updateRating={updateRating}></StarRating>
+                    <StarRating currentRating={rating} active={true} on:updateRating={updateRating} color={'yellow'}></StarRating>
                 </h5>
                 <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
                     <Label for="body" class="mb-2">Review</Label>
@@ -187,7 +179,7 @@ REVIEWS
         <Card class="text-center m-4" size="xl" padding="lg">
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex review-header">
                 { review.title }
-                <StarRating currentRating={review.rating} active={false}></StarRating>
+                <StarRating currentRating={review.rating} active={false} color={'yellow'}></StarRating>
             </h5>
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
                 { review.body }

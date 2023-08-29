@@ -6,6 +6,7 @@
     import { get }            from '../api'
     import type { Contact }   from '../types'
     import { contactReviews, selectedContact } from '../store'
+    import Reviews from './Reviews.svelte';
 
     export let renderedContacts: Contact[]
 
@@ -25,6 +26,12 @@
     let leafletMap
 
     async function showReviews(contact: Contact) {
+        // TODO: Clear existing
+        $contactReviews  = []
+        $selectedContact = {}
+
+        console.log('hmm')
+
         let res = await get(`${REVIEWS_URL}${contact.contactId}`)
             .then(r => r.json())
 

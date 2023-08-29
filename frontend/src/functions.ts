@@ -19,6 +19,18 @@ export function getUserId(): string | null {
     return null
 }
 
+export function handleResponse(res: Response, errMsg: string, cb: Function): string | null {
+    if (res.status === 401) {
+        clearExpiredToken()
+        cb()
+        return "Please log in again."
+    }
+
+    if (res.status === 400 || res.status === 500) {
+        return errMsg
+    }
+}
+
 export function isAdmin(): boolean {
     const token = sessionStorage.getItem('byotoken')
 

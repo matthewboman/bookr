@@ -68,11 +68,16 @@ async fn query_private_contacts(
     let contacts = sqlx::query_as!(
         ContactResponse,
         r#"
-        SELECT contact_id, display_name, address, city, state, zip_code, capacity, latitude, longitude, email, contact_form, age_range, country, is_private, user_id
-        FROM contacts
-        WHERE is_private = true
-        AND verified = $1
-        AND user_id = $2
+        SELECT c.contact_id, c.display_name, c.address, c.city, c.state, 
+               c.zip_code, c.capacity, c.latitude, c.longitude, c.email, 
+               c.contact_form, c.age_range, c.country, c.is_private, c.user_id,
+               ROUND(AVG(r.rating), 2)::real AS average_rating
+        FROM contacts c
+        LEFT JOIN reviews r ON c.contact_id = r.contact_id
+        WHERE c.is_private = true
+        AND c.verified = $1
+        AND c.user_id = $2
+        GROUP BY c.contact_id
         "#,
         verified,
         user_id

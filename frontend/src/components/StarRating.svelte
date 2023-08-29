@@ -3,13 +3,15 @@
 
     import Star from './Star.svelte'
 
-    export let currentRating: number
     export let active: boolean
+    export let color: string
+    export let currentRating: number
 
     const dispatch = createEventDispatcher()
 
     let rating: number
     let hoverRating: number
+    let percent: number
     const stars = [
         { id: 1, title: 'One star' },
         { id: 2, title: 'Two stars' },
@@ -18,9 +20,9 @@
         { id: 5, title: 'Five stars' },
     ]
 
-    const handleHover = (id: number, half: boolean) => () => {
+    const handleHover = (id: number) => () => {
         if (active) {
-            hoverRating = half ? (id + 0.5) : id
+            hoverRating = id
         } 
     }
 
@@ -33,26 +35,41 @@
         }
     }
 
-    onMount(() => {
-        rating = currentRating
-    })
+    function isPartial(id: number, percent: number): boolean {
+        if (percent === 0 ) {
+            return false
+        }
+        if (Math.ceil(currentRating) > id ) {
+            return false
+        }
+        return Math.floor(currentRating) === Math.floor(id - percent)
+    }
+
+    $: {
+        if (!active) {
+            rating  = currentRating
+            percent = Math.floor((currentRating - Math.floor(currentRating)) * 100) / 100
+        }
+    }
 </script>
+
+<div class="star-container">
+    {#each stars as star (star.id)}
+        <Star
+            filled={hoverRating ? (hoverRating >= star.id) : (rating >= star.id)}
+            partial={isPartial(star.id, percent)}
+            percent={percent}
+            starId={star.id}
+            color={color}
+            on:mouseover={handleHover(star.id)}
+            on:mouseleave={() => hoverRating = 0}
+            on:click={handleRate(star.id)}
+        />
+    {/each}
+</div>
 
 <style>
     .star-container {
 		display: flex;
 	}
 </style>
-
-<div class="star-container">
-    {#each stars as star (star.id)}
-        <Star
-            filled={hoverRating ? (hoverRating >= star.id) : (rating >= star.id)}
-            halfFilled={hoverRating ? (hoverRating === star.id - 0.5) : (rating === star.id - 0.5)}
-            starId={star.id}
-            on:mouseover={handleHover(star.id, false)}
-            on:mouseleave={() => hoverRating = 0}
-            on:click={handleRate(star.id)}
-        />
-    {/each}
-</div>

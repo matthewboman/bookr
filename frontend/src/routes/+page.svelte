@@ -9,7 +9,7 @@
     import { get }             from '../api'
     import { getUserId, isAuthenticated } from '../functions'
     import type { Contact }    from '../types'
-    import { authenticated, userId }   from "../store"
+    import { authenticated, userId, contactReviews }   from "../store"
 
     const CONTACTS_URL     = "/contacts"
     const PRIVATE_CONTACTS = "/user/private-contacts"
@@ -43,8 +43,8 @@
         await getPublicContacts()
 
         if (isAuthenticated()) {
-            await getPrivateContacts()
             userId.update(() => getUserId())
+            await getPrivateContacts()        
         }
     })
 </script>
@@ -81,7 +81,9 @@
         {/if}
     </MediaQuery>
 
-    <Reviews/>
+    {#if $contactReviews.length}
+        <Reviews/>
+    {/if}
 
 {:else}
     loading
