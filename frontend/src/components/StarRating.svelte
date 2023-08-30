@@ -1,17 +1,18 @@
 <script lang="ts">
-    import { onMount, createEventDispatcher } from 'svelte'
+    import { afterUpdate, createEventDispatcher } from 'svelte'
 
     import Star from './Star.svelte'
 
     export let active: boolean
     export let color: string
     export let currentRating: number
+    export let size: number
 
     const dispatch = createEventDispatcher()
 
-    let rating: number
+    let rating:      number
     let hoverRating: number
-    let percent: number
+    let percent:     number
     const stars = [
         { id: 1, title: 'One star' },
         { id: 2, title: 'Two stars' },
@@ -29,9 +30,7 @@
     const handleRate = (id: number) => (event: Event) => {
         if (active) {
             rating = id
-            dispatch('updateRating', {
-                rating
-            })
+            dispatch('updateRating', { rating })
         }
     }
 
@@ -45,6 +44,12 @@
         return Math.floor(currentRating) === Math.floor(id - percent)
     }
 
+    afterUpdate(() => {
+        if (active) {
+            rating = currentRating
+        }
+    })
+
     $: {
         if (!active) {
             rating  = currentRating
@@ -53,7 +58,7 @@
     }
 </script>
 
-<div class="star-container">
+<div class="flex">
     {#each stars as star (star.id)}
         <Star
             filled={hoverRating ? (hoverRating >= star.id) : (rating >= star.id)}
@@ -61,15 +66,10 @@
             percent={percent}
             starId={star.id}
             color={color}
+            size={size}
             on:mouseover={handleHover(star.id)}
             on:mouseleave={() => hoverRating = 0}
             on:click={handleRate(star.id)}
         />
     {/each}
 </div>
-
-<style>
-    .star-container {
-		display: flex;
-	}
-</style>

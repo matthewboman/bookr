@@ -26,15 +26,10 @@
     let leafletMap
 
     async function showReviews(contact: Contact) {
-        // TODO: Clear existing
-        $contactReviews  = []
-        $selectedContact = {}
-
-        console.log('hmm')
-
         let res = await get(`${REVIEWS_URL}${contact.contactId}`)
             .then(r => r.json())
 
+        // TODO: Reviews component only updates if data returned. Stays same if empty.
         $contactReviews  = res.reviews // intentionally overwrite
         $selectedContact = contact // intentionally overwrite
     }
@@ -44,8 +39,8 @@
     <TileLayer url={tileUrl} options={tileLayerOptions}/>
     {#each renderedContacts as contact}
         <Marker latLng={[contact.latitude, contact.longitude]} events={['click']} on:click={() => showReviews(contact)}>
-            <Popup>
-                <ContactPopup contact={contact}/>
+            <Popup events={['popupclose']}>
+                <ContactPopup contact={contact} />
             </Popup>
         </Marker>
     {/each}

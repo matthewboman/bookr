@@ -19,19 +19,22 @@
         userId 
     } from '../store'
     import type { NewReview, Review } from '../types'
-    import StarRating from './StarRating.svelte'
+    import StarRating                 from './StarRating.svelte'
 
     const ADD_REVIEW_URL = "/user/review-contact"
+
+    export let reviews: Review[]
 
     let allowAddReview    = false
     let allowDeleteReview = false
     let editingReview: Review
-    let errorMessage: string | null
-    let title: string
-    let body: string
+    let errorMessage:  string | null
+    
+    let body:   string
     let rating: number | null
+    let title:  string
 
-    async function submit() {
+    async function submitReview() {
         errorMessage = ''
 
         if (!rating) {
@@ -40,7 +43,7 @@
         }
 
         const review: NewReview = {
-            userId: $userId,
+            userId: $userId, 
             contactId: $selectedContact.contactId,
             title,
             body,
@@ -54,7 +57,6 @@
             logout
         )
 
-        // TODO: API shoudl return updated list
         if (response.status === 200) {
             allowAddReview  = false
             $contactReviews = [ review, ...$contactReviews ]
@@ -75,15 +77,15 @@
             logout
         )
 
-        // TODO: API should return updated list
         if (response.status === 200) {
-            $contactReviews = $contactReviews.filter((r) => r.reviewId !== review.reviewId)
+            $contactReviews = $contactReviews.filter((r: Review) => r.reviewId !== review.reviewId)
         }
     }
 
     async function submitEdit() {
         const url = $admin ? "/admin/edit-review" : "/user/edit-review"
-        const review: Review = {
+        const review: Review = { 
+            reviewId: editingReview.reviewId,
             userId: $userId,
             contactId: $selectedContact.contactId,
             title,
@@ -91,8 +93,17 @@
             rating
         }
 
-        // TODO: API should return updated list
-        let res = await post(url, review)
+        let response = await post(url, review)
+        errorMessage = handleResponse(
+            response,
+            "There was an error editing the review. Please try again.",
+            logout
+        )
+
+        if (response.status === 200) {
+            allowAddReview  = false
+            $contactReviews = [ review, ...$contactReviews ]
+        }
     }
 
     function editReview(review: Review) {
@@ -102,14 +113,14 @@
         rating         = review.rating
         editingReview  = review
 
+        console.log('rating', rating)
         // TODO: buggy. Need better way of handling
         $contactReviews = $contactReviews.filter((r: Review) => r.reviewId !== review.reviewId)
     }
 
     // TODO: buggy. Need better way of handling
     function cancelEdit() {
-        allowAddReview = false
-
+        allowAddReview  = false
         $contactReviews = [ editingReview, ...$contactReviews ]
     }
 
@@ -126,8 +137,8 @@
                 .map((r: Review) => r.userId)
                 .includes($userId)
 
-        // if (isAdmin() && !hasReviewed) { // actually use this
-        if (isAdmin()) { // testing by adding multiple reviews
+        if (isAdmin() && !hasReviewed) { // actually use this
+        // if (isAdmin()) { // testing by adding multiple reviews
             admin.update(() => true)
             allowDeleteReview = true
             allowAddReview    = true
@@ -143,8 +154,7 @@
     })
 </script>
 
-REVIEWS
-<div class="reviews">
+<div class="flex">
     {#if allowAddReview && $selectedContact}
         <Card class="text-center m-4" size="xl" padding="lg">
             {#if errorMessage}
@@ -153,8 +163,8 @@ REVIEWS
                 <span class="font-medium">Error</span> { errorMessage }
             </Alert>
             {/if}
-            <form class="flex flex-col space-y-6" on:submit|preventDefault={submit}>
-                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex review-header">
+            <form class="flex flex-col space-y-6">
+                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex justify-between">
                     <Label for="title" class="space-y-2">
                         <span>Review title</span>
                         <Input type="text" name="title" placeholder="" bind:value={title} required />
@@ -166,18 +176,19 @@ REVIEWS
                     <Textarea id="body" placeholder="Your review" rows="4" name="body" bind:value={body}/>
                 </p>
                 <div>
-                    <GradientButton type="submit" class="w-full1">Submit review</GradientButton>
                     {#if editingReview }
-                        <GradientButton type="submit" class="w-full1" on:click={submitEdit}>Submit review</GradientButton>
+                        <GradientButton type="submit" class="w-full1" on:click={submitEdit}>Edit review</GradientButton>
                         <GradientButton class="w-full1" on:click={cancelEdit}>Cancel</GradientButton>
+                    {:else}
+                        <GradientButton type="submit" class="w-full1" on:click={submitReview}>Submit review</GradientButton>
                     {/if}
                 </div>
             </form>
         </Card>
     {/if}
-    {#each $contactReviews as review}
+    {#each reviews as review}
         <Card class="text-center m-4" size="xl" padding="lg">
-            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex review-header">
+            <h5 class="mb-2text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex justify-between">
                 { review.title }
                 <StarRating currentRating={review.rating} active={false} color={'yellow'}></StarRating>
             </h5>
@@ -195,13 +206,3 @@ REVIEWS
         </Card>
     {/each}
 </div>
-
-<style>
-    .reviews {
-        display: flex;
-    }
-
-    .review-header {
-        justify-content: space-between;
-    }
-</style>

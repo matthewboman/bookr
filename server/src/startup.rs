@@ -20,6 +20,7 @@ use crate::routes::{
     add_contact,
     admin_delete_contact,
     admin_delete_review,
+    admin_edit_review,
     admin_get_all_reviews,
     admin_get_reviews_by_user,
     approve_contact,
@@ -153,6 +154,7 @@ async fn run(
                     .route("/all-reviews", web::get().to(admin_get_all_reviews))
                     .route("/user-reviews", web::get().to(admin_get_reviews_by_user))
                     .route("/delete-review", web::post().to(admin_delete_review))
+                    .route("/edit-review", web::post().to(admin_edit_review))
             )
             .app_data(db_pool.clone())
             .app_data(email_client.clone())

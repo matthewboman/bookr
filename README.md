@@ -17,6 +17,7 @@ Database migrations are under `/server`
 - UI theme, usability
 - response messages for: signing up, logging in, logging out, adding contacts, errors
 - build function for handling 200, 400, 401, 500 responses and curryable helper functions to do things like logout for 401 or custom actions for 200
+- validate contact form is link when submitted
 
 ## Potential Features
 - authenticated users should be able to....
