@@ -94,7 +94,7 @@
 {/if}
 
 <style>
-    /* @font-face { font-family: 'Limelight'; src: local("Trickster");} */
+    /* @font-face  { font-family: 'Limelight'; src: local("Trickster");} */
     @font-face { font-family: 'Comfortaa'; src: local("Comfortaa");}
 
     * {
