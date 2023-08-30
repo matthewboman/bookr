@@ -6,6 +6,7 @@ use uuid::Uuid;
 use crate::auth::JwtMiddleware;
 use crate::domain::contact::{delete_contact, ContactResponse};
 use crate::error::ContentError;
+use crate::utils::user_matches;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -45,10 +46,8 @@ pub async fn user_delete_contact(
     let ext      = req.extensions();
     let user_id  = ext.get::<uuid::Uuid>().unwrap();
 
-    if *user_id != json.user_id {
-        return Err(ContentError::AuthorizationError)
-    }
-
+    user_matches(user_id, &json.user_id)
+        .context("User IDs don't match when deleting review")?;
     delete_contact(&json.contact_id, &pool)
         .await
         .context("Failed to delete contact")?;

@@ -1,27 +1,40 @@
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use anyhow::Context;
 use sqlx::{PgPool, Postgres, Transaction};
-use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
-use crate::domain::{delete_review, query_reviews_by_user, Review};
-use crate::domain::input_validator::OptionalStringInput;
+use crate::domain::input_validator::StringInput;
+use crate::domain::{
+    delete_review, edit_review, insert_review, query_reviews_by_user, 
+    NewReview, Review, ReviewDeleteData, ReviewEditData
+};
 use crate::error::ContentError;
+use crate::utils::user_matches;
 
+// TODO: refactor
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateData {
     contact_id: i32,
-    title:      Option<String>,
-    body:       Option<String>,
-    rating:     i32,
+    title:      String,
+    body:       String,
+    rating:     i32
 }
 
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DeleteData {
-    review_id: Uuid,
-    _user_id:   Uuid, // unused. keep consistent w/ "/admin/delete-review"
+impl TryFrom<CreateData> for NewReview {
+    type Error = String;
+
+    fn try_from(value: CreateData) -> Result<Self, Self::Error> {
+        let title = StringInput::parse(value.title);
+        let body  = StringInput::parse(value.body);
+
+        Ok(Self {
+            title, 
+            body,
+            contact_id: value.contact_id,
+            rating: value.rating
+        })
+    }
 }
 
 #[tracing::instrument(
@@ -35,18 +48,18 @@ pub async fn review_contact(
 ) -> Result<HttpResponse, ContentError> {
     let ext     = req.extensions();
     let user_id = ext.get::<uuid::Uuid>().unwrap();
+    let review: NewReview = json.0.try_into().map_err(ContentError::ValidationError)?;
 
-    // TODO: no longer needs to be a transaction
     let mut transaction = pool
         .begin()
         .await
         .context("Failed to acquire a Postgres connection from the pool")?;
     
-    verify_contact_exists(json.contact_id.clone(), &mut transaction)
+    verify_contact_exists(&review.contact_id, &mut transaction)
         .await
         .context("Failed to find Contact with provided contact_id")?;
 
-    let review_id = insert_review(&json, user_id, &mut transaction)
+    insert_review(review, user_id, &mut transaction)
         .await
         .context("Failed to insert new review into database")?;
     
@@ -63,17 +76,41 @@ pub async fn review_contact(
 )]
 pub async fn user_delete_review(
     req:  HttpRequest,
-    json: web::Json<DeleteData>,
+    json: web::Json<ReviewDeleteData>,
     pool: web::Data<PgPool>,
     _:    JwtMiddleware,
 ) -> Result<HttpResponse, ContentError> {
     let ext     = req.extensions();
     let user_id = ext.get::<uuid::Uuid>().unwrap();
 
+    user_matches(user_id, &json.user_id)
+        .context("User IDs don't match when deleting review")?;
     delete_review(&json.review_id, user_id, &pool)
         .await
         .context("Failed to delete review")?;
     
+    Ok(HttpResponse::Ok().finish())
+}
+
+#[tracing::instrument(
+    skip(req, json, pool)
+)]
+pub async fn user_edit_review(
+    req:  HttpRequest,
+    json: web::Json<ReviewEditData>,
+    pool: web::Data<PgPool>,
+    _:    JwtMiddleware,
+) -> Result<HttpResponse, ContentError> {
+    let ext     = req.extensions();
+    let user_id = ext.get::<uuid::Uuid>().unwrap();
+    let review: Review = json.0.try_into().map_err(ContentError::ValidationError)?;
+
+    user_matches(user_id, &review.user_id)
+        .context("User IDs don't match when editing review")?;
+    edit_review(review, &pool)
+        .await
+        .context("Failed to update review")?;
+
     Ok(HttpResponse::Ok().finish())
 }
 
@@ -100,7 +137,7 @@ pub async fn user_get_reviews(
     skip(contact_id, transaction)
 )]
 async fn verify_contact_exists(
-    contact_id:  i32,
+    contact_id:  &i32,
     transaction: &mut Transaction<'_, Postgres>,
 ) -> Result<(), sqlx::Error> {
     sqlx::query!(
@@ -112,36 +149,4 @@ async fn verify_contact_exists(
     .await?;
 
     Ok(())
-}
-
-#[tracing::instrument(
-    name = "Saving new review to database",
-    skip(review, transaction)
-)]
-async fn insert_review(
-    review:      &web::Json<CreateData>,
-    user_id:     &Uuid,
-    transaction: &mut Transaction<'_, Postgres>,
-) -> Result<Uuid, sqlx::Error> {
-    let title = OptionalStringInput::parse(&review.title);
-    let body  = OptionalStringInput::parse(&review.body);
-
-    let review = sqlx::query!(
-        r#"
-        INSERT INTO reviews (user_id, contact_id, title, body, rating)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING review_id
-        "#,
-        user_id,
-        review.contact_id,
-        title.as_deref(),
-        body.as_deref(),
-        review.rating
-    )
-    .fetch_one(transaction)
-    .await?;
-
-    let review_id: Uuid = review.review_id;
-
-    Ok(review_id)
 }

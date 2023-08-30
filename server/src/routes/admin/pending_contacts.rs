@@ -1,4 +1,4 @@
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use anyhow::Context;
 use sqlx::PgPool;
 
@@ -6,7 +6,9 @@ use crate::auth::JwtMiddleware;
 use crate::domain::{delete_contact, PendingContact};
 use crate::error::AdminError;
 use crate::gmaps_api_client::{get_latlng_from_address, GoogleMapsAPIClient, Location};
+use crate::utils::is_admin;
 
+// TODO: refactor
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JsonData {
@@ -17,6 +19,7 @@ pub struct JsonData {
     zip_code:   String,
 }
 
+// TODO: refactor
 #[derive(serde::Serialize)]
 struct JsonResponse {
     message: String,
@@ -32,13 +35,7 @@ pub async fn approve_contact(
     g_client: web::Data<GoogleMapsAPIClient>,
     _:        JwtMiddleware,
 ) -> Result<HttpResponse, AdminError> {
-    let ext     = req.extensions();
-    let role    = ext.get::<String>().unwrap();
-    let admin   = String::from("admin");
-
-    if role.to_string() != admin {
-        return Err(AdminError::InvalidToken)
-    }
+    is_admin(req)?;
 
     // TODO: Would it be better to only send `contact_id` from API and return the Contact here?
     // Or allow admin to edit address, updating in database here or on successful Google API response?
@@ -84,14 +81,7 @@ pub async fn admin_delete_contact(
     pool: web::Data<PgPool>,
     _:    JwtMiddleware
 ) -> Result<HttpResponse, AdminError> {
-    let ext     = req.extensions();
-    let role    = ext.get::<String>().unwrap();
-    let admin   = String::from("admin");
-
-    if role.to_string() != admin {
-        return Err(AdminError::InvalidToken)
-    }
-
+    is_admin(req)?;
     delete_contact(&json.contact_id, &pool)
         .await
         .context("Failed to delete contact")?;
@@ -107,13 +97,7 @@ pub async fn get_pending_contacts(
     pool: web::Data<PgPool>,
     _:    JwtMiddleware
 ) -> Result<HttpResponse, AdminError> {
-    let ext   = req.extensions();
-    let role  = ext.get::<String>().unwrap();
-    let admin = String::from("admin");
-
-    if role.to_string() != admin {
-        return Err(AdminError::InvalidToken)
-    }
+    is_admin(req)?;
 
     let contacts = query_pending_contacts(&pool)
         .await
@@ -121,9 +105,6 @@ pub async fn get_pending_contacts(
     
     Ok(HttpResponse::Ok().json(contacts))
 }
-
-// TODO: This might later be shared for functionality to delete contact from map UI
-
 
 #[tracing::instrument(
     name = "Marking a contact as verified in the database",
@@ -146,6 +127,7 @@ pub async fn mark_contact_as_verified(
     Ok(())
 }
 
+// TODO: refactor so users can see pending contacts
 #[tracing::instrument(
     name = "Getting all pending contacts from the database",
     skip(pool)

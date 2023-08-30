@@ -38,6 +38,7 @@ use crate::routes::{
     sign_up,
     user_delete_contact,
     user_delete_review,
+    user_edit_review,
     user_get_reviews
 };
 
@@ -141,6 +142,7 @@ async fn run(
                     .route("/review-contact", web::post().to(review_contact))
                     .route("/delete-contact", web::post().to(user_delete_contact))
                     .route("/delete-review", web::post().to(user_delete_review))
+                    .route("/edit-review", web::post().to(user_edit_review))
                     .route("/my-reviews", web::get().to(user_get_reviews))
             )
             .service(

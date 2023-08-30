@@ -18,6 +18,12 @@ impl StringInput {
     }
 }
 
+impl AsRef<str> for StringInput {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 #[derive(Debug)]
 pub struct OptionalStringInput(Option<String>);
 

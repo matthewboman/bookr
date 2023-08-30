@@ -1,7 +1,7 @@
 CREATE TABLE reviews (
     review_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(256),
-    body TEXT,
+    title VARCHAR(256) NOT NULL,
+    body TEXT NOT NULL,
     rating INT NOT NULL,
     contact_id INT REFERENCES contacts (contact_id) NOT NULL,
     user_id UUID REFERENCES users (user_id) NOT NULL,

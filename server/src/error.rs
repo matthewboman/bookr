@@ -15,6 +15,9 @@ pub enum AdminError {
 
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
+
+    #[error("{0}")]
+    ValidationError(String),
 }
 
 impl ResponseError for AdminError {
@@ -22,7 +25,8 @@ impl ResponseError for AdminError {
         match self {
             Self::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::InvalidToken => StatusCode::UNAUTHORIZED,
-            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR
+            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::ValidationError(_) => StatusCode::BAD_REQUEST,
         }
     }
 }

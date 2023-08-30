@@ -4,7 +4,7 @@
 mod helpers;
 // mod health_check;
 // mod login;
-// mod pending_contacts;
+mod pending_contacts;
 // mod reset_password;
-mod reviews;
+// mod reviews;
 // mod sign_up;
