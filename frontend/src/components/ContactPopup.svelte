@@ -4,9 +4,7 @@
 
 <style>
     .contact {
-
         font-family: Comfortaa;
-        /* background-color: rgba(31, 41, 55, 0.9); */
     }
 
     .contact-name {
