@@ -20,6 +20,7 @@ use crate::routes::{
     add_contact,
     admin_delete_contact,
     admin_delete_review,
+    admin_edit_contact,
     admin_edit_review,
     admin_get_all_reviews,
     admin_get_reviews_by_user,
@@ -39,6 +40,7 @@ use crate::routes::{
     sign_up,
     user_delete_contact,
     user_delete_review,
+    user_edit_contact,
     user_edit_review,
     user_get_reviews
 };
@@ -143,17 +145,19 @@ async fn run(
                     .route("/review-contact", web::post().to(review_contact))
                     .route("/delete-contact", web::post().to(user_delete_contact))
                     .route("/delete-review", web::post().to(user_delete_review))
+                    .route("/edit-contact", web::post().to(user_edit_contact))
                     .route("/edit-review", web::post().to(user_edit_review))
-                    .route("/my-reviews", web::get().to(user_get_reviews))
+                    .route("/my-reviews", web::get().to(user_get_reviews)) // Not implemented
             )
             .service(
                 web::scope("/admin")
                     .route("/pending-contacts", web::get().to(get_pending_contacts))
                     .route("/delete-contact", web::post().to(admin_delete_contact))
                     .route("/approve-pending-contact", web::post().to(approve_contact))
-                    .route("/all-reviews", web::get().to(admin_get_all_reviews))
-                    .route("/user-reviews", web::get().to(admin_get_reviews_by_user))
+                    .route("/all-reviews", web::get().to(admin_get_all_reviews)) // Not implemented
+                    .route("/user-reviews", web::get().to(admin_get_reviews_by_user)) // Not implemented
                     .route("/delete-review", web::post().to(admin_delete_review))
+                    .route("/edit-contact", web::post().to(admin_edit_contact))
                     .route("/edit-review", web::post().to(admin_edit_review))
             )
             .app_data(db_pool.clone())

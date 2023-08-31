@@ -75,7 +75,6 @@ pub async fn delete_review(
     user_id:   &Uuid,
     pool:      &PgPool,
 ) -> Result<(), sqlx::Error> {
-    println!("deleting {} by {}", &review_id, &user_id);
     sqlx::query!(
         r#"
         DELETE FROM reviews WHERE review_id = $1 AND user_id = $2

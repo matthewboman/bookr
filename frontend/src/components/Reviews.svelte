@@ -16,7 +16,7 @@
         authenticated, 
         contactReviews, 
         selectedContact, 
-        userId 
+        userId
     } from '../store'
     import type { NewReview, Review } from '../types'
     import StarRating                 from './StarRating.svelte'
@@ -78,6 +78,7 @@
         )
 
         if (response.status === 200) {
+            allowAddReview  = true
             $contactReviews = $contactReviews.filter((r: Review) => r.reviewId !== review.reviewId)
         }
     }
@@ -113,12 +114,9 @@
         rating         = review.rating
         editingReview  = review
 
-        console.log('rating', rating)
-        // TODO: buggy. Need better way of handling
         $contactReviews = $contactReviews.filter((r: Review) => r.reviewId !== review.reviewId)
     }
 
-    // TODO: buggy. Need better way of handling
     function cancelEdit() {
         allowAddReview  = false
         $contactReviews = [ editingReview, ...$contactReviews ]
@@ -137,8 +135,7 @@
                 .map((r: Review) => r.userId)
                 .includes($userId)
 
-        if (isAdmin() && !hasReviewed) { // actually use this
-        // if (isAdmin()) { // testing by adding multiple reviews
+        if (isAdmin() && !hasReviewed) {
             admin.update(() => true)
             allowDeleteReview = true
             allowAddReview    = true
@@ -150,7 +147,7 @@
             allowAddReview = true
         }
 
-        allowAddReview = true
+        allowAddReview = false
     })
 </script>
 

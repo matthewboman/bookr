@@ -1,5 +1,6 @@
 export type Contact = {
     contactId:     number,
+    userId:        string,
     displayName:   string,
     address:       string,
     city:          string,
