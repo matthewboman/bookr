@@ -73,7 +73,7 @@
 {/if}
 
 <style>
-    @font-face { font-family: 'Comfortaa'; src: local("Comfortaa"), url('Comfortaa-VariableFont_wght.ttf')  format('truetype'),;}
+    @font-face { font-family: 'Comfortaa'; src: local("Comfortaa"), url('Comfortaa-VariableFont_wght.ttf')  format('truetype');}
 
     * {
         font-family: Comfortaa;
@@ -81,7 +81,6 @@
 
     .main-container {
         display: flex;
-        /* width: 90vw; */
         width: 100vw;
     }
 

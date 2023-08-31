@@ -56,8 +56,6 @@
                 targets: '.filter-container',
                 height: 54,
                 paddingBottom: 0,
-                // paddingBottom: 0,
-                // paddingBottom: 0,
                 easing,
                 duration
             })
@@ -143,11 +141,4 @@
 
 <style>
     
-    @font-face { font-family: 'Limelight'; src: local("Trickster");}
-
-    
-
-    .filter-block {
-        /* font-family: Limelight; */
-    }
 </style>
