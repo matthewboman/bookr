@@ -27,29 +27,8 @@
     onMount(async () => {
         authenticated.update(() => isAuthenticated())
 		getMap()
-
-        //
-        //
-        //
-        // FOR TESTING PURPOSES
-        // contactList = []
-        contactList = [
-            {
-                displayName: 'Turf Club',
-                capacity: 500,
-                address: '1601 University Ave W, St Paul, MN 55104',
-                city: 'St Paul',
-                state: 'MN',
-                zipCode: 55104,
-                latitude: 44.955694,
-                longitude: -93.168725
-                
-            }
-        ]
-        //
-        // contactList = await get(CONTACTS_URL).then(r => r.json())
-        //
-        //
+        
+        contactList = await get(CONTACTS_URL).then(r => r.json())
     })
 </script>
 
