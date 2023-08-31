@@ -94,8 +94,7 @@
 {/if}
 
 <style>
-    /* @font-face  { font-family: 'Limelight'; src: local("Trickster");} */
-    @font-face { font-family: 'Comfortaa'; src: local("Comfortaa");}
+    @font-face { font-family: 'Comfortaa'; src: local("Comfortaa"), url('Comfortaa-VariableFont_wght.ttf')  format('truetype'),;}
 
     * {
         font-family: Comfortaa;
