@@ -20,15 +20,12 @@ async fn unauthenticated_user_cannot_see_pending_contacts() {
 
 #[tokio::test]
 async fn non_admin_user_cannot_see_pending_contacts() {
-    let app        = spawn_app().await;
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    // Log in
+    let app      = spawn_app().await;
+    let response = app.test_user_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
+    // Get pending contacts
     let response = app.get_pending_contacts().await;
     
     assert_eq!(401, response.status().as_u16());
@@ -36,109 +33,47 @@ async fn non_admin_user_cannot_see_pending_contacts() {
 
 #[tokio::test]
 async fn admin_can_see_pending_contacts() {
-    let app        = spawn_app().await;
-
-    app.test_user.make_admin(&app.db_pool).await;
-
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    // Log in
+    let app      = spawn_app().await;
+    let response = app.admin_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
+    // Get pending contacts
     let response = app.get_pending_contacts().await;
-    
     assert_eq!(200, response.status().as_u16());
 }
 
 #[tokio::test]
 async fn admin_approve_pending_contact() {
-    // Set up
-    let app = spawn_app().await;
-    app.test_user.make_admin(&app.db_pool).await;
-
     // Log in
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let app      = spawn_app().await;
+    let response = app.admin_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
     // Create contact
-    let contact  = serde_json::json!({
-        "displayName": "test for pending",
-        "city": "asheville",
-        "state": "NC",
-        "zipCode": "28711",
-        "capacity": 100,
-        "ageRange": "allAges",
-        "isPrivate": false
-    });
-    let response = app.add_contact(&contact).await;
-    
+    let is_private = false;
+    let response   = app.create_contact(is_private).await;
     assert_eq!(200, response.status().as_u16());
 
-    // Get contact
-    let contacts = app.get_pending_contacts()
-        .await
-        .json::<PendingContacts>()
-        .await
-        .unwrap();
-    let contact = contacts.0.first().unwrap();
-
-    // Approve contact
-    let json = serde_json::json!({
-        "contactId": contact.contact_id,
-        "address":   contact.address,
-        "city":      contact.city,
-        "state":     contact.state,
-        "zipCode":   contact.zip_code
-    });
-    let response = app.approve_contact(&json).await;
-
+    // Get and approve contact
+    let contact  = app.get_first_pending_contact().await;
+    let response = app.approve_contact(contact).await;
     assert_eq!(200, response.status().as_u16());
 }
 
 #[tokio::test]
 async fn admin_can_delete_pending_contact() {
-    // Set up
-    let app = spawn_app().await;
-    app.test_user.make_admin(&app.db_pool).await;
-
-    // Log in
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let app      = spawn_app().await;
+    let response = app.admin_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
     // Create contact
-    let contact  = serde_json::json!({
-        "displayName": "test for pending",
-        "city": "asheville",
-        "state": "NC",
-        "zipCode": "28711",
-        "capacity": 100,
-        "ageRange": "allAges",
-        "isPrivate": false
-    });
-    let response = app.add_contact(&contact).await;
-    
+    let is_private = false;
+    let response   = app.create_contact(is_private).await;
     assert_eq!(200, response.status().as_u16());
 
     // Get contact
-    let contacts = app.get_pending_contacts()
-        .await
-        .json::<PendingContacts>()
-        .await
-        .unwrap();
-    let contact = contacts.0.first().unwrap();
+    let contact = app.get_first_pending_contact().await;
 
     // Delete contact
     let json = serde_json::json!({

@@ -1,7 +1,11 @@
+use actix_web::{HttpMessage, HttpRequest};
 use chrono::{Duration, Utc};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use sqlx::types::chrono::NaiveDateTime;
+use uuid::Uuid;
+
+use crate::error::{AdminError, ContentError};
 
 pub fn e400<T>(e: T) -> actix_web::Error
 where
@@ -42,6 +46,20 @@ pub fn generate_token() -> String {
         .collect()
 }
 
+pub fn is_admin(
+    req: HttpRequest,
+) -> Result<(), AdminError> {
+    let admin = String::from("admin");
+    let ext   = req.extensions();
+    let role  = ext.get::<String>().unwrap();
+
+    if role.to_string() != admin {
+        Err(AdminError::InvalidToken)
+    } else {
+        Ok(())
+    }
+}
+
 pub fn is_token_expired(created_at: NaiveDateTime, expiration_duration: Duration) -> bool {
     let current_time = Utc::now().naive_utc();
 
@@ -51,6 +69,17 @@ pub fn is_token_expired(created_at: NaiveDateTime, expiration_duration: Duration
     }
 
     created_at + expiration_duration <= current_time
+}
+
+pub fn user_matches(
+    req_id:  &Uuid,
+    data_id: &Uuid
+) -> Result<(), ContentError> {
+    if req_id != data_id {
+        Err(ContentError::AuthorizationError)
+    } else {
+        Ok(())
+    }
 }
 
 #[cfg(test)]

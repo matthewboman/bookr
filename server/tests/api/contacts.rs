@@ -15,9 +15,9 @@ async fn contacts_returns_a_200() {
 
 #[tokio::test]
 async fn unauthenticated_user_cannot_add_contact() {
-    let app      = spawn_app().await;
-    let contact  = serde_json::json!({
-        "display_name": "test",
+    let app     = spawn_app().await;
+    let contact = serde_json::json!({
+        "displayName": "test",
         "city": "asheville"
     });
     let response = app.add_contact(&contact).await;
@@ -27,15 +27,12 @@ async fn unauthenticated_user_cannot_add_contact() {
 
 #[tokio::test]
 async fn authenticated_user_can_add_contact() {
+    // Login
     let app        = spawn_app().await;
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let response   = app.test_user_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
+    // Create contact
     let contact  = serde_json::json!({
         "displayName": "test",
         "city": "asheville",
@@ -57,40 +54,26 @@ async fn private_contacts_returns_401_for_unauthenticated_user() {
 
 #[tokio::test]
 async fn private_contacts_returns_200_for_authenticated_user() {
+    // Login
     let app        = spawn_app().await;
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let response   = app.test_user_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
+    // Get private contacts
     let response = app.get_private_contacts().await;
-
     assert_eq!(200, response.status().as_u16());
 }
 
 #[tokio::test]
 async fn private_contact_not_returned_with_public_contacts() {
-    // Log in
+    // Login
     let app        = spawn_app().await;
-    let login_body = serde_json::json!({
-        "email":    &app.test_user.email,
-        "password": &app.test_user.password
-    });
-    let response   = app.post_login(&login_body).await;
-
+    let response   = app.test_user_login().await;
     assert_eq!(response.status().as_u16(), 200);
 
     // Create private contact
-    let contact  = serde_json::json!({
-        "displayName": "test",
-        "city": "asheville",
-        "isPrivate": true
-    });
-    let response = app.add_contact(&contact).await;
-
+    let is_private = true;
+    let response   = app.create_contact(is_private).await;
     assert_eq!(200, response.status().as_u16());
 
     // Query public contacts

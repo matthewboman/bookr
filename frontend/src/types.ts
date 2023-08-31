@@ -1,18 +1,20 @@
 export type Contact = {
-    contactId:   number,
-    displayName: string,
-    address:     string,
-    city:        string,
-    state:       string,
-    zipCode:     string,
-    country:     string | null,
-    capacity:    number | null,
-    latitude:    number | null,
-    longitude:   number | null,
-    email:       string | null,
-    contactForm: string | null,
-    ageRange:    string | null,
-    isPrivate:   boolean
+    contactId:     number,
+    userId:        string,
+    displayName:   string,
+    address:       string,
+    city:          string,
+    state:         string,
+    zipCode:       string,
+    country:       string | null,
+    capacity:      number | null,
+    latitude:      number | null,
+    longitude:     number | null,
+    email:         string | null,
+    contactForm:   string | null,
+    ageRange:      string | null,
+    isPrivate:     boolean,
+    averageRating: number
 }
 
 export type Jwt = {
@@ -36,7 +38,24 @@ export type NewContact = {
     isPrivate:   boolean
 }
 
+export type NewReview = {
+    contactId: number,
+    userId:    string,
+    title:     string,
+    body:      string,
+    rating:    number,
+}
+
+export type Review = {
+    reviewId:  string,
+    contactId: number,
+    userId:    string,
+    title:     string,
+    body:      string,
+    rating:    number,
+}
+
 export type User = {
-    email:    String,
-    password: String
+    email:    string,
+    password: string
 }

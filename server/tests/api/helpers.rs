@@ -9,6 +9,7 @@ use uuid::Uuid;
 use wiremock::MockServer;
 
 use byot_server::configuration::{get_configuration, DatabaseSettings, JWTSettings};
+use byot_server::domain::{PendingContact, Review};
 use byot_server::email_client::EmailClient;
 use byot_server::startup::{Application, get_connection_pool};
 use byot_server::telemetry::{get_subscriber, init_subscriber};
@@ -34,6 +35,12 @@ static TRACING: Lazy<()> = Lazy::new(|| {
     }
 });
 
+#[derive(serde::Deserialize)]
+struct PendingContacts(Vec<PendingContact>);
+
+#[derive(serde::Deserialize)]
+struct Reviews(Vec<Review>);
+
 pub struct ConfirmationLinks {
     pub html:       reqwest::Url,
     pub plain_text: reqwest::Url,
@@ -45,12 +52,81 @@ pub struct TestApp {
     pub email_server: MockServer,
     pub port:         u16,
     pub test_user:    TestUser,
+    pub admin:        TestUser,
     pub api_client:   reqwest::Client,
     pub email_client: EmailClient,
     pub jwt_settings: JWTSettings,
 }
 
 impl TestApp {
+    // Shortcuts
+    pub async fn admin_login(&self) -> reqwest::Response {
+        let login_body = serde_json::json!({
+            "email":    &self.admin.email,
+            "password": &self.admin.password
+        });
+
+        self.post_login(&login_body).await
+    }
+
+    pub async fn approve_contact(&self, contact: PendingContact) -> reqwest::Response {
+        let json = serde_json::json!({
+            "contactId": contact.contact_id,
+            "address":   contact.address,
+            "city":      contact.city,
+            "state":     contact.state,
+            "zipCode":   contact.zip_code
+        });
+        
+        self.post_approve_contact(&json).await
+    }
+
+    pub async fn create_contact(&self, isPrivate: bool) -> reqwest::Response {
+        let contact  = serde_json::json!({
+            "displayName": "test for pending",
+            "city": "asheville",
+            "state": "NC",
+            "zipCode": "28711",
+            "capacity": 100,
+            "ageRange": "allAges",
+            "isPrivate": isPrivate
+        });
+
+        self.add_contact(&contact).await
+    }
+
+    pub async fn get_first_pending_contact(&self) -> PendingContact {
+        let contacts = self.get_pending_contacts()
+            .await
+            .json::<PendingContacts>()
+            .await
+            .unwrap();
+        let contact = contacts.0.first().unwrap();
+
+        // not the most efficient, but * errors with "returns a value referencing data owned by the current function"
+        contact.clone()
+    }
+
+    pub async fn review_contact(&self, contact: PendingContact) -> reqwest::Response {
+        let review = serde_json::json!({
+            "contactId": contact.contact_id,
+            "title":     "not half bad",
+            "body":      "it was all bad",
+            "rating":    1
+        });
+
+        self.add_review(&review).await
+    }
+
+    pub async fn test_user_login(&self) -> reqwest::Response {
+        let login_body = serde_json::json!({
+            "email":    &self.test_user.email,
+            "password": &self.test_user.password
+        });
+
+        self.post_login(&login_body).await
+    }
+
     // Routes
     pub async fn add_contact<Json>(&self, json: Json) -> reqwest::Response
     where Json: serde::Serialize
@@ -63,11 +139,30 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
-    pub async fn approve_contact<Json>(&self, json: Json) -> reqwest::Response
+    pub async fn add_review<Json>(&self, json: Json) -> reqwest::Response
     where Json: serde::Serialize
     {
         self.api_client
-            .post(&format!("{}/admin/approve-pending-contact", &self.address))
+            .post(&format!("{}/user/review-contact", &self.address))
+            .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn admin_get_reviews(&self) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/admin/all-reviews", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn admin_delete_review<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/admin/delete-review", &self.address))
             .json(&json)
             .send()
             .await
@@ -78,7 +173,7 @@ impl TestApp {
     where Json: serde::Serialize
     {
         self.api_client
-            .post(&format!("{}/admin/delete-pending-contact", &self.address))
+            .post(&format!("{}/admin/delete-contact", &self.address))
             .json(&json)
             .send()
             .await
@@ -104,6 +199,14 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
+    pub async fn get_reviews(&self, id: &str) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/reviews?contactId={}", &self.address, id))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub async fn get_pending_contacts(&self) -> reqwest::Response {
         self.api_client
             .get(&format!("{}/admin/pending-contacts", &self.address))
@@ -115,6 +218,17 @@ impl TestApp {
     pub async fn get_private_contacts(&self) -> reqwest::Response {
         self.api_client
             .get(&format!("{}/user/private-contacts", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn post_approve_contact<Json>(&self, json: Json) -> reqwest::Response
+    where Json: serde::Serialize
+    {
+        self.api_client
+            .post(&format!("{}/admin/approve-pending-contact", &self.address))
+            .json(&json)
             .send()
             .await
             .expect("Failed to execute request")
@@ -167,6 +281,14 @@ impl TestApp {
         self.api_client
             .post(&format!("{}/signup", &self.address))
             .json(&json)
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn user_get_reviews(&self) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/user/my-reviews", &self.address))
             .send()
             .await
             .expect("Failed to execute request")
@@ -226,14 +348,6 @@ impl TestUser {
             email,
             password: Uuid::new_v4().to_string()
         }
-    }
-
-    pub async fn login(&self, app: &TestApp) {
-        app.post_login(&serde_json::json!({
-            "email":    &self.email,
-            "password": &self.password,
-        }))
-        .await;
     }
 
     pub async fn make_admin(&self, pool: &PgPool) {
@@ -323,12 +437,15 @@ pub async fn spawn_app() -> TestApp {
         email_server,
         port,
         test_user: TestUser::generate(),
+        admin: TestUser::generate(),
         api_client,
         email_client: configuration.email_client.client(),
         jwt_settings: configuration.jwt_settings
     };
 
     test_app.test_user.store(&test_app.db_pool).await;
+    test_app.admin.store(&test_app.db_pool).await;
+    test_app.admin.make_admin(&test_app.db_pool).await;
 
     test_app
 }

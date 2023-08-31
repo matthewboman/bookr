@@ -15,6 +15,9 @@ pub enum AdminError {
 
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
+
+    #[error("{0}")]
+    ValidationError(String),
 }
 
 impl ResponseError for AdminError {
@@ -22,7 +25,8 @@ impl ResponseError for AdminError {
         match self {
             Self::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::InvalidToken => StatusCode::UNAUTHORIZED,
-            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR
+            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::ValidationError(_) => StatusCode::BAD_REQUEST,
         }
     }
 }
@@ -34,7 +38,7 @@ impl std::fmt::Debug for AdminError {
 }
 
 #[derive(thiserror::Error)]
-pub enum ContactError {
+pub enum ContentError {
     #[error("{0}")]
     DatabaseError(#[from] sqlx::Error),
 
@@ -44,19 +48,23 @@ pub enum ContactError {
     // TODO
     #[error("{0}")]
     ValidationError(String),
+
+    #[error("User tried editting unauthorized content")]
+    AuthorizationError,
 }
 
-impl ResponseError for ContactError {
+impl ResponseError for ContentError {
     fn status_code(&self) -> StatusCode {
         match self {
-            ContactError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            ContactError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            ContactError::ValidationError(_) => StatusCode::BAD_REQUEST,
+            ContentError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ContentError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ContentError::ValidationError(_) => StatusCode::BAD_REQUEST,
+            ContentError::AuthorizationError => StatusCode::UNAUTHORIZED,
         }
     }
 }
 
-impl std::fmt::Debug for ContactError {
+impl std::fmt::Debug for ContentError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_fmt(self, f)
     }

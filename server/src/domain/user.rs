@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use secrecy::Secret;
+use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CleanUser {
@@ -20,4 +21,10 @@ pub struct User {
 pub struct UserLogin {
     pub email:    String,
     pub password: Secret<String>
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserParams {
+    pub user_id: Uuid
 }

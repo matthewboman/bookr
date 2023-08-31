@@ -18,10 +18,15 @@ use crate::email_client::EmailClient;
 use crate::gmaps_api_client::GoogleMapsAPIClient;
 use crate::routes::{
     add_contact,
+    admin_delete_contact,
+    admin_delete_review,
+    admin_edit_contact,
+    admin_edit_review,
+    admin_get_all_reviews,
+    admin_get_reviews_by_user,
     approve_contact,
     change_password,
     confirm,
-    delete_pending_contact,
     generate_reset_token,
     get_pending_contacts,
     health_check, 
@@ -30,7 +35,14 @@ use crate::routes::{
     private_contacts,
     public_contacts,
     reset_password,
-    sign_up
+    review_contact,
+    reviews_for_contact,
+    sign_up,
+    user_delete_contact,
+    user_delete_review,
+    user_edit_contact,
+    user_edit_review,
+    user_get_reviews
 };
 
 pub struct Application {
@@ -123,18 +135,30 @@ async fn run(
             .route("/login", web::post().to(login))
             .route("/reset-password", web::post().to(reset_password))
             .route("/signup", web::post().to(sign_up))
+            .route("/reviews", web::get().to(reviews_for_contact))
             .service(
                 web::scope("/user")
                     .route("/add-contact", web::post().to(add_contact))
                     .route("/change-password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out))
                     .route("/private-contacts", web::get().to(private_contacts))
+                    .route("/review-contact", web::post().to(review_contact))
+                    .route("/delete-contact", web::post().to(user_delete_contact))
+                    .route("/delete-review", web::post().to(user_delete_review))
+                    .route("/edit-contact", web::post().to(user_edit_contact))
+                    .route("/edit-review", web::post().to(user_edit_review))
+                    .route("/my-reviews", web::get().to(user_get_reviews)) // Not implemented
             )
             .service(
                 web::scope("/admin")
                     .route("/pending-contacts", web::get().to(get_pending_contacts))
-                    .route("/delete-pending-contact", web::post().to(delete_pending_contact))
+                    .route("/delete-contact", web::post().to(admin_delete_contact))
                     .route("/approve-pending-contact", web::post().to(approve_contact))
+                    .route("/all-reviews", web::get().to(admin_get_all_reviews)) // Not implemented
+                    .route("/user-reviews", web::get().to(admin_get_reviews_by_user)) // Not implemented
+                    .route("/delete-review", web::post().to(admin_delete_review))
+                    .route("/edit-contact", web::post().to(admin_edit_contact))
+                    .route("/edit-review", web::post().to(admin_edit_review))
             )
             .app_data(db_pool.clone())
             .app_data(email_client.clone())

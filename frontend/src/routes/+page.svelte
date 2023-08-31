@@ -2,13 +2,15 @@
 	import { browser } from '$app/environment'
 	import { onMount } from 'svelte'
 
+    import ContactDetails      from '../components/ContactDetails.svelte'
+    import FilterContainer     from '../components/FilterContainer.svelte'
     import MediaQuery          from '../components/MediaQuery.svelte'
-	import FilterContainer     from '../components/FilterContainer.svelte'
     import Menu                from '../components/Menu.svelte'
+    import Reviews             from '../components/Reviews.svelte'
     import { get }             from '../api'
-    import { isAuthenticated } from '../functions'
+    import { getUserId, isAuthenticated } from '../functions'
     import type { Contact }    from '../types'
-    import { authenticated }   from "../store"
+    import { authenticated, userId, selectedContact }   from "../store"
 
     const CONTACTS_URL     = "/contacts"
     const PRIVATE_CONTACTS = "/user/private-contacts"
@@ -42,7 +44,8 @@
         await getPublicContacts()
 
         if (isAuthenticated()) {
-            await getPrivateContacts()
+            userId.update(() => getUserId())
+            await getPrivateContacts()        
         }
     })
 </script>
@@ -79,6 +82,9 @@
         {/if}
     </MediaQuery>
 
+    {#if $selectedContact}
+        <ContactDetails/>
+    {/if}
 {:else}
     loading
 {/if}

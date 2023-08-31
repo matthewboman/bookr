@@ -1,35 +1,38 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte'
+    import { createEventDispatcher, onMount } from 'svelte'
     import { Alert, Button, Label, Input, Checkbox, Select } from 'flowbite-svelte'
 
     import { post }              from '../api'
     import { ageRanges, states } from '../constants'
-    import { clearExpiredToken } from '../functions'
+    import { isAdmin, handleResponse }  from '../functions'
     import { authenticated }     from '../store'
-    import type { NewContact }   from '../types'
+    import type { Contact, NewContact } from '../types'
 
+    const ADD_CONTACT_URL = "/user/add-contact"
     const dispatch = createEventDispatcher()
 
-    let currentAction  = 'add' // TODO: ability to edit contacts
-    let errorMessage   = ''
-    let successMessage = ''
+    export let contact: Contact | null
+    export let action:  string = 'add'
+
+    let errorMessage:   string | null
+    let successMessage: string | null
 
     let displayName: string
-    let address: string | null
-    let city: string
-    let state: string
-    let zipCode: string | null
-    let ageRange: string = "unknown"
-    let capacity: number | null
-    let email: string | null
+    let address:     string | null
+    let city:        string
+    let state:       string
+    let zipCode:     string | null
+    let ageRange:    string = "unknown"
+    let capacity:    number | null
+    let email:       string | null
     let contactForm: string | null
-    let isPrivate: boolean = false 
+    let isPrivate:   boolean = false 
 
     async function submit() {
-        if (currentAction === 'add') {
+        if (action === 'add') {
             await addNewContact()
-        } else if (currentAction === 'edit') {
-            // TODO: build ability for user to edit their contacts
+        } else if (action === 'edit') {
+            await editContact()
         }
     }
 
@@ -49,34 +52,81 @@
             isPrivate
         }
 
-        const res = await post("/user/add-contact", contact)
+        let response = await post(ADD_CONTACT_URL, contact)
+        errorMessage = handleResponse(
+            response,
+            "There was an error adding the contact. Please try again.",
+            logout
+        )
 
-        if (res.status === 200) {
-            successMessage = "Contact has successfully added and will appear once approved."
+        if (response.status === 200) {
+            successMessage = "Contact has successfully been added and will appear once approved."
 
             setTimeout(() => {
                 dispatch('close')
-            }, 2000)
-        }
-
-        if (res.status === 401) {
-            // Shouldn't happen but user could try faking token
-            // Token might also expire
-            clearExpiredToken()
-            authenticated.update(() => false)
-            errorMessage = "Please log in again."
-        }
-
-        if (res.status === 400) {
-            // shouldn't happen. input validators and tests on API
-            // TODO: log content if it does, create report
-            errorMessage = "There was an error adding the contact. Please try again."
-        }
-
-        if (res.status === 500) {
-            errorMessage = "There was an error adding the contact. Please try again."
+            }, 1500)
         }
     }
+
+    async function editContact() {
+        errorMessage = ''
+        let url = isAdmin() ? "/admin/edit-contact" : "/user/edit-contact"
+
+        const edited: Contact = {
+            contactId: contact.contactId,
+            userId:    contact.userId,
+            displayName,
+            address,
+            city,
+            state,
+            zipCode,
+            ageRange,
+            capacity,
+            email,
+            contactForm,
+            isPrivate
+        }
+
+        let response = await post(url, edited)
+        errorMessage = handleResponse(
+            response,
+            "There was an error editing the contact.",
+            logout
+        )
+
+        if (response.status === 200) {
+            successMessage = "Contact has been updated."
+
+            // TODO: update list of contacts
+
+            setTimeout(() => {
+                dispatch('update')
+            }, 1000)
+        }
+    }
+
+    function logout() {
+        authenticated.update(() => false)
+    }
+
+    function populateFields(contact: Contact) {
+        displayName = contact.displayName
+        address     = contact.address
+        city        = contact.city
+        state       = contact.state
+        zipCode     = contact.zipCode
+        ageRange    = contact.ageRange
+        capacity    = contact.capacity
+        email       = contact.email
+        contactForm = contact.contactForm
+        isPrivate   = contact.isPrivate
+    }
+
+    onMount(() => {
+        if (action === 'edit' && contact !== null) {
+            populateFields(contact)
+        }
+    })
 </script>
 
 <form class="flex flex-col space-y-6" on:submit|preventDefault={submit}>

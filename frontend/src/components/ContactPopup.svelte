@@ -1,62 +1,31 @@
 <script lang="ts">
+    import ContactAddress  from './contact/ContactAddress.svelte'
+    import ContactCapacity from './contact/ContactCapacity.svelte';
+    import ContactLinks    from './contact/ContactLinks.svelte';
+    import ContactName     from './contact/ContactName.svelte'
+
     export let contact: any
 </script>
 
-<style>
-    .contact {
-
-    }
-
-    .contact-name {
-        font-size: 1.2em;
-        margin-bottom: 6px;
-    }
-
-    .contact-address {
-        margin-bottom: 6px;
-    }
-
-    .venue-capacity {
-        margin-bottom: 6px;
-    }
-
-    .unknown {
-        color: grey;
-    }
-
-    .contact-info {
-
-    }
-</style>
-
 <div class="contact">
-    <div class="contact-name">
-        {contact.displayName}
-    </div>
-
-    <div class="contact-address">
-        {#if contact.address }
-            {(contact.address)}
-            <br />
-        {/if}     
-        {contact.city}, {contact.state} {#if contact.zipCode }{contact.zipCode}{/if}
-    </div>
-
-    <div class="venue-capacity">
-        Capacity: 
-        {#if contact.capacity}
-            {contact.capacity}
-        {:else}
-            <span class="unknown">unknown</span>
-        {/if}
-    </div>
- 
-    {#if contact.contactForm}
-    <div class="contact-info">
-        <a target="_blank" href="{contact.contactForm}">
-            {contact.contactForm}
-        </a>
-    </div>
-    {/if}
-
+    <ContactName
+        className={'flex justify-between'}
+        name={contact.displayName} 
+        rating={contact.averageRating} 
+        starColor={'blue'}
+        starSize={15}
+    />
+    <ContactAddress
+        className={'mb-2'}
+        contact={contact}
+    />
+    <ContactCapacity
+        className={'mb-2'}
+        capacity={contact.capacity}
+    />
+    <ContactLinks
+        className={''}
+        link={contact.contactForm}
+        email={contact.email}
+    />
 </div>

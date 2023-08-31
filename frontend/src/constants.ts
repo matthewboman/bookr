@@ -52,8 +52,8 @@ export const states = [
   ]
 
   export const ageRanges = [
-    { name: "All Ages", value: "allAges" },
-    { name: "18+",      value: "eighteenPlus" },
-    { name: "21+",      value: "twentyonePlus" },
+    { name: "All Ages", value: "all" },
+    { name: "18+",      value: "18+" },
+    { name: "21+",      value: "21+" },
     { name: "Unknown",  value: "unknown" }
 ]

@@ -1,20 +1,29 @@
 use std::ops::Deref;
 
+const forbidden_characters: [char; 9] = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
+
+fn contains_forbidden_characters(s: &str) -> bool {
+    s.chars().any(|g| forbidden_characters.contains(&g))
+}
+
 #[derive(Debug)]
 pub struct StringInput(String);
 
 impl StringInput {
     pub fn parse(s: String) -> String {
-        let forbidden_characters   = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
-        let contains_forbidden_characters = s.chars().any(|g| forbidden_characters.contains(&g));
-
-        if contains_forbidden_characters {
+        if contains_forbidden_characters(&s) {
             let s = s.replace(&forbidden_characters[..], "");
 
             s
         } else {
             s
         }
+    }
+}
+
+impl AsRef<str> for StringInput {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
 }
 
@@ -40,6 +49,35 @@ impl OptionalStringInput {
 }
 
 impl Deref for OptionalStringInput {
+    type Target = Option<String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Debug)]
+pub struct NewOptionalStringInput(Option<String>);
+
+impl NewOptionalStringInput {
+    pub fn parse(s: Option<String>) -> Option<String> {
+        match s {
+            Some(s) => {
+                let s = StringInput::parse(s);
+                let is_empty_or_whitespace = s.trim().is_empty();
+
+                if is_empty_or_whitespace {
+                    None
+                } else {
+                    Some(s.to_string())
+                }
+            }
+            None => None
+        }
+    }
+}
+
+impl Deref for NewOptionalStringInput {
     type Target = Option<String>;
 
     fn deref(&self) -> &Self::Target {
