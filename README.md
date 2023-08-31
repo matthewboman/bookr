@@ -10,6 +10,14 @@
 
 Database migrations are under `/server`
 
+## Testing
+- `cargo test` || `cargo test -- --nocapture`
+- may need to run one group of tests at a time
+- run serial `RUST_TEST_THREADS=1`
+- or increase `ulimit`
+- temporary databases are created with hashes for names. If you need to clean them up run `psql -Atqc "SELECT 'DROP DATABASE ' || quote_ident(datname) || ';' FROM pg_database WHERE datname like '%7%';" | psql` replacing `7` with any number that's not in the name of one of your existing databases
+
+
 ## Tech improvements
 - grouping map points
 - postgis

@@ -1,9 +1,9 @@
 use std::ops::Deref;
 
-const forbidden_characters: [char; 9] = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
+const FORBIDDEN_CHARACTERS: [char; 9] = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
 
 fn contains_forbidden_characters(s: &str) -> bool {
-    s.chars().any(|g| forbidden_characters.contains(&g))
+    s.chars().any(|g| FORBIDDEN_CHARACTERS.contains(&g))
 }
 
 #[derive(Debug)]
@@ -12,7 +12,7 @@ pub struct StringInput(String);
 impl StringInput {
     pub fn parse(s: String) -> String {
         if contains_forbidden_characters(&s) {
-            let s = s.replace(&forbidden_characters[..], "");
+            let s = s.replace(&FORBIDDEN_CHARACTERS[..], "");
 
             s
         } else {
@@ -31,35 +31,6 @@ impl AsRef<str> for StringInput {
 pub struct OptionalStringInput(Option<String>);
 
 impl OptionalStringInput {
-    pub fn parse(s: &Option<String>) -> OptionalStringInput {
-        match s {
-            Some(s) => {
-                let s = StringInput::parse(s.to_owned());
-                let is_empty_or_whitespace = s.trim().is_empty();
-
-                if is_empty_or_whitespace {
-                    Self(None)
-                } else {
-                    Self(Some(s.to_string()))
-                }
-            }
-            None => Self(None)
-        }
-    }
-}
-
-impl Deref for OptionalStringInput {
-    type Target = Option<String>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[derive(Debug)]
-pub struct NewOptionalStringInput(Option<String>);
-
-impl NewOptionalStringInput {
     pub fn parse(s: Option<String>) -> Option<String> {
         match s {
             Some(s) => {
@@ -77,7 +48,7 @@ impl NewOptionalStringInput {
     }
 }
 
-impl Deref for NewOptionalStringInput {
+impl Deref for OptionalStringInput {
     type Target = Option<String>;
 
     fn deref(&self) -> &Self::Target {
@@ -111,7 +82,7 @@ mod tests {
     #[test]
     fn empty_string_returns_none() {
         let input = "".to_string();
-        let res   = OptionalStringInput::parse(&Some(input));
+        let res   = OptionalStringInput::parse(Some(input));
 
         assert_eq!(res.is_none(), true);
     }

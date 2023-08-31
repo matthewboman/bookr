@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::domain::{NewOptionalStringInput, StringInput};
+use crate::domain::{OptionalStringInput, StringInput};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Contact {
@@ -86,13 +86,13 @@ impl TryFrom<EditContactData> for EditedContact {
 
     fn try_from(value: EditContactData) -> Result<Self, Self::Error> {
         let display_name = StringInput::parse(value.display_name);
-        let address      = NewOptionalStringInput::parse(value.address);
+        let address      = OptionalStringInput::parse(value.address);
         let city         = StringInput::parse(value.city);
-        let state        = NewOptionalStringInput::parse(value.state);
-        let zip_code     = NewOptionalStringInput::parse(value.zip_code);
-        let country      = NewOptionalStringInput::parse(value.country);
-        let email        = NewOptionalStringInput::parse(value.email);
-        let contact_form = NewOptionalStringInput::parse(value.contact_form);
+        let state        = OptionalStringInput::parse(value.state);
+        let zip_code     = OptionalStringInput::parse(value.zip_code);
+        let country      = OptionalStringInput::parse(value.country);
+        let email        = OptionalStringInput::parse(value.email);
+        let contact_form = OptionalStringInput::parse(value.contact_form);
         let age_range    = StringInput::parse(value.age_range);
 
         Ok(Self {
@@ -112,9 +112,7 @@ impl TryFrom<EditContactData> for EditedContact {
     }
 }
 
-// TODO: Separate out to JSON and internal struct
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct NewContact {
     pub display_name: String,
     pub address:      Option<String>,
@@ -124,7 +122,7 @@ pub struct NewContact {
     pub capacity:     Option<i32>,
     pub email:        Option<String>,
     pub contact_form: Option<String>,
-    pub age_range:    Option<String>,
+    pub age_range:    String,
     pub is_private:   bool,
 }
 

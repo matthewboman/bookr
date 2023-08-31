@@ -81,7 +81,7 @@ impl TestApp {
         self.post_approve_contact(&json).await
     }
 
-    pub async fn create_contact(&self, isPrivate: bool) -> reqwest::Response {
+    pub async fn create_contact(&self, is_private: bool) -> reqwest::Response {
         let contact  = serde_json::json!({
             "displayName": "test for pending",
             "city": "asheville",
@@ -89,7 +89,7 @@ impl TestApp {
             "zipCode": "28711",
             "capacity": 100,
             "ageRange": "allAges",
-            "isPrivate": isPrivate
+            "isPrivate": is_private
         });
 
         self.add_contact(&contact).await
