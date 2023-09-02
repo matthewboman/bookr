@@ -1,6 +1,7 @@
 use actix_web::{web, HttpRequest, HttpResponse};
 use anyhow::Context;
 use sqlx::PgPool;
+use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
 use crate::domain::{delete_contact, PendingContact};
@@ -8,15 +9,23 @@ use crate::error::AdminError;
 use crate::gmaps_api_client::{get_latlng_from_address, GoogleMapsAPIClient, Location};
 use crate::utils::is_admin;
 
-// TODO: refactor
+// TODO: refactor to edit on approval?
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct JsonData {
+pub struct ApproveData {
     contact_id: i32,
+    user_id:    Uuid,
     address:    String,
     city:       String,
     state:      String,
-    zip_code:   String,
+    zip_code:   String
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeleteData {
+    contact_id: i32,
+    user_id:    Uuid
 }
 
 // TODO: refactor
@@ -30,7 +39,7 @@ struct JsonResponse {
 )]
 pub async fn approve_contact(
     req:      HttpRequest,
-    json:     web::Json<JsonData>,
+    json:     web::Json<ApproveData>,
     pool:     web::Data<PgPool>,
     g_client: web::Data<GoogleMapsAPIClient>,
     _:        JwtMiddleware,
@@ -77,7 +86,7 @@ pub async fn approve_contact(
 )]
 pub async fn admin_delete_contact(
     req:  HttpRequest,
-    json: web::Json<JsonData>,
+    json: web::Json<DeleteData>,
     pool: web::Data<PgPool>,
     _:    JwtMiddleware
 ) -> Result<HttpResponse, AdminError> {

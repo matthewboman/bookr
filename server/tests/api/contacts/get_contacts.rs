@@ -1,5 +1,4 @@
 use byot_server::domain::{ContactResponse};
-
 use crate::helpers::spawn_app;
 
 #[derive(serde::Deserialize, Debug)]

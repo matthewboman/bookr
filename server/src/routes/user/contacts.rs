@@ -49,8 +49,7 @@ pub async fn user_delete_contact(
     let ext      = req.extensions();
     let user_id  = ext.get::<uuid::Uuid>().unwrap();
 
-    user_matches(user_id, &json.user_id)
-        .context("User IDs don't match when deleting review")?;
+    user_matches(user_id, &json.user_id)?;
     delete_contact(&json.contact_id, &pool)
         .await
         .context("Failed to delete contact")?;
@@ -70,8 +69,7 @@ pub async fn user_edit_contact(
     let ext     = req.extensions();
     let user_id = ext.get::<uuid::Uuid>().unwrap();
 
-    user_matches(user_id, &json.user_id)
-        .context("User IDs don't match when updating contact")?;
+    user_matches(user_id, &json.user_id)?;
     
     let contact: EditedContact = json.0.try_into().map_err(ContentError::ValidationError)?;
 

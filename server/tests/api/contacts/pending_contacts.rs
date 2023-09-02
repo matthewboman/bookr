@@ -68,6 +68,7 @@ async fn admin_can_delete_pending_contact() {
     // Delete contact
     let json = serde_json::json!({
         "contactId": contact.contact_id,
+        "userId":    contact.user_id,
         "address":   contact.address,
         "city":      contact.city,
         "state":     contact.state,

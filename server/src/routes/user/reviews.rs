@@ -83,8 +83,7 @@ pub async fn user_delete_review(
     let ext     = req.extensions();
     let user_id = ext.get::<uuid::Uuid>().unwrap();
 
-    user_matches(user_id, &json.user_id)
-        .context("User IDs don't match when deleting review")?;
+    user_matches(user_id, &json.user_id)?;
     delete_review(&json.review_id, user_id, &pool)
         .await
         .context("Failed to delete review")?;

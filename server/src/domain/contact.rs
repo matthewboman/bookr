@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::domain::{OptionalStringInput, StringInput};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Contact {
     pub contact_id:   i32,
     pub display_name: String,
@@ -26,7 +26,7 @@ pub struct Contact {
     pub updated_at:   chrono::DateTime<chrono::Utc>
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ContactResponse {
     pub contact_id:     i32,

@@ -1,5 +1,5 @@
 mod create_contacts;
-// mod delete_contacts; // TODO
-// mod edit_contacts; // TODO
+mod delete_contacts;
+mod edit_contacts;
 mod get_contacts;
 mod pending_contacts;

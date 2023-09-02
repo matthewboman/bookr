@@ -45,8 +45,13 @@ async fn authenticated_user_can_review_contact() {
     let response   = app.create_contact(is_private).await;
     assert_eq!(200, response.status().as_u16());
 
+    // Approve contact
+    let pending  = app.get_first_pending_contact().await;
+    let response = app.approve_contact(pending).await;
+    assert_eq!(200, response.status().as_u16());
+
     // Get and review contact
-    let contact  = app.get_first_pending_contact().await;
+    let contact  = app.get_first_contact().await;
     let response = app.review_contact(contact).await;
     assert_eq!(200, response.status().as_u16());
 }
