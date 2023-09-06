@@ -75,7 +75,6 @@ impl TestApp {
     pub async fn approve_contact(&self, contact: PendingContact) -> reqwest::Response {
         let json = serde_json::json!({
             "contactId": contact.contact_id,
-            "userId":    contact.user_id,
             "address":   contact.address,
             "city":      contact.city,
             "state":     contact.state,
