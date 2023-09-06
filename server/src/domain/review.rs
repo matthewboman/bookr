@@ -4,6 +4,31 @@ use uuid::Uuid;
 
 use crate::domain::StringInput;
 
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateReviewData {
+    contact_id: i32,
+    title:      String,
+    body:       String,
+    rating:     i32
+}
+
+impl TryFrom<CreateReviewData> for NewReview {
+    type Error = String;
+
+    fn try_from(value: CreateReviewData) -> Result<Self, Self::Error> {
+        let title = StringInput::parse(value.title);
+        let body  = StringInput::parse(value.body);
+
+        Ok(Self {
+            title, 
+            body,
+            contact_id: value.contact_id,
+            rating: value.rating
+        })
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct NewReview {
     pub contact_id: i32,

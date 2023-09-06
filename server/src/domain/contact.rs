@@ -4,6 +4,9 @@ use uuid::Uuid;
 
 use crate::domain::{OptionalStringInput, StringInput};
 
+// TODO: use generics to clean up
+// https://stackoverflow.com/questions/32552593/is-it-possible-for-one-struct-to-extend-an-existing-struct-keeping-all-the-fiel
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Contact {
     pub contact_id:   i32,

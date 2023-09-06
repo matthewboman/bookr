@@ -7,20 +7,6 @@ use uuid::Uuid;
 
 use crate::error::{AdminError, ContentError};
 
-pub fn e400<T>(e: T) -> actix_web::Error
-where
-    T: std::fmt::Debug + std::fmt::Display + 'static
-{
-    actix_web::error::ErrorBadRequest(e)
-}
-
-pub fn e500<T>(e: T) -> actix_web::Error
-where
-    T: std::fmt::Debug + std::fmt::Display + 'static
-{
-    actix_web::error::ErrorInternalServerError(e)
-}
-
 pub fn error_chain_fmt(
     e: &impl std::error::Error,
     f: &mut std::fmt::Formatter<'_>,
