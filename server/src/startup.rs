@@ -30,7 +30,7 @@ use crate::routes::{
     generate_reset_token,
     get_pending_contacts,
     health_check, 
-    login,
+    log_in,
     log_out,
     private_contacts,
     public_contacts,
@@ -132,7 +132,7 @@ async fn run(
             .route("/confirm", web::get().to(confirm))
             .route("/contacts", web::get().to(public_contacts))
             .route("/generate-reset-token", web::post().to(generate_reset_token))
-            .route("/login", web::post().to(login))
+            .route("/login", web::post().to(log_in))
             .route("/reset-password", web::post().to(reset_password))
             .route("/signup", web::post().to(sign_up))
             .route("/reviews", web::get().to(reviews_for_contact))

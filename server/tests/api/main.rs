@@ -1,10 +1,6 @@
-// mod change_password;
+// mod auth;
 // mod confirmation;
 // mod contacts;
 mod helpers;
 // mod health_check;
-// mod login;
-mod pending_contacts;
-// mod reset_password;
-// mod reviews;
-// mod sign_up;
+mod reviews;

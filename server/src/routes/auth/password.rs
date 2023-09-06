@@ -79,7 +79,9 @@ pub async fn reset_password(
         return Err(TokenError::InvalidToken)
     }
 
-    // TODO: server-side validation to test new passwords
+    if json.new_password.expose_secret() != json.new_password_check.expose_secret() {
+        return Err(TokenError::ValidationError("Passwords do not match".to_string()))
+    }
 
     let password      = json.new_password.clone();
     let password_hash = spawn_blocking_with_tracing(move || compute_password_hash(password))
@@ -160,7 +162,6 @@ async fn get_details_from_reset_token(
     .fetch_optional(pool)
     .await?;
 
-    // Ok(result.map(|r| r.user_id))
     Ok(result.map(|r| (r.user_id, r.created_at)))
 }
 

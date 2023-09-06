@@ -20,7 +20,7 @@ use crate::error::LoginError;
         user_id=tracing::field::Empty
     )
 )]
-pub async fn login(
+pub async fn log_in(
     json:         web::Json<UserLogin>,
     pool:         web::Data<PgPool>,
     jwt_settings: web::Data<JWTSettings>,

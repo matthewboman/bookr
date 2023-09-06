@@ -45,7 +45,6 @@ pub enum ContentError {
     #[error("Something went wrong")]
     UnexpectedError(#[from] anyhow::Error),
 
-    // TODO
     #[error("{0}")]
     ValidationError(String),
 

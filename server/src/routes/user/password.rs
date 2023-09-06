@@ -1,11 +1,10 @@
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use anyhow::Context;
-use secrecy::Secret;
+use secrecy::{ExposeSecret, Secret};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::auth::{validate_credentials, AuthError, Credentials, JwtMiddleware};
-use crate::utils::e500;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -15,37 +14,35 @@ pub struct PasswordResetData {
     new_password_check: Secret<String>,
 }
 
+#[tracing::instrument(
+    skip(req, json, pool)
+)]
 pub async fn change_password(
     req:  HttpRequest,
     json: web::Json<PasswordResetData>,
     pool: web::Data<PgPool>,
     _:    JwtMiddleware
-) -> Result<HttpResponse, actix_web::Error> { // TODO: custom error 
+) -> Result<HttpResponse, AuthError> {
     let ext     = req.extensions();
     let user_id = ext.get::<uuid::Uuid>().unwrap();
-    let email   = get_email(*user_id, &pool).await.map_err(e500)?;
+    let email   = get_email(*user_id, &pool)
+        .await
+        .context("Failed to find user with provided email")?;
+
+    if json.new_password.expose_secret() != json.new_password_check.expose_secret() {
+        return Err(AuthError::ValidationError("Passwords do not match".to_string()))
+    }
 
     let credentials = Credentials {
         email,
         password: json.0.current_password
     };
 
-    // TODO: server-side validation to test passwords
-
-    if let Err(e) = validate_credentials(credentials, &pool).await {
-        return match e {
-            AuthError::InvalidCredentials(_) => {
-                Ok(
-                    HttpResponse::Unauthorized().finish()
-                )
-            }
-            AuthError::UnexpectedError(_) => Err(e500(e))
-        };
-    }
+    validate_credentials(credentials, &pool).await?;
 
     crate::auth::change_password(*user_id, json.0.new_password, &pool)
         .await
-        .map_err(e500)?;
+        .context("Failed to update password")?;
     
     Ok(HttpResponse::Ok().finish())
 }

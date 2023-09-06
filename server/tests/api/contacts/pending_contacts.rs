@@ -1,14 +1,4 @@
-use byot_server::domain::{PendingContact};
 use crate::helpers::spawn_app;
-
-#[derive(serde::Deserialize)]
-struct PendingContacts(Vec<PendingContact>);
-
-impl std::fmt::Debug for PendingContacts {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f)
-    }
-}
 
 #[tokio::test]
 async fn unauthenticated_user_cannot_see_pending_contacts() {
@@ -78,6 +68,7 @@ async fn admin_can_delete_pending_contact() {
     // Delete contact
     let json = serde_json::json!({
         "contactId": contact.contact_id,
+        "userId":    contact.user_id,
         "address":   contact.address,
         "city":      contact.city,
         "state":     contact.state,

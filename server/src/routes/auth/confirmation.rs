@@ -34,7 +34,7 @@ pub async fn confirm(
     name = "Get a user_id from a token",
     skip(token, pool)
 )]
-pub async fn get_user_id_from_token(
+async fn get_user_id_from_token(
     pool:  &PgPool, 
     token: &str
 ) -> Result<Option<Uuid>, sqlx::Error> {
@@ -51,7 +51,7 @@ pub async fn get_user_id_from_token(
     name = "Mark user as confirmed",
     skip(user_id, pool)
 )]
-pub async fn confirm_user(
+async fn confirm_user(
     pool:    &PgPool, 
     user_id: Uuid
 ) -> Result<(), sqlx::Error> {

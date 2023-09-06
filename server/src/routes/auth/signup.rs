@@ -72,7 +72,7 @@ pub async fn sign_up(
     name = "Saving new user to the database",
     skip(email, password_hash, transaction)
 )]
-pub async fn insert_user(
+async fn insert_user(
     transaction:   &mut Transaction<'_, Postgres>,
     email:         &str,
     password_hash: Secret<String>
@@ -97,7 +97,7 @@ pub async fn insert_user(
     name = "Store confirmation token in the database",
     skip(confirmation_token, transaction)
 )]
-pub async fn store_token(
+async fn store_token(
     transaction:        &mut Transaction<'_, Postgres>,
     user_id:            Uuid,
     confirmation_token: &str
@@ -120,7 +120,7 @@ pub async fn store_token(
     name = "Send a confirmation email to a new user",
     skip(email_client, email, base_url, token)
 )]
-pub async fn send_confirmation_email(
+async fn send_confirmation_email(
     email_client: &EmailClient,
     email:        UserEmail,
     base_url:     &str,

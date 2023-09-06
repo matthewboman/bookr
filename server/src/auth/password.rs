@@ -1,3 +1,4 @@
+use actix_web::{ResponseError, http::StatusCode};
 use anyhow::Context;
 use argon2::password_hash::SaltString;
 use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version};
@@ -19,6 +20,19 @@ pub enum AuthError {
 
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
+
+    #[error("{0}")]
+    ValidationError(String),
+}
+
+impl ResponseError for AuthError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::InvalidCredentials(_) => StatusCode::UNAUTHORIZED,
+            Self::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::ValidationError(_) => StatusCode::BAD_REQUEST,
+        }
+    }
 }
 
 #[tracing::instrument(

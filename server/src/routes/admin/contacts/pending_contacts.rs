@@ -3,23 +3,21 @@ use anyhow::Context;
 use sqlx::PgPool;
 
 use crate::auth::JwtMiddleware;
-use crate::domain::{delete_contact, PendingContact};
+use crate::domain::PendingContact;
 use crate::error::AdminError;
 use crate::gmaps_api_client::{get_latlng_from_address, GoogleMapsAPIClient, Location};
 use crate::utils::is_admin;
 
-// TODO: refactor
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct JsonData {
+pub struct ApproveData {
     contact_id: i32,
     address:    String,
     city:       String,
     state:      String,
-    zip_code:   String,
+    zip_code:   String
 }
 
-// TODO: refactor
 #[derive(serde::Serialize)]
 struct JsonResponse {
     message: String,
@@ -30,15 +28,13 @@ struct JsonResponse {
 )]
 pub async fn approve_contact(
     req:      HttpRequest,
-    json:     web::Json<JsonData>,
+    json:     web::Json<ApproveData>,
     pool:     web::Data<PgPool>,
     g_client: web::Data<GoogleMapsAPIClient>,
     _:        JwtMiddleware,
 ) -> Result<HttpResponse, AdminError> {
     is_admin(req)?;
 
-    // TODO: Would it be better to only send `contact_id` from API and return the Contact here?
-    // Or allow admin to edit address, updating in database here or on successful Google API response?
     mark_contact_as_verified(&json.contact_id, &pool)
         .await
         .context("Failed to delete contact")?;
@@ -70,23 +66,6 @@ pub async fn approve_contact(
     };
     
     Ok(HttpResponse::Ok().json(json_response))
-}
-
-#[tracing::instrument(
-    skip(req, json, pool),
-)]
-pub async fn admin_delete_contact(
-    req:  HttpRequest,
-    json: web::Json<JsonData>,
-    pool: web::Data<PgPool>,
-    _:    JwtMiddleware
-) -> Result<HttpResponse, AdminError> {
-    is_admin(req)?;
-    delete_contact(&json.contact_id, &pool)
-        .await
-        .context("Failed to delete contact")?;
-    
-    Ok(HttpResponse::Ok().finish())
 }
 
 #[tracing::instrument(
