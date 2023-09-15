@@ -47,12 +47,14 @@ export type NewReview = {
 }
 
 export type Review = {
-    reviewId:  string,
-    contactId: number,
-    userId:    string,
-    title:     string,
-    body:      string,
-    rating:    number,
+    reviewId:    string,
+    contactId:   number,
+    userId:      string,
+    title:       string,
+    body:        string,
+    rating:      number,
+    email:       string | null,
+    contactName: string | null
 }
 
 export type User = {

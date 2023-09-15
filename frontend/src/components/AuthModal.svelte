@@ -4,7 +4,8 @@
 
     import { type User } from '../types' // TODO: verify w types
     import { post }          from '../api'
-    import { authenticated } from '../store'
+    import { getUserId }     from '../functions'
+    import { authenticated, userId } from '../store'
 
     const dispatch = createEventDispatcher()
 
@@ -64,6 +65,7 @@
 
             sessionStorage.setItem('byotoken', json.token)
             authenticated.update(() => true)
+            $userId = getUserId()
             dispatch('close')
         }
 

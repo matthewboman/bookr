@@ -12,3 +12,5 @@ CREATE TABLE reviews (
 
 CREATE INDEX idx_reviews_contact_id ON reviews (contact_id);
 CREATE INDEX idx_reviews_user_id on reviews (user_id);
+CREATE INDEX idx_reviews_created ON reviews (date(created_at));
+CREATE INDEX idx_reviews_updated ON reviews (date(updated_at));

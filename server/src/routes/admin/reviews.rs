@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 use crate::auth::JwtMiddleware;
 use crate::domain::{
-    delete_review, edit_review, query_reviews, query_reviews_by_user, 
+    delete_review, edit_review, query_recent_reviews, query_reviews_by_user, 
     Review, ReviewEditData, ReviewDeleteData,
     UserParams
 };
@@ -54,14 +54,14 @@ pub async fn admin_edit_review(
 #[tracing::instrument(
     skip(req, pool)
 )]
-pub async fn admin_get_all_reviews(
+pub async fn admin_get_recent_reviews(
     req:  HttpRequest,
     pool: web::Data<PgPool>,
     _:    JwtMiddleware,
 ) -> Result<HttpResponse, AdminError> {
     is_admin(req)?;
 
-    let reviews = query_reviews(&pool)
+    let reviews = query_recent_reviews(&pool)
         .await
         .context("Failed to get reviews")?;
     

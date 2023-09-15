@@ -22,7 +22,7 @@ use crate::routes::{
     admin_delete_review,
     admin_edit_contact,
     admin_edit_review,
-    admin_get_all_reviews,
+    admin_get_recent_reviews,
     admin_get_reviews_by_user,
     approve_contact,
     change_password,
@@ -147,15 +147,15 @@ async fn run(
                     .route("/delete-review", web::post().to(user_delete_review))
                     .route("/edit-contact", web::post().to(user_edit_contact))
                     .route("/edit-review", web::post().to(user_edit_review))
-                    .route("/my-reviews", web::get().to(user_get_reviews)) // Not implemented
+                    .route("/my-reviews", web::get().to(user_get_reviews))
             )
             .service(
                 web::scope("/admin")
                     .route("/pending-contacts", web::get().to(get_pending_contacts))
                     .route("/delete-contact", web::post().to(admin_delete_contact))
                     .route("/approve-pending-contact", web::post().to(approve_contact))
-                    .route("/all-reviews", web::get().to(admin_get_all_reviews)) // Not implemented
-                    .route("/user-reviews", web::get().to(admin_get_reviews_by_user)) // Not implemented
+                    .route("/recent-reviews", web::get().to(admin_get_recent_reviews))
+                    .route("/user-reviews", web::get().to(admin_get_reviews_by_user))
                     .route("/delete-review", web::post().to(admin_delete_review))
                     .route("/edit-contact", web::post().to(admin_edit_contact))
                     .route("/edit-review", web::post().to(admin_edit_review))
@@ -172,14 +172,14 @@ async fn run(
     Ok(server)
 }
 
+// TEMP
+
 // pub struct TestUser {
 //     pub user_id:  Uuid,
 //     pub email:    String,
 //     pub password: String
 // }
 
-
-// TEMP
 // impl TestUser {
 //     pub fn generate() -> Self {
 //         Self {

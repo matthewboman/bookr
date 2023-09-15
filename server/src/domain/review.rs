@@ -92,6 +92,19 @@ impl TryFrom<ReviewEditData> for Review {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RenderedReview {
+    pub review_id:    Uuid,
+    pub user_id:      Uuid,
+    pub contact_id:   i32,
+    pub title:        String,
+    pub body:         String,
+    pub rating:       i32,
+    pub email:        String,
+    pub contact_name: String,
+}
+
 #[tracing::instrument(
     skip(pool, review_id)
 )]
@@ -144,8 +157,7 @@ pub async fn insert_review(
     user_id:     &Uuid,
     transaction: &mut Transaction<'_, Postgres>,
 ) -> Result<(), sqlx::Error> {
-// ) -> Result<Uuid, sqlx::Error> {
-    // let review = sqlx::query!(
+    // TODO: update to return review
     sqlx::query!(
         r#"
         INSERT INTO reviews (user_id, contact_id, title, body, rating)
@@ -161,23 +173,24 @@ pub async fn insert_review(
     .fetch_one(transaction)
     .await?;
 
-    // let review_id: Uuid = review.review_id;
-
-    // Ok(review_id)
     Ok(())
 }
 
 #[tracing::instrument(
     skip(pool)
 )]
-pub async fn query_reviews(
+pub async fn query_recent_reviews(
     pool:    &PgPool
-) -> Result<Vec<Review>, sqlx::Error> {
+) -> Result<Vec<RenderedReview>, sqlx::Error> {
     let reviews = sqlx::query_as!(
-        Review,
+        RenderedReview,
         r#"
-        SELECT review_id, user_id, contact_id, title, body, rating
-        FROM reviews
+        SELECT r.review_id, r.user_id, r.contact_id, r.title, r.body, r.rating, u.email, c.display_name as contact_name
+        FROM reviews r
+        JOIN users u ON r.user_id = u.user_id
+        JOIN contacts c ON r.contact_id = c.contact_id
+        WHERE r.updated_at > now() - interval '1 week'
+        ORDER BY r.updated_at     
         "#
     ).fetch_all(pool)
     .await?;
@@ -191,13 +204,15 @@ pub async fn query_reviews(
 pub async fn query_reviews_by_user(
     user_id: &Uuid,
     pool:    &PgPool
-) -> Result<Vec<Review>, sqlx::Error> {
+) -> Result<Vec<RenderedReview>, sqlx::Error> {
     let reviews = sqlx::query_as!(
-        Review,
+        RenderedReview,
         r#"
-        SELECT review_id, user_id, contact_id, title, body, rating
-        FROM reviews
-        where user_id = $1
+        SELECT r.review_id, r.user_id, r.contact_id, r.title, r.body, r.rating, u.email, c.display_name as contact_name
+        FROM reviews r
+        JOIN users u ON r.user_id = u.user_id
+        JOIN contacts c ON r.contact_id = c.contact_id
+        WHERE r.user_id = $1
         "#,
         user_id
     ).fetch_all(pool)
