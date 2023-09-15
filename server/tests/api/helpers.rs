@@ -249,6 +249,14 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
+    pub async fn get_genres(&self) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/genres", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
     pub async fn get_reviews(&self, id: &str) -> reqwest::Response {
         self.api_client
             .get(&format!("{}/reviews?contactId={}", &self.address, id))
