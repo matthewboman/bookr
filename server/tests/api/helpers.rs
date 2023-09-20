@@ -93,7 +93,8 @@ impl TestApp {
             "zipCode": "28711",
             "capacity": 100,
             "ageRange": "all",
-            "isPrivate": is_private
+            "isPrivate": is_private,
+            "genres":    [1]
         });
 
         self.add_contact(&contact).await

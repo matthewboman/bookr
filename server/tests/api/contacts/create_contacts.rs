@@ -24,9 +24,29 @@ async fn authenticated_user_can_add_contact() {
         "displayName": "test",
         "city": "asheville",
         "ageRange":  "18+",
-        "isPrivate": false
+        "isPrivate": false,
+        "genres":    [1]
     });
     let response = app.add_contact(&contact).await;
     
     assert_eq!(200, response.status().as_u16());
+}
+
+#[tokio::test]
+async fn contact_must_contain_genre() {
+    // Login
+    let app        = spawn_app().await;
+    let response   = app.test_user_login().await;
+    assert_eq!(response.status().as_u16(), 200);
+
+    // Create contact
+    let contact  = serde_json::json!({
+        "displayName": "test",
+        "city": "asheville",
+        "ageRange":  "18+",
+        "isPrivate": false,
+    });
+    let response = app.add_contact(&contact).await;
+    
+    assert_eq!(400, response.status().as_u16());
 }

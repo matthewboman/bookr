@@ -55,7 +55,8 @@ async fn user_can_edit_contact() {
         "displayName": "changed name",
         "city":        "new city",
         "ageRange":    "all",
-        "isPrivate":   false
+        "isPrivate":   false,
+        "genres":      [1, 2] // add genre 2
     });
     let response = app.user_edit_contact(edited).await;
 
@@ -92,7 +93,8 @@ async fn admin_can_edit_contact() {
         "displayName": "changed name",
         "city":        "new city",
         "ageRange":    "all",
-        "isPrivate":   false
+        "isPrivate":   false,
+        "genres":      [2] // remove genre 1
     });
     let response = app.admin_edit_contact(edited).await;
 

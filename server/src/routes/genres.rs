@@ -26,7 +26,7 @@ async fn query_genres(pool: &PgPool) -> Result<Vec<Genre>, sqlx::Error> {
     let genres = sqlx::query_as!(
         Genre,
         r#"
-        SELECT genre_id, name FROM genres
+        SELECT genre_id, genre_name FROM genres
         "#
     ).fetch_all(pool)
     .await?;
