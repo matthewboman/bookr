@@ -52,6 +52,28 @@ pub struct ContactResponse {
     pub genres:         Vec<Genre>,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ContactRow {
+    pub contact_id:     i32,
+    pub display_name:   String,
+    pub address:        Option<String>,
+    pub city:           String,
+    pub state:          Option<String>,
+    pub zip_code:       Option<String>,
+    pub country:        Option<String>,
+    pub latitude:       Option<f32>,
+    pub longitude:      Option<f32>,
+    pub capacity:       Option<i32>,
+    pub email:          Option<String>,
+    pub contact_form:   Option<String>,
+    pub age_range:      String,
+    pub user_id:        Uuid,
+    pub is_private:     bool,
+    pub average_rating: Option<f32>,
+    pub genre_id:       i32,
+    pub genre_name:     String,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EditContactData {
@@ -317,71 +339,39 @@ pub async fn update_contact_genres(
     Ok(())
 }
 
-// TODO
-// #[derive(Debug, FromRow)]
-// pub struct ContactWithGenre {
-//     pub contact_id:     i32,
-//     pub display_name:   String,
-//     pub address:        Option<String>,
-//     pub city:           String,
-//     pub state:          Option<String>,
-//     pub zip_code:       Option<String>,
-//     pub country:        Option<String>,
-//     pub latitude:       Option<f32>,
-//     pub longitude:      Option<f32>,
-//     pub capacity:       Option<i32>,
-//     pub email:          Option<String>,
-//     pub contact_form:   Option<String>,
-//     pub age_range:      String,
-//     pub user_id:        Uuid,
-//     pub is_private:     bool,
-//     pub average_rating: Option<f32>,
-//     pub genre_id:       i32,
-//     pub genre_name:     String,
-// }
+pub fn format_contact_response(rows: Vec<ContactRow>) -> Vec<ContactResponse> {
+    let mut grouped_contacts: Vec<ContactResponse> = Vec::new();
 
-// pub fn format_contact_response(contact_id: i32, rows: ContactWithGenre) -> ContactResponse {
-//     let mut contact_genres   = Vec::new();
-//     let mut contact_response = None;
+    for row in rows {
+        let genre = Genre {
+            genre_id:   row.genre_id,
+            genre_name: row.genre_name
+        };
 
-//     for row in rows {
-//         if contact_response.is_none() {
-//             contact_response = Some(ContactResponse {
-//                 contact_id,
-//                 display_name:   row.display_name,
-//                 address:        row.address,
-//                 city:           row.city,
-//                 state:          row.state,
-//                 zip_code:       row.zip_code,
-//                 capacity:       row.capacity,
-//                 latitude:       row.latitude,
-//                 longitude:      row.longitude,
-//                 email:          row.email,
-//                 contact_form:   row.contact_form,
-//                 age_range:      row.age_range,
-//                 country:        row.country,
-//                 is_private:     row.is_private,
-//                 user_id:        row.user_id,
-//                 average_rating: row.average_rating,
-//                 genres:         Vec::new()
-//             });
-//         }
-
-//         // TODO: average rating is being calculated in sql query for each contact.
-//         // test to see if it's faster to calculate here now that genres are being collected
-
-//         let genre = Genre {
-//             genre_id:   row.genre_id,
-//             genre_name: row.genre_name
-//         };
-
-//         contact_genres.push(genre);
-//     }
-
-//     if let Some(mut response) = contact_response {
-//         response.genres = contact_genres;
-//         response       
-//     } else {
-//         unreachable!();
-//     }
-// }
+        if let Some(existing_contact) = grouped_contacts.iter_mut().find(|c| c.contact_id == row.contact_id) {
+            existing_contact.genres.push(genre);
+        } else {
+            let contact = ContactResponse {
+                contact_id:     row.contact_id,
+                display_name:   row.display_name,
+                address:        row.address,
+                city:           row.city,
+                state:          row.state,
+                zip_code:       row.zip_code,
+                country:        row.country,
+                capacity:       row.capacity,
+                latitude:       row.latitude,
+                longitude:      row.longitude,
+                email:          row.email,
+                contact_form:   row.contact_form,
+                age_range:      row.age_range,
+                is_private:     row.is_private,
+                user_id:        row.user_id,
+                average_rating: row.average_rating,
+                genres:         [genre].to_vec()
+            };
+            grouped_contacts.push(contact)
+        }
+    }
+    grouped_contacts
+}

@@ -12,9 +12,15 @@ export type Contact = {
     longitude:     number | null,
     email:         string | null,
     contactForm:   string | null,
-    ageRange:      string | null,
+    ageRange:      string,
     isPrivate:     boolean,
-    averageRating: number
+    averageRating: number,
+    genres:        Genre[]
+}
+
+export type Genre = {
+    genreId:   number,
+    genreName: string
 }
 
 export type Jwt = {

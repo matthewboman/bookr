@@ -37,7 +37,7 @@
 
 <LeafletMap bind:this={leafletMap} options={mapOptions}>
     <TileLayer url={tileUrl} options={tileLayerOptions}/>
-    {#each renderedContacts as contact}
+    {#each renderedContacts as contact, index (index)}
         <Marker latLng={[contact.latitude, contact.longitude]} events={['click']} on:click={() => showReviews(contact)}>
             <Popup events={['popupclose']}>
                 <ContactPopup contact={contact} />

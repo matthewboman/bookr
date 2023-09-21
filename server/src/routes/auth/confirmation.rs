@@ -6,19 +6,19 @@ use uuid::Uuid;
 use crate::error::TokenError;
 
 #[derive(serde::Deserialize)]
-pub struct Parameters {
+pub struct TokenParams {
     token: String,
 }
 
 #[tracing::instrument(
     name = "Confirm a pending user",
-    skip(parameters, pool)
+    skip(params, pool)
 )]
 pub async fn confirm(
-    parameters: web::Query<Parameters>,
-    pool:       web::Data<PgPool>
+    params: web::Query<TokenParams>,
+    pool:   web::Data<PgPool>
 ) -> Result<HttpResponse, TokenError> { 
-    let user_id = get_user_id_from_token(&pool, &parameters.token)
+    let user_id = get_user_id_from_token(&pool, &params.token)
         .await
         .context("Failed to find a user with the provided confirmation token")?
         .ok_or(TokenError::InvalidToken)?;

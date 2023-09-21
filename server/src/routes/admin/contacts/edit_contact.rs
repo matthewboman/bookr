@@ -38,6 +38,11 @@ pub async fn admin_edit_contact(
         .await
         .context("Failed to update genres for contact")?;
 
+    transaction
+        .commit()
+        .await
+        .context("Failed to commit SQL transaction to update contact")?;
+
     // TODO: if verified && address changes, update latitute and longitude
     // TODO: need someway to handle if this process errors. new column `erroring` && view for admin?
 
