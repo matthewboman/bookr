@@ -93,7 +93,8 @@ impl TestApp {
             "zipCode": "28711",
             "capacity": 100,
             "ageRange": "all",
-            "isPrivate": is_private
+            "isPrivate": is_private,
+            "genres":    [1]
         });
 
         self.add_contact(&contact).await
@@ -244,6 +245,14 @@ impl TestApp {
     pub async fn get_contacts(&self) -> reqwest::Response {
         self.api_client
             .get(&format!("{}/contacts", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn get_genres(&self) -> reqwest::Response {
+        self.api_client
+            .get(&format!("{}/genres", &self.address))
             .send()
             .await
             .expect("Failed to execute request")

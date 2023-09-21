@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { onMount }                from 'svelte'
-    import { Label, Input, Checkbox } from 'flowbite-svelte'
+	import { onMount } from 'svelte'
+    import { Button, Label, Input, Checkbox, MultiSelect } from 'flowbite-svelte'
 
+    import { genres }       from '../store'
     import type { Contact } from '../types'
     
     export let filteredContacts: Contact[]
@@ -15,6 +16,8 @@
     let eighteenPlus        = true
     let twentyonePlus       = true
     let allowNullAgeRange   = true
+    let formattedGenres     = $genres.map(g => ({ value: g.genreId, name: g.genreName }))
+    let selectedGenres      = formattedGenres.map(g => g.value)
 
     const capacityFilter = (contact: Contact) => {
         if (allowNullCapacity && contact.capacity == null) return true
@@ -35,17 +38,25 @@
         return false
     }
 
+    const genreFilter = (contact: Contact) => {
+        const contactGenres = contact.genres.map(g => g.genreId)
+        return contactGenres.filter(g => selectedGenres.includes(g)).length > 0
+    }
+
     function update() {
         filteredContacts = contactList
             .filter(c => capacityFilter(c))
             .filter(c => ageRangeFilter(c))
+            .filter(c => genreFilter(c))
     }
 
     // Workaround to reload when data is fetched
-    onMount(update)
+    onMount(() => {
+        update()
+    })
 </script>
 
-<div class="filter-block mb-4">
+<div class="mb-4">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
     <Label class="space-y-2 mb-2">
         <span>Min</span>
@@ -58,7 +69,7 @@
     <Checkbox bind:checked={allowNullCapacity} on:change={update}>Allow for venues with unknown capacity</Checkbox>
 </div>
 
-<div class="filter-block mb-4">
+<div class="mb-4">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by age range</h3>
     <Checkbox bind:checked={allAges} on:change={update}>All ages</Checkbox>
     <Checkbox bind:checked={eighteenPlus} on:change={update}>18+</Checkbox>
@@ -66,8 +77,9 @@
     <Checkbox bind:checked={allowNullAgeRange} on:change={update}>Allow for venues with unknown age range</Checkbox>
 </div>
 
-<style>
-    .filter-block {
-
-    }
-</style>
+<div>
+    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by genre</h3>
+    <MultiSelect items={formattedGenres} bind:value={selectedGenres} on:change={update} size="lg" />
+    This button is a <a href="workaround https://github.com/themesberg/flowbite-svelte/pull/1081" target="_blank">workaround </a>
+    <Button on:click={update}>update</Button>
+</div>

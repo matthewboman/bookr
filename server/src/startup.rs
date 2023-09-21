@@ -28,6 +28,8 @@ use crate::routes::{
     change_password,
     confirm,
     generate_reset_token,
+    get_contact_by_id,
+    get_genres,
     get_pending_contacts,
     health_check, 
     log_in,
@@ -130,7 +132,9 @@ async fn run(
             .wrap(cors)
             .route("/health_check", web::get().to(health_check))
             .route("/confirm", web::get().to(confirm))
+            .route("/contact", web::get().to(get_contact_by_id))
             .route("/contacts", web::get().to(public_contacts))
+            .route("/genres", web::get().to(get_genres))
             .route("/generate-reset-token", web::post().to(generate_reset_token))
             .route("/login", web::post().to(log_in))
             .route("/reset-password", web::post().to(reset_password))

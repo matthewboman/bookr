@@ -4,7 +4,10 @@ use sqlx::PgPool;
 
 use crate::auth::JwtMiddleware;
 use crate::domain::contact::{
-    update_contact, EditContactData, EditedContact
+    update_contact,
+    update_contact_genres,
+    EditContactData, 
+    EditedContact
 };
 use crate::error::ContentError;
 use crate::utils::user_matches;
@@ -25,9 +28,23 @@ pub async fn user_edit_contact(
     
     let contact: EditedContact = json.0.try_into().map_err(ContentError::ValidationError)?;
 
-    update_contact(contact, &pool)
+    let mut transaction = pool
+        .begin()
+        .await
+        .context("Failed to acquire a Postgres connection from the pool")?;
+
+    update_contact(&contact, &mut transaction)
         .await
         .context("Failed to update contact")?;
+
+    update_contact_genres(&contact, &mut transaction)
+        .await
+        .context("Failed to update genres for contact")?;
+    
+    transaction
+        .commit()
+        .await
+        .context("Failed to commit SQL transaction to update contact")?;
 
     // TODO: if verified && address changes, update latitute and longitude
     // TODO: need someway to handle if this process errors. new column `erroring` && view for admin?

@@ -4,7 +4,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
-use crate::domain::contact::ContactResponse;
+use crate::domain::{format_contact_response, ContactResponse, ContactRow};
 use crate::error::ContentError;
 
 #[tracing::instrument(
@@ -36,23 +36,28 @@ async fn query_private_contacts(
     pool:     &PgPool
 ) -> Result<Vec<ContactResponse>, sqlx::Error> {
     let contacts = sqlx::query_as!(
-        ContactResponse,
+        ContactRow,
         r#"
         SELECT c.contact_id, c.display_name, c.address, c.city, c.state, 
                c.zip_code, c.capacity, c.latitude, c.longitude, c.email, 
                c.contact_form, c.age_range, c.country, c.is_private, c.user_id,
-               ROUND(AVG(r.rating), 2)::real AS average_rating
+               ROUND(AVG(r.rating), 2)::real AS average_rating,
+               g.genre_name, g.genre_id
         FROM contacts c
         LEFT JOIN reviews r ON c.contact_id = r.contact_id
+        LEFT JOIN contacts_genres ON c.contact_id = contacts_genres.contact_id
+        LEFT JOIN genres g on g.genre_id = contacts_genres.genre_id
         WHERE c.is_private = true
         AND c.verified = $1
         AND c.user_id = $2
-        GROUP BY c.contact_id
+        GROUP BY c.contact_id, g.genre_name, g.genre_id
         "#,
         verified,
         user_id
     ).fetch_all(pool)
     .await?;
 
-    Ok(contacts)
+    let result = format_contact_response(contacts);
+
+    Ok(result)
 }

@@ -6,22 +6,19 @@
     import ContactModal    from "./ContactModal.svelte"
     import ContactAddress  from "./contact/ContactAddress.svelte"
     import ContactCapacity from './contact/ContactCapacity.svelte'
+    import ContactGenres   from "./contact/ContactGenres.svelte"
     import ContactLinks    from './contact/ContactLinks.svelte'
     import ContactName     from "./contact/ContactName.svelte"
     import { isAdmin, isAuthenticated } from '../functions'
-    import { contactReviews, selectedContact, userId } from "../store"
+    import { contactReviews, genres, selectedContact, userId } from "../store"
    
     let canEditContact = false
     let editingContact = false
 
     function checkIfUserCanEdit(): boolean {
-        if (isAdmin()) {
-            return true
-        }
+        if (isAdmin()) return true
 
-        if (isAuthenticated() && $userId === $selectedContact.userId) {
-            return true
-        }
+        if (isAuthenticated() && $userId === $selectedContact.userId) return true
 
         return false
     }
@@ -60,12 +57,16 @@
         link={$selectedContact.contactForm}
         email={$selectedContact.email}
     />
+    <ContactGenres
+        className={''}
+        genres={$selectedContact.genres}
+    />
     {#if canEditContact}
         <Button on:click={editContact}>Edit</Button>
     {/if}
 
     <Modal bind:open={editingContact} size="xs" class="w-full">
-        <ContactModal on:update={closeContactModal} contact={$selectedContact} action={'edit'}/>
+        <ContactModal on:update={closeContactModal} action={'edit'}/>
     </Modal>
 </div>
 

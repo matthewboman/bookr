@@ -7,7 +7,7 @@ use crate::error::ContentError;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Params {
+pub struct ReviewParams {
     contact_id: i32
 }
 
@@ -15,7 +15,7 @@ pub struct Params {
     skip(pool, params)
 )]
 pub async fn reviews_for_contact(
-    params: web::Query<Params>,
+    params: web::Query<ReviewParams>,
     pool:   web::Data<PgPool>
 ) -> Result<HttpResponse, ContentError> {
     let reviews = query_reviews_for_contact(&pool, &params.contact_id)

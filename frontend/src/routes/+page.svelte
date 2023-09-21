@@ -10,15 +10,20 @@
     import { get }             from '../api'
     import { getUserId, isAuthenticated } from '../functions'
     import type { Contact }    from '../types'
-    import { authenticated, userId, selectedContact }   from "../store"
+    import { authenticated, genres, userId, selectedContact }   from "../store"
 
     const CONTACTS_URL     = "/contacts"
+    const GENRES_URL       = "/genres"
     const PRIVATE_CONTACTS = "/user/private-contacts"
 
 	let LeafletContainer: any
     let contactList: Contact[] = []
 	let filteredContacts: Contact[] = []
     $: renderedContacts = filteredContacts
+
+    async function getGenres() {
+        $genres = await get(GENRES_URL).then(r => r.json())
+    }
 
 	// Workaround bc `browser` isn't defined w/ SSR
 	async function getMap() {
@@ -40,6 +45,7 @@
     onMount(async () => {
         authenticated.update(() => isAuthenticated())
 		getMap()
+        getGenres()
 
         await getPublicContacts()
 

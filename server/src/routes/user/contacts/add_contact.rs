@@ -1,10 +1,15 @@
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse};
 use anyhow::Context;
-use sqlx::{PgPool, postgres::{PgQueryResult}};
+use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
 
 use crate::auth::JwtMiddleware;
-use crate::domain::{OptionalStringInput, StringInput, NewContact};
+use crate::domain::{
+    add_contact_genre_relation,
+    NewContact,
+    OptionalStringInput, 
+    StringInput,   
+};
 use crate::error::ContentError;
 
 #[derive(serde::Deserialize)]
@@ -20,6 +25,7 @@ pub struct NewContactData {
     pub contact_form: Option<String>,
     pub age_range:    String,
     pub is_private:   bool,
+    pub genres:       Vec<i32>,
 }
 
 impl TryFrom<NewContactData> for NewContact {
@@ -45,7 +51,8 @@ impl TryFrom<NewContactData> for NewContact {
             email,
             contact_form,
             age_range,
-            is_private: value.is_private
+            is_private: value.is_private,
+            genres:     value.genres
         })
     }
 }
@@ -63,26 +70,41 @@ pub async fn add_contact(
     let user_id = ext.get::<uuid::Uuid>().unwrap();
     let contact: NewContact = json.0.try_into().map_err(ContentError::ValidationError)?;
 
-    insert_contact(contact, &pool, user_id)
+    let mut transaction = pool
+        .begin()
+        .await
+        .context("Failed to acquire a Postgres connection from the pool")?;
+
+    let contact_id = insert_contact(&contact, &mut transaction, user_id)
         .await
         .context("Failed to insert new contact into database")?;
+
+    add_contact_genre_relation(&contact_id, contact.genres, &mut transaction)
+        .await
+        .context("Failed to insert contacts_genres relation")?;
+    
+    transaction
+        .commit()
+        .await
+        .context("Failed to commit SQL transaction to add new Contact")?;
 
     Ok(HttpResponse::Ok().finish())
 }
 
 #[tracing::instrument(
     name = "Saving new contact to database",
-    skip(contact, pool, user_id)
+    skip(contact, transaction, user_id)
 )]
 pub async fn insert_contact(
-    contact: NewContact,
-    pool:    &PgPool,
-    user_id: &Uuid,
-) -> Result<PgQueryResult, sqlx::Error> {
-    let c = sqlx::query!(
+    contact:     &NewContact,
+    transaction: &mut Transaction<'_, Postgres>,
+    user_id:     &Uuid,
+) -> Result<i32, sqlx::Error> {
+    let result = sqlx::query!(
         r#"
         INSERT INTO contacts (display_name, address, city, state, zip_code, capacity, email, contact_form, age_range, is_private, user_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING contact_id
         "#,
         contact.display_name,
         contact.address,
@@ -95,8 +117,10 @@ pub async fn insert_contact(
         contact.age_range,
         contact.is_private,
         user_id
-    ).execute(pool)
+    ).fetch_one(transaction)
     .await?;
 
-    Ok(c)
+    let contact_id: i32 = result.contact_id;
+
+    Ok(contact_id)
 }
