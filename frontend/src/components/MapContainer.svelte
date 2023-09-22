@@ -1,10 +1,36 @@
 <script lang="ts">
     import Map        from './Map.svelte'
     import MediaQuery from './MediaQuery.svelte'
+    import { mapOptions }   from '../store'
     import type { Contact } from '../types'
 
     export let renderedContacts: Contact[]= []
 </script>
+
+{#key $mapOptions}
+    <MediaQuery query="(min-width: 1281px)" let:matches>
+        {#if matches}
+            <div class="map computer"> 
+                <Map renderedContacts={renderedContacts} mapOptions={$mapOptions}/>   
+            </div>
+        {/if}
+    </MediaQuery>
+    <MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
+        {#if matches}
+            <div class="map tablet">    
+                <Map renderedContacts={renderedContacts} mapOptions={$mapOptions}/>
+            </div>
+        {/if}
+    </MediaQuery>
+
+    <MediaQuery query="(max-width: 480px)" let:matches>
+        {#if matches}
+            <div class="map mobile">    
+                <Map renderedContacts={renderedContacts} mapOptions={$mapOptions}/>
+            </div>
+        {/if}
+    </MediaQuery>
+{/key}
 
 <style>
     .map {
@@ -29,27 +55,3 @@
         height: 600px;
     }
 </style>
-
-<MediaQuery query="(min-width: 1281px)" let:matches>
-    {#if matches}
-        <div class="map computer"> 
-            <Map renderedContacts={renderedContacts}/>   
-        </div>
-    {/if}
-</MediaQuery>
-
-<MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
-    {#if matches}
-        <div class="map tablet">    
-            <Map renderedContacts={renderedContacts}/>
-        </div>
-    {/if}
-</MediaQuery>
-
-<MediaQuery query="(max-width: 480px)" let:matches>
-    {#if matches}
-        <div class="map mobile">    
-            <Map renderedContacts={renderedContacts}/>
-        </div>
-    {/if}
-</MediaQuery>
