@@ -21,6 +21,7 @@ pub async fn find_coordinates_for_city(
     g_client: web::Data<GoogleMapsAPIClient>,
 ) -> Result<HttpResponse, GeocodingError> {
     let city = StringInput::parse(json.city.clone());
+    let city = city.to_lowercase();
     let mut conn = redis.get_tokio_connection()
         .await
         .context("Could not reg async Redis connection")?;
