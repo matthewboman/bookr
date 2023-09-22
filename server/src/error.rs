@@ -39,26 +39,30 @@ impl std::fmt::Debug for AdminError {
 
 #[derive(thiserror::Error)]
 pub enum ContentError {
+    #[error("User tried editting unauthorized content")]
+    AuthorizationError,
+
     #[error("{0}")]
     DatabaseError(#[from] sqlx::Error),
+
+    #[error("Could not connect to Redis")]
+    RedisError(#[from] redis::RedisError),
 
     #[error("Something went wrong")]
     UnexpectedError(#[from] anyhow::Error),
 
     #[error("{0}")]
     ValidationError(String),
-
-    #[error("User tried editting unauthorized content")]
-    AuthorizationError,
 }
 
 impl ResponseError for ContentError {
     fn status_code(&self) -> StatusCode {
         match self {
+            ContentError::AuthorizationError => StatusCode::UNAUTHORIZED,
             ContentError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ContentError::RedisError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ContentError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ContentError::ValidationError(_) => StatusCode::BAD_REQUEST,
-            ContentError::AuthorizationError => StatusCode::UNAUTHORIZED,
         }
     }
 }

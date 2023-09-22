@@ -1,5 +1,4 @@
 use actix_cors::Cors;
-use actix_session::{storage::RedisSessionStore, SessionMiddleware};
 use actix_web::{
     web,
     cookie::Key,
@@ -108,9 +107,11 @@ async fn run(
     let email_client = web::Data::new(email_client);
     let jwt_settings = web::Data::new(jwt_settings);
     let gmaps_client = web::Data::new(gmaps_client);
-    let secret_key   = Key::from(hmac_secret.expose_secret().as_bytes());
-    let redis_store  = RedisSessionStore::new(redis_uri.expose_secret()).await?;
-    // let test_user = TestUser::generate();
+    let _secret_key  = Key::from(hmac_secret.expose_secret().as_bytes()); // previously used for RedisSession. idk if necessary
+    let redis_client = web::Data::new(
+        redis::Client::open(redis_uri.expose_secret().clone())?
+    );
+    // let test_user = TestUser::generate(); // Use to create user first time running app
     // test_user.store(&db_pool).await;
     let server       = HttpServer::new(move || {
         let cors = Cors::default()
@@ -127,7 +128,6 @@ async fn run(
         // let cors = Cors::permissive(); // For debugging
 
         App::new()
-            .wrap(SessionMiddleware::new(redis_store.clone(), secret_key.clone()))
             .wrap(TracingLogger::default())
             .wrap(cors)
             .route("/health_check", web::get().to(health_check))
@@ -169,6 +169,7 @@ async fn run(
             .app_data(jwt_settings.clone())
             .app_data(gmaps_client.clone())
             .app_data(base_url.clone())
+            .app_data(redis_client.clone())
     })
     .listen(listener)?
     .run();
@@ -176,7 +177,7 @@ async fn run(
     Ok(server)
 }
 
-// TEMP
+// TEMP: Use to create user first time running app
 
 // pub struct TestUser {
 //     pub user_id:  Uuid,

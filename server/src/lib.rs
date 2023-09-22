@@ -5,6 +5,7 @@ pub mod email_client;
 pub mod error;
 pub mod gmaps_api_client;
 // pub mod idempotency;
+pub mod redis_cli;
 pub mod routes;
 pub mod startup;
 pub mod telemetry;
