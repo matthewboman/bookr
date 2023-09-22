@@ -39,26 +39,30 @@ impl std::fmt::Debug for AdminError {
 
 #[derive(thiserror::Error)]
 pub enum ContentError {
+    #[error("User tried editting unauthorized content")]
+    AuthorizationError,
+
     #[error("{0}")]
     DatabaseError(#[from] sqlx::Error),
+
+    #[error("Could not connect to Redis")]
+    RedisError(#[from] redis::RedisError),
 
     #[error("Something went wrong")]
     UnexpectedError(#[from] anyhow::Error),
 
     #[error("{0}")]
     ValidationError(String),
-
-    #[error("User tried editting unauthorized content")]
-    AuthorizationError,
 }
 
 impl ResponseError for ContentError {
     fn status_code(&self) -> StatusCode {
         match self {
+            ContentError::AuthorizationError => StatusCode::UNAUTHORIZED,
             ContentError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ContentError::RedisError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ContentError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ContentError::ValidationError(_) => StatusCode::BAD_REQUEST,
-            ContentError::AuthorizationError => StatusCode::UNAUTHORIZED,
         }
     }
 }
@@ -66,6 +70,34 @@ impl ResponseError for ContentError {
 impl std::fmt::Debug for ContentError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_fmt(self, f)
+    }
+}
+
+#[derive(thiserror::Error)]
+pub enum GeocodingError {
+    #[error("An error occurred while contacting the API: {0}")]
+    ApiError(#[from] reqwest::Error),
+
+    #[error("No results found for the address: {0}")]
+    NoResultsFound(String),
+
+    #[error("Something went wrong")]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+impl std::fmt::Debug for GeocodingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        error_chain_fmt(self, f)
+    }
+}
+
+impl ResponseError for GeocodingError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            GeocodingError::ApiError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            GeocodingError::NoResultsFound(_) => StatusCode::BAD_REQUEST,
+            GeocodingError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
     }
 }
 

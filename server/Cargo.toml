@@ -14,13 +14,14 @@ name = "byot_server"
 actix-cors = "0.6.4"
 actix-session = { version = "0.7", features = ["redis-rs-tls-session"] }
 actix-web = {version = "4.3", default-features = false, features = ["macros"]}
-actix-web-lab = "0.18"
 anyhow = "1"
 argon2 = { version = "0.4", features = ["std"] }
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "serde"] }
 config = "0.13"
 jsonwebtoken = "8.3.0"
 rand = { version = "0.8", features = ["std_rng"] }
+redis = { version = "0.23.3", features = ["r2d2", "tokio-comp"]}
+regex = "1.9.1"
 secrecy = { version = "0.8", features = ["serde"]}
 serde = { version = "1", features = ["derive"] }
 serde-aux = "4"
@@ -32,12 +33,9 @@ tracing-actix-web = "0.7"
 tracing-log = "0.1"
 tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
 tracing-bunyan-formatter = "0.3"
-unicode-segmentation = "1"
 urlencoding = "2"
 uuid = { version = "1", features = ["serde", "v4"] }
 validator = "0.16"
-regex = "1.9.1"
-itertools = "0.11.0"
 
 [dependencies.reqwest]
 version = "0.11"

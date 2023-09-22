@@ -1,3 +1,5 @@
+import type { LatLngExpression } from "leaflet"
+
 export type Contact = {
     contactId:     number,
     userId:        string,
@@ -28,6 +30,11 @@ export type Jwt = {
     iat:  number,
     exp:  number,
     role: string,
+}
+
+export type MapOptions = {
+    center: LatLngExpression,
+    zoom:   number
 }
 
 export type NewContact = {

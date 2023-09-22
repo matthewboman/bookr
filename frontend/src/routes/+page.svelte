@@ -6,11 +6,10 @@
     import FilterContainer     from '../components/FilterContainer.svelte'
     import MediaQuery          from '../components/MediaQuery.svelte'
     import Menu                from '../components/Menu.svelte'
-    import Reviews             from '../components/Reviews.svelte'
     import { get }             from '../api'
     import { getUserId, isAuthenticated } from '../functions'
     import type { Contact }    from '../types'
-    import { authenticated, genres, userId, selectedContact }   from "../store"
+    import { authenticated, genres, selectedContact, userId } from "../store"
 
     const CONTACTS_URL     = "/contacts"
     const GENRES_URL       = "/genres"
@@ -75,7 +74,7 @@
     <!-- Tablet --> 
     <MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
         {#if matches}
-            <svelte:component this={LeafletContainer} {renderedContacts}/> 
+            <svelte:component this={LeafletContainer} {renderedContacts} /> 
             <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
         {/if}
     </MediaQuery>
