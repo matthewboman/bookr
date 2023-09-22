@@ -30,7 +30,7 @@ pub async fn get_genres(
 
     store_data_as_json(&mut conn, "genres", &genres)
         .await
-        .context("Could not store genres in Redi")?;
+        .context("Could not store genres in Redis")?;
 
     Ok(HttpResponse::Ok().json(genres))
 }

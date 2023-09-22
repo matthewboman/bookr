@@ -1,11 +1,13 @@
 use secrecy::{ExposeSecret, Secret};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use urlencoding::encode;
+
+use crate::error::{GeocodingError};
 
 pub async fn get_latlng_from_address(
     gmaps_api_client: &GoogleMapsAPIClient,
     address:          &str
-) -> Result<Location, Box<dyn std::error::Error>> {
+) -> Result<Location, GeocodingError> {
     let encoded = encode(&address);
     let url     = format!(
         "{}?address={}&key={}",
@@ -22,7 +24,7 @@ pub async fn get_latlng_from_address(
         Ok(result.geometry.location)
     } else {
         let e = format!("No results found for {}", &address);
-        Err(e.into())
+        Err(GeocodingError::NoResultsFound(e))
     }
 }
 
@@ -85,7 +87,7 @@ struct Bounds {
     southwest: Location,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct Location {
     pub lat: f32,
     pub lng: f32,

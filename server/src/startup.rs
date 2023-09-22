@@ -26,6 +26,7 @@ use crate::routes::{
     approve_contact,
     change_password,
     confirm,
+    find_coordinates_for_city,
     generate_reset_token,
     get_contact_by_id,
     get_genres,
@@ -134,6 +135,7 @@ async fn run(
             .route("/confirm", web::get().to(confirm))
             .route("/contact", web::get().to(get_contact_by_id))
             .route("/contacts", web::get().to(public_contacts))
+            .route("/find-coordinates-for-city", web::post().to(find_coordinates_for_city))
             .route("/genres", web::get().to(get_genres))
             .route("/generate-reset-token", web::post().to(generate_reset_token))
             .route("/login", web::post().to(log_in))

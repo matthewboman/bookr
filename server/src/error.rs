@@ -74,6 +74,34 @@ impl std::fmt::Debug for ContentError {
 }
 
 #[derive(thiserror::Error)]
+pub enum GeocodingError {
+    #[error("An error occurred while contacting the API: {0}")]
+    ApiError(#[from] reqwest::Error),
+
+    #[error("No results found for the address: {0}")]
+    NoResultsFound(String),
+
+    #[error("Something went wrong")]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+impl std::fmt::Debug for GeocodingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        error_chain_fmt(self, f)
+    }
+}
+
+impl ResponseError for GeocodingError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            GeocodingError::ApiError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            GeocodingError::NoResultsFound(_) => StatusCode::BAD_REQUEST,
+            GeocodingError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+}
+
+#[derive(thiserror::Error)]
 pub enum LoginError {
     #[error("Authentication failed")]
     AuthError(#[from] AuthError),
