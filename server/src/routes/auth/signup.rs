@@ -57,6 +57,7 @@ pub async fn sign_up(
         .await
         .context("Failed to commit SQL transaction to store a new subscriber")?;
 
+    // Will error locally w/o email configured
     send_confirmation_email(
         &email_client,
         email,

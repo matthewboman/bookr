@@ -1,41 +1,65 @@
 # Map of venues for booking tours
 
+  
+
 ## Project info
-- `/server` is a Rest enpoint written in Rust that connects to a Postgres database
-- `/frontend` is a web application written in Svelte that renders a map of venues
-- `/addr_to_geo` is a Node script that pulls contacts from the database and adds a latitude/longitude so they can be rendered on a map. Maybe deprecated now that this happens on admin approval
+
+-  `/server`
+	- REST API written in Rust
+	- Handles JWT-based authentication/authorization
+	- Client to retrieve GeoJSON data from Google Maps API
+	- Postgres && Redis
+-  `/frontend` 
+	- SPA written with Sveltekit that renders a filterable map of venues
+	- Flowbite/Tailwind-based CSS
+	- Leaflet map library
+
+-  `/addr_to_geo` 
+	- DEPRECATED: Node script that pulls contacts from the database and adds a latitude/longitude so they can be rendered on a map. 
+	- Can be used to bulk-update `Contacts` with lat/lng
+  
 
 ## Getting started
-- Postgres Dockerfile provided as a convenience but not necessary. Example `.env` files use variables from image. Start the Docker service: `docker compose up`
 
-Database migrations are under `/server`
+- Postgres Dockerfile provided as a convenience but not necessary. Example `.env` files use variables from image. Start the Docker service: `docker compose up`
+- Run database migrations under `/server/migrations` with `sqlx migrate run`
+- Start the server (port 8000 default): `cargo run`
+	- Uncomment lines to create `TestUser` in `server/src/startup.rs` first time running app 
+	- OR signup and change `status` column in `users` to `confirmed`
+	- Comment out `send_confirmation_email` in `server/src/routes/auth/signup.rs` if email client not configured locally.
+- Start the SPA: `npm run dev`
 
 ## Testing
-- `cargo test` || `cargo test -- --nocapture`
-- may need to run one group of tests at a time
-- run serial `RUST_TEST_THREADS=1`
-- or increase `ulimit`
-- temporary databases are created with hashes for names. If you need to clean them up run `psql -Atqc "SELECT 'DROP DATABASE ' || quote_ident(datname) || ';' FROM pg_database WHERE datname like '%7%';" | psql` replacing `7` with any number that's not in the name of one of your existing databases
 
+-  `cargo test` || `cargo test -- --nocapture`
+- `main.rs` tests the different features. You may need to run one group of tests at a time.
+- OR run serial `RUST_TEST_THREADS=1`
+- OR or increase `ulimit`
+- Temporary databases are created with hashes for names. If you need to clean them up run `psql -Atqc "SELECT 'DROP DATABASE ' || quote_ident(datname) || ';' FROM pg_database WHERE datname like '%7%';" | psql` replacing `7` with any number that's not in the name of one of your existing databases
 
 ## Tech improvements
+
 - grouping map points
 - postgis
-    - need to implement: https://github.com/jmoiron/sqlx/issues/129
+	- need to implement: https://github.com/jmoiron/sqlx/issues/129
 - UI theme, usability
 - response messages for: signing up, logging in, logging out, adding contacts, errors
-- build function for handling 200, 400, 401, 500 responses and curryable helper functions to do things like logout for 401 or custom actions for 200
-- validate contact form is link when submitted
-- a lot in UI needs updated when user signs in/out
+- validate `contactForm` is link when submitted
+- state management
+	- a lot in UI needs updated when user signs in/out
+	- endpoints should return newly added/edited data and update UI
+- make API CRUD (currently only GET/POST)
+- GraphQL?
 
 ## Potential Features
-- authenticated users should be able to....
-    - add notes/rating/feeback--public or private?
-- filter by genre
-- venue/contact type
-    - filter by bar, venue, house, promoter, other
-- create route && export to CSV
-- editing contacts
-    - admin edit pending contacts
-    - admin edit public contacts
-    - user edit own contacts
+
+- filter by contact type: promoter, venue, DIY/house, band
+- create tour
+	- select date range
+	- add multiple contacts to each date, set to: contacted, pending, confirmed, n/a
+	- adjust date of events
+	- export to CSV formatted for Songkick import
+	- calculate drive times for routes
+- mass-import contacts from CSV
+- login w/ google
+- ability to share private contacts w/ specific users
