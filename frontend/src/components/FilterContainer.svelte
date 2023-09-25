@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
     import { Alert, Button, Checkbox, Input, Label, MultiSelect, Search } from 'flowbite-svelte'
+    import anime from 'animejs'
 
     import { post }               from '../api'
     import { handleResponse }     from '../functions'
@@ -80,26 +81,95 @@
             .filter(c => genreFilter(c))
     }
 
+    // toggle filters animation
+    let areFiltersShowing = true
+    let filterText = 'hide filters'
+
+    function toggleFilters(){
+        let easing = 'easeOutQuad'
+        let duration = 300
+
+        if(areFiltersShowing){
+            // hide
+            anime({
+                targets: '.filter-container',
+                height: 54,
+                paddingBottom: 0,
+                easing,
+                duration
+            })
+
+            anime({
+                targets: '.toggle-filters span',
+                opacity: 0,
+                easing: 'linear',
+                duration: 100,
+                complete: () => {
+                    filterText = 'show filters'
+                    anime({
+                        targets: '.toggle-filters span',
+                        opacity: 1,
+                        easing: 'linear',
+                        duration: 100,
+                    })
+                }
+            })
+        } else {
+            // show
+            anime({
+                targets: '.filter-container',
+                height: 322,
+                padding: 16,
+                easing,
+                duration
+            })
+
+            anime({
+                targets: '.toggle-filters span',
+                opacity: 0,
+                easing: 'linear',
+                duration: 100,
+                complete: () => {
+                    filterText = 'hide filters'
+                    anime({
+                        targets: '.toggle-filters span',
+                        opacity: 1,
+                        easing: 'linear',
+                        duration: 100,
+                    })
+                }
+            })
+
+        }
+
+        areFiltersShowing = !areFiltersShowing
+    }
+
     // Workaround to reload when data is fetched
     onMount(() => {
         update()
     })
 </script>
 
-<div class="mb-4">
+<button on:click={toggleFilters} class="toggle-filters xl:hidden md:block text-center w-full pb-2">
+    <span>{filterText}</span>
+</button>
+<div class="filter-block mb-4">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
-    <Label class="space-y-2 mb-2">
-        <span>Min</span>
-        <Input type="number" name="displayName" placeholder="" bind:value={minCapacity} on:change={update}/>
-    </Label>
-    <Label class="space-y-2 mb-2">
-        <span>Max</span>
-        <Input type="number" name="displayName" placeholder="" bind:value={maxCapacity} on:change={update}/>
-    </Label>
+    <div class="flex w-full gap-2">
+        <Label class="space-y-2 mb-2 flex-grow">
+            <span>Min</span>
+            <Input type="number" name="displayName" placeholder="" bind:value={minCapacity} on:change={update}/>
+        </Label>
+        <Label class="space-y-2 mb-2 flex-grow">
+            <span>Max</span>
+            <Input type="number" name="displayName" placeholder="" bind:value={maxCapacity} on:change={update}/>
+        </Label>
+    </div>
     <Checkbox bind:checked={allowNullCapacity} on:change={update}>Allow for venues with unknown capacity</Checkbox>
 </div>
 
-<div class="mb-4">
+<div class="filter-block mb-4">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by age range</h3>
     <Checkbox bind:checked={allAges} on:change={update}>All ages</Checkbox>
     <Checkbox bind:checked={eighteenPlus} on:change={update}>18+</Checkbox>
@@ -107,14 +177,14 @@
     <Checkbox bind:checked={allowNullAgeRange} on:change={update}>Allow for venues with unknown age range</Checkbox>
 </div>
 
-<div>
+<div class="filter-block mb-4">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by genre</h3>
     <MultiSelect items={formattedGenres} bind:value={selectedGenres} on:change={update} size="lg" />
     This button is a <a href="workaround https://github.com/themesberg/flowbite-svelte/pull/1081" target="_blank">workaround </a>
     <Button on:click={update}>update</Button>
 </div>
 
-<div>
+<div class="filter-block mb-4">
     {#if errorMessage}
         <Alert border color="red">
             <svg slot="icon" aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>

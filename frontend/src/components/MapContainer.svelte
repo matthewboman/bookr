@@ -43,15 +43,16 @@
 
 	/* Device-specific map layout */
 	.computer {
-        /* width: 90%; */
         height: 800px;
     }
     .tablet {
-        width: 85vw;
-        height: 600px;
+        flex-grow: 1;
+        height: 100vh;
+        width: 100vw;
     }
     .mobile {
-        width: 85vw;
-        height: 600px;
+        flex-grow: 1;
+        height: 100vh;
+        width: 100vw;
     }
 </style>

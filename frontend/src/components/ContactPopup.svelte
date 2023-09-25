@@ -29,3 +29,9 @@
         email={contact.email}
     />
 </div>
+
+<style>
+    .contact {
+        font-family: Comfortaa;
+    }
+</style>
