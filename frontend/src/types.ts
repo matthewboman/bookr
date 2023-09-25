@@ -16,6 +16,7 @@ export type Contact = {
     contactForm:   string | null,
     ageRange:      string,
     isPrivate:     boolean,
+    contactType:   string | null,
     averageRating: number,
     genres:        Genre[]
 }
@@ -48,7 +49,9 @@ export type NewContact = {
     email:       string | null,
     contactForm: string | null,
     ageRange:    string,
-    isPrivate:   boolean
+    isPrivate:   boolean,
+    contactType: string,
+    genres:      Genre[]
 }
 
 export type NewReview = {

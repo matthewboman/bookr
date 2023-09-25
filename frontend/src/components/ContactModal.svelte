@@ -3,7 +3,7 @@
     import { Alert, Button, Label, Input, Checkbox, Select, MultiSelect } from 'flowbite-svelte'
 
     import { get, post }         from '../api'
-    import { ageRanges, states } from '../constants'
+    import { ageRanges, states, contactTypes } from '../constants'
     import { isAdmin, handleResponse }  from '../functions'
     import { authenticated, genres, selectedContact } from '../store'
     import type { Contact, NewContact } from '../types'
@@ -22,6 +22,7 @@
     let state:          string
     let zipCode:        string | null
     let ageRange:       string = "unknown"
+    let contactType:    string = "venue"
     let capacity:       number | null
     let email:          string | null
     let contactForm:    string | null
@@ -55,7 +56,8 @@
             state,
             zipCode,
             ageRange,
-            capacity: 10,
+            contactType,
+            capacity,
             email,
             contactForm,
             isPrivate,
@@ -91,7 +93,8 @@
             state,
             zipCode,
             ageRange,
-            capacity,
+            contactType,
+            capacity: Number(capacity),
             email,
             contactForm,
             isPrivate,
@@ -127,11 +130,12 @@
         state          = contact.state
         zipCode        = contact.zipCode
         ageRange       = contact.ageRange
+        contactType    = contact.contactType
         capacity       = contact.capacity
         email          = contact.email
         contactForm    = contact.contactForm
         isPrivate      = contact.isPrivate
-        // selectedGenres = contact.genres.map(g => g.genreId) // doesn't work. set on mount
+        // selectedGenres = contact.genres.map(g => g.genreId) // doesn't work.
     }
 
     onMount(() => {
@@ -184,6 +188,9 @@
     <MultiSelect items={formattedGenres} bind:value={selectedGenres} size="lg" />
     <Label>Age range
         <Select class="mt-2" items={ageRanges} bind:value={ageRange} required/>
+    </Label>
+    <Label>Type of contact
+        <Select class="mt-2" items={contactTypes} bind:value={contactType} required/>
     </Label>
     <Label class="space-y-2">
         <span>Capacity</span>

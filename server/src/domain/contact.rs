@@ -26,6 +26,7 @@ pub struct Contact {
     pub user_id:      Uuid,
     pub is_private:   bool,
     pub verified:     bool,
+    pub contact_type: Option<String>,
     pub created_at:   chrono::DateTime<chrono::Utc>,
     pub updated_at:   chrono::DateTime<chrono::Utc>
 }
@@ -48,6 +49,7 @@ pub struct ContactResponse {
     pub age_range:      String,
     pub user_id:        Uuid,
     pub is_private:     bool,
+    pub contact_type:   Option<String>,
     pub average_rating: Option<f32>,
     pub genres:         Vec<Genre>,
 }
@@ -69,6 +71,7 @@ pub struct ContactRow {
     pub age_range:      String,
     pub user_id:        Uuid,
     pub is_private:     bool,
+    pub contact_type:   Option<String>,
     pub average_rating: Option<f32>,
     pub genre_id:       i32,
     pub genre_name:     String,
@@ -90,6 +93,7 @@ pub struct EditContactData {
     pub age_range:    String,
     pub user_id:      Uuid,
     pub is_private:   bool,
+    pub contact_type: String,
     pub genres:       Vec<i32>,
 }
 
@@ -107,6 +111,7 @@ pub struct EditedContact {
     pub contact_form: Option<String>,
     pub age_range:    String,
     pub is_private:   bool,
+    pub contact_type: String,
     pub genres:       Vec<i32>,
 }
 
@@ -123,6 +128,7 @@ impl TryFrom<EditContactData> for EditedContact {
         let email        = OptionalStringInput::parse(value.email);
         let contact_form = OptionalStringInput::parse(value.contact_form);
         let age_range    = StringInput::parse(value.age_range);
+        let contact_type = StringInput::parse(value.contact_type);
 
         Ok(Self {
             contact_id: value.contact_id,
@@ -136,6 +142,7 @@ impl TryFrom<EditContactData> for EditedContact {
             email,
             contact_form,
             age_range,
+            contact_type,
             is_private: value.is_private,
             genres:     value.genres,
         })
@@ -154,6 +161,7 @@ pub struct NewContact {
     pub contact_form: Option<String>,
     pub age_range:    String,
     pub is_private:   bool,
+    pub contact_type: String,
     pub genres:       Vec<i32>,
 }
 
@@ -171,6 +179,7 @@ pub struct PendingContact {
     pub email:        Option<String>,
     pub contact_form: Option<String>,
     pub age_range:    String,
+    pub contact_type: Option<String>,
     pub user_id:      Uuid,
 }
 
@@ -285,8 +294,9 @@ pub async fn update_contact(
             email = $7,
             contact_form = $8,
             age_range = $9,
-            is_private = $10
-        WHERE contact_id = $11
+            is_private = $10,
+            contact_type = $11
+        WHERE contact_id = $12
         "#,
         contact.display_name,
         contact.address,
@@ -298,6 +308,7 @@ pub async fn update_contact(
         contact.contact_form,
         contact.age_range,
         contact.is_private,
+        contact.contact_type,
         contact.contact_id
     ).execute(transaction)
     .await?;
@@ -368,6 +379,7 @@ pub fn format_contact_response(rows: Vec<ContactRow>) -> Vec<ContactResponse> {
                 is_private:     row.is_private,
                 user_id:        row.user_id,
                 average_rating: row.average_rating,
+                contact_type:   row.contact_type,
                 genres:         [genre].to_vec()
             };
             grouped_contacts.push(contact)

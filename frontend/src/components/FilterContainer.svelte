@@ -25,13 +25,18 @@
     let eighteenPlus        = true
     let twentyonePlus       = true
     let allowNullAgeRange   = true
+    // Contact type
+    let venue               = true
+    let promoter            = true
+    let diy                 = true
+    let band                = true
     // Genre
     let formattedGenres     = $genres.map(g => ({ value: g.genreId, name: g.genreName }))
     let selectedGenres      = formattedGenres.map(g => g.value)
     // City search
     let city = ''
 
-    const capacityFilter = (contact: Contact) => {
+    const capacityFilter = (contact: Contact): boolean => {
         if (allowNullCapacity && contact.capacity == null) return true
         if (!allowNullCapacity && contact.capacity == null) return false
 
@@ -40,19 +45,28 @@
         return false
     }
 
-    const ageRangeFilter = (contact: Contact) => {
-        if (allAges && contact.ageRange == 'all') return true
-        if (eighteenPlus && contact.ageRange == '18+') return true
-        if (twentyonePlus && contact.ageRange == '21+') return true
+    const ageRangeFilter = (contact: Contact): boolean => {
+        if (allAges && contact.ageRange === 'all') return true
+        if (eighteenPlus && contact.ageRange === '18+') return true
+        if (twentyonePlus && contact.ageRange === '21+') return true
 
         if (allowNullAgeRange && contact.ageRange == null) return true
 
         return false
     }
 
-    const genreFilter = (contact: Contact) => {
+    const genreFilter = (contact: Contact): boolean => {
         const contactGenres = contact.genres.map(g => g.genreId)
         return contactGenres.filter(g => selectedGenres.includes(g)).length > 0
+    }
+
+    const contactTypeFilter = (contact: Contact): boolean => {
+        if (venue && contact.contactType === 'venue') return true
+        if (promoter && contact.contactType === 'promoter') return true
+        if (diy && contact.contactType === 'diy') return true
+        if (band && contact.contactType === 'band') return true
+
+        return false
     }
 
     async function searchCity() {
@@ -79,6 +93,7 @@
             .filter(c => capacityFilter(c))
             .filter(c => ageRangeFilter(c))
             .filter(c => genreFilter(c))
+            .filter(c => contactTypeFilter(c))
     }
 
     // toggle filters animation
@@ -170,7 +185,7 @@
 </div>
 
 <div class="filter-block mb-4">
-    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by age range</h3>
+    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter contacts by age range</h3>
     <Checkbox bind:checked={allAges} on:change={update}>All ages</Checkbox>
     <Checkbox bind:checked={eighteenPlus} on:change={update}>18+</Checkbox>
     <Checkbox bind:checked={twentyonePlus} on:change={update}>21+</Checkbox>
@@ -178,7 +193,15 @@
 </div>
 
 <div class="filter-block mb-4">
-    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by genre</h3>
+    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter contacts by type</h3>
+    <Checkbox bind:checked={venue} on:change={update}>Venues</Checkbox>
+    <Checkbox bind:checked={promoter} on:change={update}>Promoters</Checkbox>
+    <Checkbox bind:checked={diy} on:change={update}>DIY spaces, houses, etc.</Checkbox>
+    <Checkbox bind:checked={band} on:change={update}>Bands</Checkbox>
+</div>
+
+<div class="filter-block mb-4">
+    <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter contacts by genre</h3>
     <MultiSelect items={formattedGenres} bind:value={selectedGenres} on:change={update} size="lg" />
     This button is a <a href="workaround https://github.com/themesberg/flowbite-svelte/pull/1081" target="_blank">workaround </a>
     <Button on:click={update}>update</Button>

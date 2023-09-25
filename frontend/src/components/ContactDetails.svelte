@@ -10,7 +10,7 @@
     import ContactLinks    from './contact/ContactLinks.svelte'
     import ContactName     from "./contact/ContactName.svelte"
     import { isAdmin, isAuthenticated } from '../functions'
-    import { contactReviews, genres, selectedContact, userId } from "../store"
+    import { contactReviews, selectedContact, userId } from "../store"
    
     let canEditContact = false
     let editingContact = false

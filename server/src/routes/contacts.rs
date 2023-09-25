@@ -48,7 +48,7 @@ async fn query_contacts(pool: &PgPool) -> Result<Vec<ContactResponse>, sqlx::Err
         SELECT
             c.contact_id, c.display_name, c.address, c.city, c.state, c.zip_code, c.country,
             c.capacity, c.latitude, c.longitude, c.email, c.contact_form, c.age_range,
-            c.user_id, c.is_private,
+            c.user_id, c.is_private, c.contact_type,
             ROUND(AVG(r.rating), 2)::real AS average_rating,
             g.genre_name, g.genre_id
         FROM contacts c
@@ -82,7 +82,7 @@ async fn query_contact_by_id(
         r#"
         SELECT c.contact_id, c.display_name, c.address, c.city, c.state, c.zip_code, 
                c.capacity, c.latitude, c.longitude, c.email, c.contact_form, 
-               c.age_range, c.country, c.is_private, c.user_id, 
+               c.age_range, c.country, c.is_private, c.user_id, c.contact_type,
                ROUND(AVG(r.rating), 2)::real AS average_rating,
                g.genre_name, g.genre_id
         FROM contacts c
