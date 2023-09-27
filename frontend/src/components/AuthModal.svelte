@@ -38,6 +38,9 @@
     let successMessage: string
     let disabled = false // TODO: disable button if passwords don't match
 
+    // TODO: split into different modals using slots
+    // TODO: handle response
+
     async function submit() {
         errorMessage   = ''
         successMessage = ''

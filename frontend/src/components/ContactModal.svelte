@@ -8,6 +8,9 @@
     import { authenticated, genres, selectedContact } from '../store'
     import type { Contact, NewContact } from '../types'
 
+    // TODO: separate modal logic from form
+    // TODO: create/edit differences
+
     const ADD_CONTACT_URL = "/user/add-contact"
     const GENRES_URL      = "/genres"
     const dispatch        = createEventDispatcher()

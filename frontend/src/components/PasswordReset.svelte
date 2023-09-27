@@ -6,8 +6,8 @@
     import { authenticated } from '../store'
     import { onMount } from 'svelte';
 
-    let loggedIn       = false
-    let disabled       = true
+    let loggedIn        = false
+    let disabled        = true
     let passowordsMatch = true
     let currentPassword: string
     let newPassword: string
@@ -37,6 +37,8 @@
         
         const url = loggedIn ? "/user/change-password" : "/reset-password"
         const res = await post(url, body)
+
+        // TODO: handle response
 
         if (res.status === 200) {
             successMessage = "Your password has successfully been updated."

@@ -44,6 +44,7 @@ use crate::routes::{
     user_delete_review,
     user_edit_contact,
     user_edit_review,
+    user_get_contacts,
     user_get_reviews
 };
 
@@ -147,6 +148,7 @@ async fn run(
                     .route("/add-contact", web::post().to(add_contact))
                     .route("/change-password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out))
+                    .route("/contacts", web::get().to(user_get_contacts))
                     .route("/private-contacts", web::get().to(private_contacts))
                     .route("/review-contact", web::post().to(review_contact))
                     .route("/delete-contact", web::post().to(user_delete_contact))

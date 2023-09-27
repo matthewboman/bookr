@@ -2,9 +2,9 @@
     import { LeafletMap, Marker, Popup, TileLayer } from 'svelte-leafletjs'
 
     import ContactPopup       from './ContactPopup.svelte'
-    import { get }            from '../api'
-    import type { Contact, MapOptions }        from '../types'
-    import { contactReviews, selectedContact } from '../store'
+    import { get }            from '../../api'
+    import type { Contact, MapOptions }        from '../../types'
+    import { contactReviews, selectedContact } from '../../store'
 
     export let renderedContacts: Contact[]
     export let mapOptions: MapOptions

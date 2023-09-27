@@ -10,6 +10,24 @@ use crate::error::ContentError;
 #[tracing::instrument(
     skip(req, pool)
 )]
+pub async fn user_get_contacts(
+    req:  HttpRequest,
+    pool: web::Data<PgPool>,
+    _:    JwtMiddleware
+) -> Result<HttpResponse, ContentError> {
+    let ext      = req.extensions();
+    let user_id  = ext.get::<uuid::Uuid>().unwrap();
+    let private  = false;
+    let contacts = query_user_contacts(user_id, private, &pool)
+        .await
+        .context("Failed to get private contacts from database")?;
+
+    Ok(HttpResponse::Ok().json(contacts))
+}
+
+#[tracing::instrument(
+    skip(req, pool)
+)]
 pub async fn private_contacts(
     req:  HttpRequest,
     pool: web::Data<PgPool>,
@@ -17,9 +35,8 @@ pub async fn private_contacts(
 ) -> Result<HttpResponse, ContentError> {
     let ext      = req.extensions();
     let user_id  = ext.get::<uuid::Uuid>().unwrap();
-    let verified = true; // TODO: user's might want a list of their pending contacts. Created `pending_private_contacts` when building edit workflow.
- 
-    let contacts = query_private_contacts(user_id, verified, &pool)
+    let private  = true;
+    let contacts = query_user_contacts(user_id, private, &pool)
         .await
         .context("Failed to get private contacts from database")?;
     
@@ -27,12 +44,12 @@ pub async fn private_contacts(
 }
 
 #[tracing::instrument(
-    name = "Querying private contacts from DB",
-    skip(pool, user_id, verified)
+    name = "Querying User's contacts from DB",
+    skip(pool, user_id, private)
 )]
-async fn query_private_contacts(
+async fn query_user_contacts(
     user_id:  &Uuid,
-    verified: bool,
+    private:  bool,
     pool:     &PgPool
 ) -> Result<Vec<ContactResponse>, sqlx::Error> {
     let contacts = sqlx::query_as!(
@@ -48,12 +65,11 @@ async fn query_private_contacts(
         LEFT JOIN reviews r ON c.contact_id = r.contact_id
         LEFT JOIN contacts_genres ON c.contact_id = contacts_genres.contact_id
         LEFT JOIN genres g on g.genre_id = contacts_genres.genre_id
-        WHERE c.is_private = true
-        AND c.verified = $1
+        WHERE c.is_private = true OR c.is_private = $1
         AND c.user_id = $2
         GROUP BY c.contact_id, g.genre_name, g.genre_id
-        "#,
-        verified,
+        "#, // `is_private` is intentionally redundant to allow for `true` or all
+        private,
         user_id
     ).fetch_all(pool)
     .await?;

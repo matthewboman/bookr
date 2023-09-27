@@ -1,20 +1,18 @@
 <script lang="ts">
-    import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte'
-    import { Button, Modal } from 'flowbite-svelte'
-    import { goto }          from '$app/navigation'
+    import { onMount } from 'svelte'
+    import { Button, Modal, Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte'
+    import { goto }    from '$app/navigation'
 
-    import { post }          from '../api'
-    import { authenticated } from '../store'
-    import AuthModal         from "../components/AuthModal.svelte"
-    import ContactModal      from '../components/ContactModal.svelte'
+    import { post }          from '../../api'
+    import { isAdmin, isAuthenticated } from '../../functions'
+    import { admin, authenticated }     from '../../store'
+    import AuthModal         from "../AuthModal.svelte"
+    import ContactModal      from '../ContactModal.svelte'
 
-    export let onAuthClose = null
-    
+    export let onAuthClose: string = ''
+
     let authModal    = false
     let contactModal = false
-    let userExists: boolean
-
-    authenticated.subscribe((val) => {userExists = val})
 
     async function signOut() {
         const res = await post("/user/logout", {})
@@ -36,6 +34,16 @@
     function closeContactModal() {
         contactModal = false
     }
+
+    onMount(async() => {
+        if (isAuthenticated()) {
+            authenticated.update(() => true)
+        }
+
+        if (isAdmin()) {
+            admin.update(() => true)
+        }     
+    })
 </script>
   
 <Navbar let:hidden let:toggle color="primary">
@@ -47,7 +55,11 @@
     <NavHamburger on:click={toggle} />
     <NavUl {hidden}>
         <NavLi href="/about">About</NavLi>
-        {#if userExists}
+        {#if $admin}
+            <NavLi href="/admin">Admin</NavLi>
+        {/if}
+        {#if $authenticated}
+            <NavLi href="/user/profile">Profile</NavLi>
             <Button size="sm" on:click={() => contactModal = true}>Add contact</Button>
             <Button size="sm" on:click={signOut}>Sign Out</Button>
         {:else}           

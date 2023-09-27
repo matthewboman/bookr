@@ -14,6 +14,8 @@
     import type { Review } from '../../types'
     import StarRating      from "../StarRating.svelte"
 
+    // TODO: make review blocks less redundant
+
     export let review: Review
 
     const dispatch = createEventDispatcher()
@@ -59,9 +61,6 @@
 </script>
 
 <Card class="text-center m-4" size="xl" padding="lg">
-    <h2>
-        Review of { review.contactName }
-    </h2>
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex justify-between">
         { review.title }
         <StarRating currentRating={review.rating} active={false} color={'yellow'}></StarRating>

@@ -2,10 +2,9 @@
 	import { browser } from '$app/environment'
 	import { onMount } from 'svelte'
 
-    import ContactDetails      from '../components/ContactDetails.svelte'
     import FilterContainer     from '../components/FilterContainer.svelte'
     import MediaQuery          from '../components/MediaQuery.svelte'
-    import Menu                from '../components/Menu.svelte'
+    import SelectedContact     from '../components/contact/SelectedContact.svelte'
     import { get }             from '../api'
     import { getUserId, isAuthenticated } from '../functions'
     import type { Contact }    from '../types'
@@ -27,7 +26,7 @@
 	// Workaround bc `browser` isn't defined w/ SSR
 	async function getMap() {
 		if (browser) {
-			LeafletContainer = (await import('../components/MapContainer.svelte')).default
+			LeafletContainer = (await import('../components/map/MapContainer.svelte')).default
 		}
 	}
 
@@ -56,7 +55,6 @@
 </script>
 
 {#if contactList.length}
-    <Menu/>
     <!-- Desktop -->
     <MediaQuery query="(min-width: 1281px)" let:matches>
         {#if matches}
@@ -92,7 +90,7 @@
     </MediaQuery>
 
     {#if $selectedContact}
-        <ContactDetails/>
+        <SelectedContact/>
     {/if}
 {:else}
     loading
