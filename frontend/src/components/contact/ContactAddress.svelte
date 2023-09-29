@@ -15,9 +15,3 @@
         { contact.zipCode }
     {/if}
 </div>
-
-<style>
-    .detail {
-
-    }
-</style>

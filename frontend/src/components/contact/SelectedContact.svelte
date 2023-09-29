@@ -7,7 +7,7 @@
     import ContactModal   from "../ContactModal.svelte"
     import { post }       from '../../api'
     import { handleResponse, isAdmin, isAuthenticated } from '../../functions'
-    import { contactReviews, selectedContact, userId } from "../../store"
+    import { contactReviews, selectedContact, userId }  from "../../store"
    
     const DELETE_CONTACT_URL = "/user/delete-contact"
 

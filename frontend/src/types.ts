@@ -43,7 +43,7 @@ export type NewContact = {
     address:     string | null,
     city:        string,
     state:       string,
-    zipCode:     string,
+    zipCode:     string | null,
     // country:     string,
     capacity:    number | null,
     email:       string | null,

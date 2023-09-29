@@ -1,7 +1,9 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte'
     import { ButtonGroup, Card, GradientButton} from 'flowbite-svelte'
-    import type { Contact } from '../types'
+
+    import type { Contact } from '../../types'
+    import ContactAddress   from './ContactAddress.svelte'
 
     export let contact: Contact
 
@@ -18,21 +20,10 @@
 
 <Card size="xl">
     <div class="flex justify-between">
-        <div class="">
+        <div>
             { contact.displayName }
         </div>
-        <div class="">
-            { contact.address }
-        </div>
-        <div class="">
-            { contact.city }
-        </div>
-        <div class="">
-            { contact.state }
-        </div>
-        <div class="">
-            { contact.zipCode }
-        </div>
+        <ContactAddress contact={contact} className={''}/>
         <div class="">
             <ButtonGroup>
                 <GradientButton shadow={true} color="green" on:click={approveContact}>Approve</GradientButton>

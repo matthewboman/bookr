@@ -2,7 +2,7 @@
     import { createEventDispatcher } from "svelte"
     import { Button, Modal } from "flowbite-svelte"
 
-    import Reviews        from "../Reviews.svelte"
+    import Reviews        from "../review/Reviews.svelte"
     import ContactDetails from './ContactDetails.svelte'
     import ContactModal   from "../ContactModal.svelte"
     import { post }       from '../../api'

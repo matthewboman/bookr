@@ -1,16 +1,16 @@
 <script lang="ts">
     import { LeafletMap, Marker, Popup, TileLayer } from 'svelte-leafletjs'
 
-    import ContactPopup       from './ContactPopup.svelte'
-    import { get }            from '../../api'
+    import ContactPopup from './ContactPopup.svelte'
+    import { get }      from '../../api'
     import type { Contact, MapOptions }        from '../../types'
     import { contactReviews, selectedContact } from '../../store'
 
     export let renderedContacts: Contact[]
-    export let mapOptions: MapOptions
+    export let mapOptions:       MapOptions
 
-    const REVIEWS_URL = "/reviews?contactId="
-    const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    const REVIEWS_URL      = "/reviews?contactId="
+    const tileUrl          = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     const tileLayerOptions = {
         minZoom: 0,
         maxZoom: 20,
@@ -41,6 +41,7 @@
 </LeafletMap>
 
 <style>
+    /* override leaflet */
     :global(.leaflet-popup-content-wrapper), :global(.leaflet-popup-tip) {
         backdrop-filter: blur(2px);
         background-color: rgba(31, 41, 55, 0.8);

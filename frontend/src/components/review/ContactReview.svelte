@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte"
-    import { Card, GradientButton } from "flowbite-svelte"
+    import { GradientButton }        from "flowbite-svelte"
 
     import { post }           from "../../api"
     import { handleResponse } from '../../functions'
@@ -12,15 +12,12 @@
         userId
     } from '../../store'
     import type { Review } from '../../types'
-    import StarRating      from "../StarRating.svelte"
-
-    // TODO: make review blocks less redundant
+    import ReviewDispaly   from "./Review.svelte"
 
     export let review: Review
+    let errorMessage:  string | null
 
     const dispatch = createEventDispatcher()
-
-    let errorMessage: string | null
 
     async function deleteReview(review: Review) {
         const url  = $admin ? "/admin/delete-review" : "/user/delete-review"
@@ -60,15 +57,8 @@
     }
 </script>
 
-<Card class="text-center m-4" size="xl" padding="lg">
-    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex justify-between">
-        { review.title }
-        <StarRating currentRating={review.rating} active={false} color={'yellow'}></StarRating>
-    </h5>
-    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
-        { review.body }
-    </p>
-    <div>
+<ReviewDispaly review={review}>
+    <div class="basis-1/4 gap-4" slot="actions">
         {#if $admin || review.userId === $userId}
             <GradientButton type="submit" class="w-full1" on:click={() => deleteReview(review)}>Delete review</GradientButton>
         {/if}
@@ -79,4 +69,4 @@
             <a href={`/admin/reviews?user-id=${review.userId}`}>{review.email}</a>
         {/if}
     </div>
-</Card>
+</ReviewDispaly>

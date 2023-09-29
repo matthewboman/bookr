@@ -3,10 +3,9 @@
     import { Sidebar, SidebarGroup, SidebarItem, SidebarWrapper } from 'flowbite-svelte'
     import { BookOutline, StarOutline, StarSolid } from 'flowbite-svelte-icons'
 
-    $: activeUrl  = $page.url.pathname
+    import { activeClass, nonActiveClass } from './sidebar'
 
-    let activeClass = 'flex items-center p-2 text-base font-normal text-primary-900 bg-primary-200 dark:bg-primary-700 rounded-lg dark:text-white hover:bg-primary-100 dark:hover:bg-gray-700';
-    let nonActiveClass = 'flex items-center p-2 text-base font-normal text-green-900 rounded-lg dark:text-white hover:bg-green-100 dark:hover:bg-green-700';
+    $: activeUrl  = $page.url.pathname
 </script>
   
   <Sidebar {activeUrl} {activeClass} {nonActiveClass}>

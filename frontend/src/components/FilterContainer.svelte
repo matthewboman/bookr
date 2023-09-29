@@ -1,15 +1,16 @@
 <script lang="ts">
+    import anime       from 'animejs'
 	import { onMount } from 'svelte'
-    import { Alert, Button, Checkbox, Input, Label, MultiSelect, Search } from 'flowbite-svelte'
-    import anime from 'animejs'
+    import { Button, Checkbox, Input, Label, MultiSelect, Search } from 'flowbite-svelte'
 
     import { post }               from '../api'
     import { handleResponse }     from '../functions'
     import { genres, mapOptions } from '../store'
     import type { Contact }       from '../types'
+    import ErrorMessage           from './ui/ErrorMessage.svelte'
     
     export let filteredContacts: Contact[]
-    export let contactList: Contact[]
+    export let contactList:      Contact[]
 
     const CITY_SEARCH_URL = "/find-coordinates-for-city"
     const CITY_ZOOM       = 12
@@ -39,7 +40,6 @@
     const capacityFilter = (contact: Contact): boolean => {
         if (allowNullCapacity && contact.capacity == null) return true
         if (!allowNullCapacity && contact.capacity == null) return false
-
         if (contact.capacity >= minCapacity && contact.capacity <= maxCapacity) return true
         
         return false
@@ -49,7 +49,6 @@
         if (allAges && contact.ageRange === 'all') return true
         if (eighteenPlus && contact.ageRange === '18+') return true
         if (twentyonePlus && contact.ageRange === '21+') return true
-
         if (allowNullAgeRange && contact.ageRange == null) return true
 
         return false
@@ -70,7 +69,7 @@
     }
 
     async function searchCity() {
-        if (city.length < 1) {return}
+        if (city.length < 1) return
 
         let response = await post(CITY_SEARCH_URL, { city })
         errorMessage = handleResponse(
@@ -98,13 +97,13 @@
 
     // toggle filters animation
     let areFiltersShowing = true
-    let filterText = 'hide filters'
+    let filterText        = 'hide filters'
 
     function toggleFilters(){
         let easing = 'easeOutQuad'
         let duration = 300
 
-        if(areFiltersShowing){
+        if (areFiltersShowing){
             // hide
             anime({
                 targets: '.filter-container',
@@ -154,9 +153,7 @@
                     })
                 }
             })
-
         }
-
         areFiltersShowing = !areFiltersShowing
     }
 
@@ -209,10 +206,7 @@
 
 <div class="filter-block mb-4">
     {#if errorMessage}
-        <Alert border color="red">
-            <svg slot="icon" aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-            <span class="font-medium">Error</span> { errorMessage }
-        </Alert>
+        <ErrorMessage message={errorMessage} />
     {/if}
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Find venues in city</h3>
     <Search bind:value={city}>

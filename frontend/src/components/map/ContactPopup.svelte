@@ -31,6 +31,7 @@
 </div>
 
 <style>
+    /* override .leaflect-container */
     .contact {
         font-family: Comfortaa;
     }
