@@ -4,21 +4,22 @@
 
     import Reviews        from "../review/Reviews.svelte"
     import ContactDetails from './ContactDetails.svelte'
-    import ContactModal   from "../ContactModal.svelte"
-    import { post }       from '../../api'
+    import ContactModal   from "./AddContactForm.svelte"
+    import { get, post }  from '../../api'
     import { handleResponse } from '../../functions'
     import { selectedContact, userId } from "../../store"
     import type { Contact } from '../../types'
-
-    // TODO: build endpoint && workflow where user clicks to get all reviews for their contact
    
     const DELETE_CONTACT_URL = "/user/delete-contact"
+    const REVIEWS_URL        = "/reviews?contactId="
     const dispatch = createEventDispatcher()
 
     export let contact: Contact
 
     let editingContact = false
-    let errorMessage: string | null
+    let showingReviews = false
+    $: reviewButton = showingReviews ? "Hide reviews" : "Show all reviews"
+    $: reviews      = []
 
     async function deleteContact() {
         let req = {
@@ -38,6 +39,17 @@
         }
     }
 
+    async function showReviews() {
+        showingReviews = !showingReviews
+
+        if (reviews.length < 1) {
+            let res = await get(`${REVIEWS_URL}${contact.contactId}`)
+                .then(r => r.json())
+
+            reviews = res.reviews
+        }
+    }
+
     function editContact() {
         editingContact = true
         $selectedContact = contact
@@ -52,6 +64,7 @@
     <ContactDetails contact={contact} className={''} />
     { contact.contactType}
 
+    <Button on:click={showReviews}>{ reviewButton }</Button>
     <Button on:click={editContact}>Edit</Button>
     <Button on:click={deleteContact}>Delete</Button>
 
@@ -60,4 +73,6 @@
     </Modal>
 </div>
 
-<Reviews reviews={[]}/>
+{#if showingReviews}
+    <Reviews reviews={reviews}/>
+{/if}

@@ -1,5 +1,4 @@
 <script lang="ts">
-    import anime       from 'animejs'
 	import { onMount } from 'svelte'
     import { Button, Checkbox, Input, Label, MultiSelect, Search } from 'flowbite-svelte'
 
@@ -95,78 +94,13 @@
             .filter(c => contactTypeFilter(c))
     }
 
-    // toggle filters animation
-    let areFiltersShowing = true
-    let filterText        = 'hide filters'
-
-    function toggleFilters(){
-        let easing = 'easeOutQuad'
-        let duration = 300
-
-        if (areFiltersShowing){
-            // hide
-            anime({
-                targets: '.filter-container',
-                height: 54,
-                paddingBottom: 0,
-                easing,
-                duration
-            })
-
-            anime({
-                targets: '.toggle-filters span',
-                opacity: 0,
-                easing: 'linear',
-                duration: 100,
-                complete: () => {
-                    filterText = 'show filters'
-                    anime({
-                        targets: '.toggle-filters span',
-                        opacity: 1,
-                        easing: 'linear',
-                        duration: 100,
-                    })
-                }
-            })
-        } else {
-            // show
-            anime({
-                targets: '.filter-container',
-                height: 322,
-                padding: 16,
-                easing,
-                duration
-            })
-
-            anime({
-                targets: '.toggle-filters span',
-                opacity: 0,
-                easing: 'linear',
-                duration: 100,
-                complete: () => {
-                    filterText = 'hide filters'
-                    anime({
-                        targets: '.toggle-filters span',
-                        opacity: 1,
-                        easing: 'linear',
-                        duration: 100,
-                    })
-                }
-            })
-        }
-        areFiltersShowing = !areFiltersShowing
-    }
-
     // Workaround to reload when data is fetched
     onMount(() => {
         update()
     })
 </script>
 
-<button on:click={toggleFilters} class="toggle-filters xl:hidden md:block text-center w-full pb-2">
-    <span>{filterText}</span>
-</button>
-<div class="filter-block mb-4">
+<div class="filter-block mb-5">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter venues by capacity</h3>
     <div class="flex w-full gap-2">
         <Label class="space-y-2 mb-2 flex-grow">
@@ -181,7 +115,7 @@
     <Checkbox bind:checked={allowNullCapacity} on:change={update}>Allow for venues with unknown capacity</Checkbox>
 </div>
 
-<div class="filter-block mb-4">
+<div class="filter-block mb-5">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter contacts by age range</h3>
     <Checkbox bind:checked={allAges} on:change={update}>All ages</Checkbox>
     <Checkbox bind:checked={eighteenPlus} on:change={update}>18+</Checkbox>
@@ -189,7 +123,7 @@
     <Checkbox bind:checked={allowNullAgeRange} on:change={update}>Allow for venues with unknown age range</Checkbox>
 </div>
 
-<div class="filter-block mb-4">
+<div class="filter-block mb-5">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter contacts by type</h3>
     <Checkbox bind:checked={venue} on:change={update}>Venues</Checkbox>
     <Checkbox bind:checked={promoter} on:change={update}>Promoters</Checkbox>
@@ -197,14 +131,14 @@
     <Checkbox bind:checked={band} on:change={update}>Bands</Checkbox>
 </div>
 
-<div class="filter-block mb-4">
+<div class="filter-block mb-5">
     <h3 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">Filter contacts by genre</h3>
     <MultiSelect items={formattedGenres} bind:value={selectedGenres} on:change={update} size="lg" />
     This button is a <a href="workaround https://github.com/themesberg/flowbite-svelte/pull/1081" target="_blank">workaround </a>
     <Button on:click={update}>update</Button>
 </div>
 
-<div class="filter-block mb-4">
+<div class="filter-block mb-5">
     {#if errorMessage}
         <ErrorMessage message={errorMessage} />
     {/if}

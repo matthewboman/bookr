@@ -3,7 +3,7 @@
     import { Button } from 'flowbite-svelte'
 
     import { post }      from '../../api'
-    import PasswordReset from '../../components/PasswordReset.svelte'
+    import PasswordReset from '../../components/auth/PasswordReset.svelte'
 
     const RESET_PASSWORD_URL = "/reset-password"
     const REDIRECT_AFTER_MS  = 1000

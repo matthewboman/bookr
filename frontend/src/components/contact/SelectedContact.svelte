@@ -4,7 +4,7 @@
 
     import Reviews        from "../review/Reviews.svelte"
     import ContactDetails from './ContactDetails.svelte'
-    import ContactModal   from "../ContactModal.svelte"
+    import AddContactForm from "./AddContactForm.svelte"
     import { post }       from '../../api'
     import { handleResponse, isAdmin, isAuthenticated } from '../../functions'
     import { contactReviews, selectedContact, userId }  from "../../store"
@@ -13,7 +13,6 @@
 
     let canEditContact = false
     let editingContact = false
-    let errorMessage: string | null
 
     function checkIfUserCanEdit(): boolean {
         if (isAdmin()) return true
@@ -63,7 +62,7 @@
     {/if}
 
     <Modal bind:open={editingContact} size="xs" class="w-full">
-        <ContactModal on:update={closeContactModal} action={'edit'}/>
+        <AddContactForm on:update={closeContactModal} action={'edit'}/>
     </Modal>
 </div>
 

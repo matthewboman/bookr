@@ -1,6 +1,6 @@
 <script lang="ts">
     import Map        from './Map.svelte'
-    import MediaQuery from '../MediaQuery.svelte'
+    import MediaQuery from '../ui/MediaQuery.svelte'
     import { mapOptions }   from '../../store'
     import type { Contact } from '../../types'
 

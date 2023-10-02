@@ -2,12 +2,13 @@
 	import { browser } from '$app/environment'
 	import { onMount } from 'svelte'
 
-    import FilterContainer     from '../components/FilterContainer.svelte'
-    import MediaQuery          from '../components/MediaQuery.svelte'
-    import SelectedContact     from '../components/contact/SelectedContact.svelte'
-    import { get }             from '../api'
+    import FilterContainer  from '../components/FilterContainer.svelte'
+    import MediaQuery       from '../components/ui/MediaQuery.svelte'
+    import SelectedContact  from '../components/contact/SelectedContact.svelte'
+    import Toggle           from '../components/ui/Toggle.svelte'
+    import { get }          from '../api'
     import { getUserId, isAuthenticated } from '../functions'
-    import type { Contact }    from '../types'
+    import type { Contact } from '../types'
     import { authenticated, genres, selectedContact, userId } from "../store"
 
     const CONTACTS_URL     = "/contacts"
@@ -73,9 +74,9 @@
     <MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
         {#if matches}
             <svelte:component this={LeafletContainer} {renderedContacts}/> 
-            <div class="filter-container p-4 border-primary-700">
+            <Toggle >
                 <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
-            </div>
+            </Toggle>
         {/if}
     </MediaQuery>
     
@@ -83,9 +84,9 @@
     <MediaQuery query="(max-width: 480px)" let:matches>
         {#if matches}
             <svelte:component this={LeafletContainer} {renderedContacts}/> 
-            <div class="filter-container p-4 border-primary-700">
+            <Toggle >
                 <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
-            </div>
+            </Toggle>
         {/if}
     </MediaQuery>
 
@@ -116,11 +117,13 @@
         backdrop-filter: blur(2px);
         border-style: solid;
         border-top-width: 4px;
-        position: absolute;
-        bottom: 0px;
+        /* position: absolute; */
+        /* bottom: 0px; */
         z-index: 10;
         background-color: rgba(31, 41, 55,0.9);
         width: 100vw;
+        height: 54px; 
+        padding: 16px 16px 0px;
     }
 
     .desktop-map {

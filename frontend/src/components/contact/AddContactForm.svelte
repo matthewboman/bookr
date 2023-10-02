@@ -2,13 +2,13 @@
     import { createEventDispatcher, onMount } from 'svelte'
     import { Button, Label, Input, Checkbox, Select, MultiSelect } from 'flowbite-svelte'
 
-    import { get, post }  from '../api'
-    import { ageRanges, states, contactTypes } from '../constants'
-    import { isAdmin, handleResponse }  from '../functions'
-    import { authenticated, genres, selectedContact } from '../store'
-    import type { Contact, Genre, NewContact } from '../types'
-    import ErrorMessage   from './ui/ErrorMessage.svelte'
-    import SuccessMessage from './ui/SuccessMessage.svelte'
+    import { get, post }  from '../../api'
+    import { ageRanges, states, contactTypes } from '../../constants'
+    import { isAdmin, handleResponse }  from '../../functions'
+    import { authenticated, genres, selectedContact } from '../../store'
+    import type { Contact, Genre, NewContact } from '../../types'
+    import ErrorMessage   from '../ui/ErrorMessage.svelte'
+    import SuccessMessage from '../ui/SuccessMessage.svelte'
 
     const ADD_CONTACT_URL = "/user/add-contact"
     const GENRES_URL      = "/genres"
@@ -30,7 +30,7 @@
     let contactForm:    string | null
     let isPrivate:      boolean = false 
 
-    let selectedGenres  = $selectedContact ? $selectedContact.genres.map(g => g.genreId) : null
+    let selectedGenres  = $selectedContact ? $selectedContact.genres.map(g => g.genreId) : []
     let formattedGenres = $genres.map(g => ({ value: g.genreId, name: g.genreName }))
     let title  = action === 'add' ? 'Add new contact' : 'Edit selected contact'
     let button = action === 'add' ? 'Add contact' : 'Update contact'

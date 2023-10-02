@@ -2,12 +2,12 @@
     import { createEventDispatcher } from 'svelte'
     import { Button, Label, Input } from 'flowbite-svelte'
 
-    import { type User } from '../types' // TODO: verify w types
-    import { post }          from '../api'
-    import { getUserId }     from '../functions'
-    import { authenticated, userId } from '../store'
-    import ErrorMessage      from './ui/ErrorMessage.svelte'
-    import SuccessMessage    from './ui/SuccessMessage.svelte'
+    import { type User } from '../../types' // TODO: verify w types
+    import { post }          from '../../api'
+    import { getUserId }     from '../../functions'
+    import { authenticated, userId } from '../../store'
+    import ErrorMessage      from '../ui/ErrorMessage.svelte'
+    import SuccessMessage    from '../ui/SuccessMessage.svelte'
 
     const dispatch = createEventDispatcher()
 

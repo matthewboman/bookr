@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Label, Input, Helper } from 'flowbite-svelte'
 
-    import ErrorMessage   from './ui/ErrorMessage.svelte'
-    import SuccessMessage from './ui/SuccessMessage.svelte'
+    import ErrorMessage   from '../ui/ErrorMessage.svelte'
+    import SuccessMessage from '../ui/SuccessMessage.svelte'
 
     export let newPassword:      string
     export let newPasswordCheck: string

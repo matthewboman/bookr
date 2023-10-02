@@ -3,11 +3,11 @@
     import { Button, Modal, Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte'
     import { goto }    from '$app/navigation'
 
-    import { post }          from '../../api'
+    import { post }       from '../../api'
     import { isAdmin, isAuthenticated } from '../../functions'
     import { admin, authenticated }     from '../../store'
-    import AuthModal         from "../AuthModal.svelte"
-    import ContactModal      from '../ContactModal.svelte'
+    import AuthModal      from "../auth/AuthModal.svelte"
+    import AddContactForm from '../contact/AddContactForm.svelte'
 
     export let onAuthClose: string = ''
 
@@ -72,7 +72,7 @@
     <AuthModal on:close={closeAuthModal}/>
 </Modal>
 <Modal bind:open={contactModal} size="xs" class="w-full">
-    <ContactModal on:close={closeContactModal} />
+    <AddContactForm on:close={closeContactModal} />
 </Modal>
 
 <style>
