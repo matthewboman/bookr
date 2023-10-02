@@ -1,16 +1,16 @@
 <script lang="ts">
     import { onMount } from 'svelte'
 
-    import { isAdmin, isAuthenticated } from '../functions'
+    import { isAdmin, isAuthenticated } from '../../functions'
     import { 
         admin, 
         contactReviews, 
         selectedContact,
         userId
-    } from '../store'
-    import type { Review }   from '../types'
-    import UserDisplayReview from './review/UserDisplayReview.svelte'
-    import EditReview        from './review/EditReview.svelte'
+    } from '../../store'
+    import type { Review } from '../../types'
+    import EditReview      from './EditReview.svelte'
+    import ContactReview   from './ContactReview.svelte'
 
     export let reviews: Review[]
 
@@ -42,6 +42,6 @@
         <EditReview on:disallowEditReview={() => allowAddReview = false}/>
     {/if}
     {#each reviews as review}
-        <UserDisplayReview review={review} on:allowEdit={() => allowAddReview = true}/>
+        <ContactReview review={review} on:allowEdit={() => allowAddReview = true}/>
     {/each}
 </div>

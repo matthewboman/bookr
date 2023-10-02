@@ -185,7 +185,9 @@ pub async fn query_recent_reviews(
     let reviews = sqlx::query_as!(
         RenderedReview,
         r#"
-        SELECT r.review_id, r.user_id, r.contact_id, r.title, r.body, r.rating, u.email, c.display_name as contact_name
+        SELECT 
+            r.review_id, r.user_id, r.contact_id, r.title, r.body, r.rating, 
+            u.email, c.display_name as contact_name
         FROM reviews r
         JOIN users u ON r.user_id = u.user_id
         JOIN contacts c ON r.contact_id = c.contact_id

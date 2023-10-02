@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte"
-    import { Card, GradientButton }  from "flowbite-svelte"
+    import { GradientButton }  from "flowbite-svelte"
 
     import { post }           from "../../api"
     import { handleResponse } from '../../functions'
@@ -10,14 +10,13 @@
         selectedReview
     } from '../../store'
     import type { Review } from '../../types'
-    import StarRating      from "../StarRating.svelte"
+    import ReviewDispaly   from "./Review.svelte"
 
     export let review: Review
+    let errorMessage:  string | null
 
     const dispatch   = createEventDispatcher()
     const DELETE_URL = "/admin/delete-review"
-
-    let errorMessage: string | null
 
     async function deleteReview(review: Review) {
         const data   = {
@@ -55,27 +54,9 @@
     }
 </script>
 
-<Card class="text-center m-4" size="xl" padding="lg">
-    <div class="flex flex-row">
-        <div class="basis-1/4 gap-4">
-            { review.contactName }
-            <a href={`/admin/reviews?user-id=${review.userId}`}>{review.email}</a>
-        </div>
-        <div class="basis-2/4 gap-4">
-            <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex">
-                { review.title }
-                <div class="inline">
-                    <StarRating currentRating={review.rating} active={false} color={'yellow'}></StarRating>
-
-                </div>
-            </h5>
-            <p class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
-                { review.body }
-            </p>
-        </div>
-        <div class="basis-1/4 gap-4">
-            <GradientButton type="submit" class="w-full1" on:click={() => deleteReview(review)}>Delete review</GradientButton>
-            <GradientButton type="submit" class="w-full1" on:click={() => editReview(review)}>Edit review</GradientButton>
-        </div>
+<ReviewDispaly review={review}>
+    <div class="basis-1/4 gap-4" slot="actions">
+        <GradientButton type="submit" class="w-full1" on:click={() => deleteReview(review)}>Delete review</GradientButton>
+        <GradientButton type="submit" class="w-full1" on:click={() => editReview(review)}>Edit review</GradientButton>
     </div>
-</Card>
+</ReviewDispaly>

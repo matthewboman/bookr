@@ -2,12 +2,11 @@
     import { browser } from '$app/environment'
     import { onMount } from 'svelte'
 
-    import Menu    from '../../components/Menu.svelte'
     import { get } from "../../api"
 
-    export let onAuthClose = 'redirect'
     let message: string = "verifying"
 
+    // TODO: handle response
     async function verifyEmail() {
         const params = new URLSearchParams(window.location.search)
         const token  = params.get("token")
@@ -41,7 +40,6 @@
 
 </script>
 
-<Menu bind:onAuthClose={onAuthClose}/>
 <div>
     { message }
 </div>

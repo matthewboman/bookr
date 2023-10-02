@@ -24,8 +24,8 @@ pub async fn user_delete_contact(
     json: web::Json<DeleteData>,
     _:    JwtMiddleware
 ) -> Result<HttpResponse, ContentError> {
-    let ext      = req.extensions();
-    let user_id  = ext.get::<uuid::Uuid>().unwrap();
+    let ext     = req.extensions();
+    let user_id = ext.get::<uuid::Uuid>().unwrap();
 
     user_matches(user_id, &json.user_id)?;
     delete_contact(&json.contact_id, &pool)

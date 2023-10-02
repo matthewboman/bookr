@@ -9,6 +9,7 @@
         authenticated, 
         contactReviews, 
         selectedReview,
+        userId
     } from '../../store'
     import type { Review } from '../../types'
     import ReviewDispaly   from "./Review.svelte"
@@ -58,7 +59,14 @@
 
 <ReviewDispaly review={review}>
     <div class="basis-1/4 gap-4" slot="actions">
-        <GradientButton type="submit" class="w-full1" on:click={() => deleteReview(review)}>Delete review</GradientButton>
-        <GradientButton type="submit" class="w-full1" on:click={() => editReview(review)}>Edit review</GradientButton>
+        {#if $admin || review.userId === $userId}
+            <GradientButton type="submit" class="w-full1" on:click={() => deleteReview(review)}>Delete review</GradientButton>
+        {/if}
+        {#if $admin || review.userId === $userId}
+            <GradientButton type="submit" class="w-full1" on:click={() => editReview(review)}>Edit review</GradientButton>
+        {/if}
+        {#if $admin && review.email}
+            <a href={`/admin/reviews?user-id=${review.userId}`}>{review.email}</a>
+        {/if}
     </div>
 </ReviewDispaly>

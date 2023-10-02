@@ -25,6 +25,7 @@ pub struct NewContactData {
     pub contact_form: Option<String>,
     pub age_range:    String,
     pub is_private:   bool,
+    pub contact_type: String,
     pub genres:       Vec<i32>,
 }
 
@@ -40,6 +41,7 @@ impl TryFrom<NewContactData> for NewContact {
         let email        = OptionalStringInput::parse(value.email);
         let contact_form = OptionalStringInput::parse(value.contact_form);
         let age_range    = StringInput::parse(value.age_range);
+        let contact_type = StringInput::parse(value.contact_type);
 
         Ok(Self {
             display_name,
@@ -51,6 +53,7 @@ impl TryFrom<NewContactData> for NewContact {
             email,
             contact_form,
             age_range,
+            contact_type,
             is_private: value.is_private,
             genres:     value.genres
         })
@@ -102,8 +105,12 @@ pub async fn insert_contact(
 ) -> Result<i32, sqlx::Error> {
     let result = sqlx::query!(
         r#"
-        INSERT INTO contacts (display_name, address, city, state, zip_code, capacity, email, contact_form, age_range, is_private, user_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        INSERT INTO contacts (
+            display_name, address, city, state, zip_code, capacity, email, 
+            contact_form, age_range, is_private, contact_type,
+            user_id
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING contact_id
         "#,
         contact.display_name,
@@ -116,6 +123,7 @@ pub async fn insert_contact(
         contact.contact_form,
         contact.age_range,
         contact.is_private,
+        contact.contact_type,
         user_id
     ).fetch_one(transaction)
     .await?;

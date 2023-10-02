@@ -4,9 +4,9 @@
     import Star from './Star.svelte'
 
     export let active: boolean
-    export let color: string
+    export let color: string = 'yellow'
     export let currentRating: number
-    export let size: number
+    export let size: number = 20
 
     const dispatch = createEventDispatcher()
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import StarRating from "../StarRating.svelte"
+    import StarRating from "../ui/StarRating.svelte"
 
     export let className: string
     export let name:      string

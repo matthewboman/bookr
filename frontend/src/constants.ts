@@ -49,11 +49,18 @@ export const states = [
     { name: "West Virginia", value: "WV" },
     { name: "Wisconsin", value: "WI" },
     { name: "Wyoming", value: "WY" }
-  ]
+]
 
-  export const ageRanges = [
+export const ageRanges = [
     { name: "All Ages", value: "all" },
     { name: "18+",      value: "18+" },
     { name: "21+",      value: "21+" },
     { name: "Unknown",  value: "unknown" }
+]
+
+export const contactTypes = [
+    { name: "Venue",             value: "venue" },
+    { name: "Promoter",          value: "promoter" },
+    { name: "DIY space / house", value: "diy" },
+    { name: "Band",              value: "band" },
 ]

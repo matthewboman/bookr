@@ -1,8 +1,8 @@
 <script lang="ts">
-    import ContactAddress  from './contact/ContactAddress.svelte'
-    import ContactCapacity from './contact/ContactCapacity.svelte';
-    import ContactLinks    from './contact/ContactLinks.svelte';
-    import ContactName     from './contact/ContactName.svelte'
+    import ContactAddress  from '../contact/ContactAddress.svelte'
+    import ContactCapacity from '../contact/ContactCapacity.svelte';
+    import ContactLinks    from '../contact/ContactLinks.svelte';
+    import ContactName     from '../contact/ContactName.svelte'
 
     export let contact: any
 </script>
@@ -12,7 +12,7 @@
         className={'flex justify-between'}
         name={contact.displayName} 
         rating={contact.averageRating} 
-        starColor={'blue'}
+        starColor={'yellow'}
         starSize={15}
     />
     <ContactAddress
@@ -31,6 +31,7 @@
 </div>
 
 <style>
+    /* override .leaflect-container */
     .contact {
         font-family: Comfortaa;
     }

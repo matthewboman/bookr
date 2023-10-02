@@ -117,7 +117,9 @@ pub async fn query_pending_contacts(
     let contacts = sqlx::query_as!(
         PendingContact,
         r#"
-        SELECT contact_id, display_name, address, city, state, zip_code, capacity, email, contact_form, age_range, country, user_id
+        SELECT 
+            contact_id, display_name, address, city, state, zip_code, capacity, 
+            email, contact_form, age_range, country, user_id, contact_type
         FROM contacts
         WHERE verified = false
         "#

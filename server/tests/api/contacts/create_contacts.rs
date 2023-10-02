@@ -24,6 +24,7 @@ async fn authenticated_user_can_add_contact() {
         "displayName": "test",
         "city": "asheville",
         "ageRange":  "18+",
+        "contactType": "venue",
         "isPrivate": false,
         "genres":    [1]
     });
