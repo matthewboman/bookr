@@ -28,6 +28,7 @@
 	- OR signup and change `status` column in `users` to `confirmed`
 	- Comment out `send_confirmation_email` in `server/src/routes/auth/signup.rs` if email client not configured locally.
 - Start the SPA: `npm run dev`
+- For frontend/UI development without setting up a Rust backend, checkout [FRONTEND.md](https://github.com/matthewboman/bookr/blob/main/FRONTEND.md)
 
 ## Testing
 

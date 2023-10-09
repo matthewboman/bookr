@@ -44,11 +44,11 @@ pub async fn admin_edit_review(
 
     let review: Review = json.0.try_into().map_err(AdminError::ValidationError)?;
 
-    edit_review(review, &pool)
+    let review = edit_review(review, &pool)
         .await
         .context("Failed to update review")?;
 
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::Ok().json(review))
 }
 
 #[tracing::instrument(

@@ -165,6 +165,54 @@ pub struct NewContact {
     pub genres:       Vec<i32>,
 }
 
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewContactData {
+    pub display_name: String,
+    pub address:      Option<String>,
+    pub city:         String,
+    pub state:        Option<String>,
+    pub zip_code:     Option<String>,
+    pub capacity:     Option<i32>,
+    pub email:        Option<String>,
+    pub contact_form: Option<String>,
+    pub age_range:    String,
+    pub is_private:   bool,
+    pub contact_type: String,
+    pub genres:       Vec<i32>,
+}
+
+impl TryFrom<NewContactData> for NewContact {
+    type Error = String;
+
+    fn try_from(value: NewContactData) -> Result<Self, Self::Error> {
+        let display_name = StringInput::parse(value.display_name);
+        let address      = OptionalStringInput::parse(value.address);
+        let city         = StringInput::parse(value.city);
+        let state        = OptionalStringInput::parse(value.state);
+        let zip_code     = OptionalStringInput::parse(value.zip_code);
+        let email        = OptionalStringInput::parse(value.email);
+        let contact_form = OptionalStringInput::parse(value.contact_form);
+        let age_range    = StringInput::parse(value.age_range);
+        let contact_type = StringInput::parse(value.contact_type);
+
+        Ok(Self {
+            display_name,
+            address,
+            city,
+            state,
+            zip_code,
+            capacity: value.capacity,
+            email,
+            contact_form,
+            age_range,
+            contact_type,
+            is_private: value.is_private,
+            genres:     value.genres
+        })
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PendingContact {
@@ -224,6 +272,78 @@ pub async fn delete_contact(
     .await?;
 
     Ok(())
+}
+
+#[tracing::instrument(
+    name = "Saving new contact to database",
+    skip(contact, transaction, user_id)
+)]
+pub async fn insert_contact(
+    contact:     &NewContact,
+    transaction: &mut Transaction<'_, Postgres>,
+    user_id:     &Uuid,
+) -> Result<i32, sqlx::Error> {
+    let result = sqlx::query!(
+        r#"
+        INSERT INTO contacts (
+            display_name, address, city, state, zip_code, capacity, email, 
+            contact_form, age_range, is_private, contact_type,
+            user_id
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        RETURNING contact_id
+        "#,
+        contact.display_name,
+        contact.address,
+        contact.city,
+        contact.state,
+        contact.zip_code,
+        contact.capacity,
+        contact.email,
+        contact.contact_form,
+        contact.age_range,
+        contact.is_private,
+        contact.contact_type,
+        user_id
+    ).fetch_one(transaction)
+    .await?;
+
+    let contact_id: i32 = result.contact_id;
+
+    Ok(contact_id)
+}
+
+#[tracing::instrument(
+    name = "Querying contacts from DB",
+    skip(pool, contact_id)
+)]
+pub async fn query_contact_by_id(
+    pool:       &PgPool,
+    contact_id: &i32,
+) -> Result<Option<ContactResponse>, sqlx::Error> {
+    let contacts = sqlx::query_as!(
+        ContactRow,
+        r#"
+        SELECT c.contact_id, c.display_name, c.address, c.city, c.state, c.zip_code, 
+               c.capacity, c.latitude, c.longitude, c.email, c.contact_form, 
+               c.age_range, c.country, c.is_private, c.user_id, c.contact_type,
+               ROUND(AVG(r.rating), 2)::real AS average_rating,
+               g.genre_name, g.genre_id
+        FROM contacts c
+        LEFT JOIN reviews r ON c.contact_id = r.contact_id
+        LEFT JOIN contacts_genres ON c.contact_id = contacts_genres.contact_id
+        LEFT JOIN genres g on g.genre_id = contacts_genres.genre_id
+        WHERE c.contact_id = $1
+        GROUP BY c.contact_id, g.genre_name, g.genre_id
+        "#,
+        contact_id
+    ).fetch_all(pool)
+    .await?;
+
+    let formatted = format_contact_response(contacts);
+    let contact   = formatted.first();
+
+    Ok(contact.cloned())
 }
 
 #[tracing::instrument(

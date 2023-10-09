@@ -4,6 +4,7 @@ use sqlx::PgPool;
 
 use crate::auth::JwtMiddleware;
 use crate::domain::contact::{
+    query_contact_by_id,
     update_contact,
     update_contact_genres,
     EditContactData, 
@@ -45,8 +46,13 @@ pub async fn user_edit_contact(
         .commit()
         .await
         .context("Failed to commit SQL transaction to update contact")?;
+    
+    // If this fails, the transaction shouldn't fail
+    let contact = query_contact_by_id(&pool, &contact.contact_id)
+        .await
+        .context("Failed to query updated contact from the database")?;
 
     // TODO: if verified && address changes, update latitute and longitude
     // TODO: need someway to handle if this process errors. new column `erroring` && view for admin?
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::Ok().json(contact))
 }

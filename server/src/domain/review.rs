@@ -131,21 +131,23 @@ pub async fn delete_review(
 pub async fn edit_review(
     review:  Review,
     pool:    &PgPool
-) -> Result<(), sqlx::Error> {
-    sqlx::query!(
+) -> Result<Review, sqlx::Error> {
+    let review = sqlx::query_as!(
+        Review,
         r#"
         UPDATE reviews
         SET title = $1, body = $2, rating = $3
         WHERE review_id = $4
+        RETURNING review_id, contact_id, user_id, title, body, rating
         "#,
         review.title,
         review.body,
         review.rating,
         review.review_id,
-    ).execute(pool)
+    ).fetch_one(pool)
     .await?;
 
-    Ok(())
+    Ok(review)
 }
 
 #[tracing::instrument(
@@ -156,13 +158,13 @@ pub async fn insert_review(
     review:      NewReview,
     user_id:     &Uuid,
     transaction: &mut Transaction<'_, Postgres>,
-) -> Result<(), sqlx::Error> {
-    // TODO: update to return review
-    sqlx::query!(
+) -> Result<Review, sqlx::Error> {
+    let review = sqlx::query_as!(
+        Review,
         r#"
         INSERT INTO reviews (user_id, contact_id, title, body, rating)
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING review_id
+        RETURNING review_id, contact_id, user_id, title, body, rating
         "#,
         user_id,
         review.contact_id,
@@ -173,7 +175,7 @@ pub async fn insert_review(
     .fetch_one(transaction)
     .await?;
 
-    Ok(())
+    Ok(review)
 }
 
 #[tracing::instrument(

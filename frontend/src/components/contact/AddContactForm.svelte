@@ -5,7 +5,7 @@
     import { get, post }  from '../../api'
     import { ageRanges, states, contactTypes } from '../../constants'
     import { isAdmin, handleResponse }  from '../../functions'
-    import { authenticated, genres, selectedContact } from '../../store'
+    import { authenticated, genres, selectedContact, contactList } from '../../store'
     import type { Contact, Genre, NewContact } from '../../types'
     import ErrorMessage   from '../ui/ErrorMessage.svelte'
     import SuccessMessage from '../ui/SuccessMessage.svelte'
@@ -111,9 +111,10 @@
         )
 
         if (response.status === 200) {
-            successMessage = "Contact has been updated."
-
-            // TODO: update list of contacts
+            successMessage   = "Contact has been updated."
+            const contact    = await response.json()
+            $selectedContact = contact
+            $contactList     = [...$contactList.filter(c => c.contactId != contact.contactId), contact]
 
             setTimeout(() => {
                 dispatch('update')

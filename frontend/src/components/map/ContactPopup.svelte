@@ -23,6 +23,9 @@
         className={'mb-2'}
         capacity={contact.capacity}
     />
+    <div class="mb-2">
+        <a href={`/contact?contactId=${contact.contactId}`} class="text-orange-400 leaflet-link-override">Contact details</a>
+    </div>
     <ContactLinks
         className={''}
         link={contact.contactForm}
@@ -34,5 +37,9 @@
     /* override .leaflect-container */
     .contact {
         font-family: Comfortaa;
+    }
+
+    .leaflet-link-override {
+        color: rgb(255 138 76);
     }
 </style>

@@ -9,7 +9,7 @@
 </script>
 
 <div class={className}>
-    <h2 class="mr-2 text-xl">{ name }</h2>
+    <h2 class="mr-4 text-2xl">{ name }</h2>
     {#if rating}
         <StarRating 
             currentRating={rating} 

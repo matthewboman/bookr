@@ -8,7 +8,7 @@
 
 <div class={className}>
     {#if link}
-        <a target="_blank" href="{link}">
+        <a target="_blank" href="{link}" class="text-orange-400 leaflet-link-override">
             { link }
         </a>
     {/if}
@@ -16,3 +16,9 @@
         <div>{ email }</div>
     {/if}
 </div>
+
+<style>
+    .leaflet-link-override {
+        color: rgb(255 138 76);
+    }
+</style>

@@ -5,9 +5,10 @@
 </script>
 
 <div class={className}>
-    {#each genres as genre}
-        <div>
-            { genre.genreName }
-        </div>
-    {/each}
+    Genres:
+    <ul>
+        {#each genres as genre}  
+            <li>{ genre.genreName }</li>
+        {/each}
+    </ul>
 </div>

@@ -27,7 +27,7 @@ async fn admin_can_delete_review() {
     assert_eq!(200, response.status().as_u16());
 
     // Get reviews
-    let reviews = app.admin_get_reviews()
+    let reviews = app.admin_get_recent_reviews()
         .await
         .json::<Reviews>()
         .await

@@ -54,7 +54,7 @@
     }
 </script>
 
-<ReviewDispaly review={review}>
+<ReviewDispaly review={review} displayHeader={true}>
     <div class="basis-1/4 gap-4" slot="actions">
         <GradientButton type="submit" class="w-full1" on:click={() => deleteReview(review)}>Delete review</GradientButton>
         <GradientButton type="submit" class="w-full1" on:click={() => editReview(review)}>Edit review</GradientButton>

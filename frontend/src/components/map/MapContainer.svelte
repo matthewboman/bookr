@@ -10,22 +10,14 @@
 {#key $mapOptions}
     <MediaQuery query="(min-width: 1281px)" let:matches>
         {#if matches}
-            <div class="map computer"> 
-                <Map renderedContacts={renderedContacts} mapOptions={$mapOptions}/>   
-            </div>
-        {/if}
-    </MediaQuery>
-    <MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
-        {#if matches}
-            <div class="map tablet">    
+            <div class="map desktop">
                 <Map renderedContacts={renderedContacts} mapOptions={$mapOptions}/>
             </div>
         {/if}
     </MediaQuery>
-
-    <MediaQuery query="(max-width: 480px)" let:matches>
+    <MediaQuery query="(max-width: 1280px)" let:matches>
         {#if matches}
-            <div class="map mobile">    
+            <div class="map tablet-mobile">    
                 <Map renderedContacts={renderedContacts} mapOptions={$mapOptions}/>
             </div>
         {/if}
@@ -38,19 +30,14 @@
         margin-left: auto;
         margin-right: auto;
         z-index: 5;
-        position: sticky; /* no idea what is setting this to `static` */
+        position: sticky; /* Override: no idea what is setting this to `static` */
     }
 
 	/* Device-specific map layout */
-	.computer {
+	.desktop {
         height: 800px;
     }
-    .tablet {
-        flex-grow: 1;
-        height: 100vh;
-        width: 100vw;
-    }
-    .mobile {
+    .tablet-mobile {
         flex-grow: 1;
         height: 100vh;
         width: 100vw;

@@ -5,13 +5,16 @@
     import StarRating      from "../ui/StarRating.svelte"
 
     export let review: Review
+    export let displayHeader = false
 </script>
 
 <Card class="text-center m-4" size="xl" padding="lg">
-    <h2>
-        Review of { review.contactName }
-    </h2>
-    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex justify-between">
+    {#if displayHeader}
+        <h2>
+            Review of { review.contactName }
+        </h2>
+    {/if}
+    <h5 class="mb-2 text-2xl tracking-tight text-gray-900 dark:text-white flex justify-between">
         { review.title }
         <StarRating currentRating={review.rating} active={false} color={'yellow'}></StarRating>
     </h5>

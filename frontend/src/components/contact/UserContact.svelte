@@ -61,7 +61,7 @@
 </script>
 
 <div>
-    <ContactDetails contact={contact} className={''} />
+    <ContactDetails contact={contact} className={'mb-4'} />
     { contact.contactType}
 
     <Button on:click={showReviews}>{ reviewButton }</Button>

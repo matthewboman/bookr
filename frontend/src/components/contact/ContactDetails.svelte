@@ -15,7 +15,7 @@
         className={'flex'}
         name={contact.displayName} 
         rating={contact.averageRating} 
-        starColor={'red'}
+        starColor={'yellow'}
         starSize={25}
     />
     <ContactAddress
@@ -23,11 +23,11 @@
         contact={contact}
     />
     <ContactCapacity
-        className={''}
+        className={'mb-2'}
         capacity={contact.capacity}
     />
     <ContactLinks
-        className={''}
+        className={'mb-2'}
         link={contact.contactForm}
         email={contact.email}
     />

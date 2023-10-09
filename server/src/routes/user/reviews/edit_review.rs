@@ -24,9 +24,9 @@ pub async fn user_edit_review(
 
     user_matches(user_id, &review.user_id)
         .context("User IDs don't match when editing review")?;
-    edit_review(review, &pool)
+    let review = edit_review(review, &pool)
         .await
         .context("Failed to update review")?;
 
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::Ok().json(review))
 }

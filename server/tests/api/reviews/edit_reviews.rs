@@ -110,7 +110,7 @@ async fn admin_can_edit_review() {
 
     // Admin login and edit review
     let response = app.admin_login().await;
-    let reviews = app.admin_get_reviews()
+    let reviews = app.admin_get_recent_reviews()
         .await
         .json::<Reviews>()
         .await

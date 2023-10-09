@@ -51,8 +51,9 @@
         )
 
         if (response.status === 200) {
+            let editedReview = await response.json()
             dispatch('disallowEditReview')
-            $contactReviews = [ review, ...$contactReviews ]
+            $contactReviews = [ editedReview, ...$contactReviews ]
         }
     }
 
@@ -79,8 +80,9 @@
         )
 
         if (response.status === 200) {
+            let newReview = await response.json()
             dispatch('disallowEditReview')
-            $contactReviews = [ review, ...$contactReviews ]
+            $contactReviews = [ newReview, ...$contactReviews ]
         }
     }
 

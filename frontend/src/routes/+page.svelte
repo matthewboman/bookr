@@ -9,14 +9,20 @@
     import { get }          from '../api'
     import { getUserId, isAuthenticated } from '../functions'
     import type { Contact } from '../types'
-    import { authenticated, genres, selectedContact, userId } from "../store"
+    import { 
+        authenticated,
+        contactList,
+        genres,
+        mapOptions,
+        selectedContact,
+        userId
+    } from "../store"
 
     const CONTACTS_URL     = "/contacts"
     const GENRES_URL       = "/genres"
     const PRIVATE_CONTACTS = "/user/private-contacts"
 
-	let LeafletContainer: any
-    let contactList: Contact[] = []
+	let LeafletMap: any
 	let filteredContacts: Contact[] = []
     $: renderedContacts = filteredContacts
 
@@ -27,18 +33,18 @@
 	// Workaround bc `browser` isn't defined w/ SSR
 	async function getMap() {
 		if (browser) {
-			LeafletContainer = (await import('../components/map/MapContainer.svelte')).default
+			LeafletMap = (await import('../components/map/Map.svelte')).default
 		}
 	}
 
     async function getPrivateContacts() {
         let contacts = await get(PRIVATE_CONTACTS).then(r => r.json())
-        contactList = [...contactList, ...contacts]
+        $contactList = [...$contactList, ...contacts]
     }
 
     async function getPublicContacts() {
         let contacts = await get(CONTACTS_URL).then(r => r.json())
-        contactList = [...contactList, ...contacts]
+        $contactList = [...$contactList, ...contacts]
     }
 
     onMount(async () => {
@@ -55,44 +61,35 @@
     })
 </script>
 
-{#if contactList.length}
+{#if $contactList.length}
     <!-- Desktop -->
     <MediaQuery query="(min-width: 1281px)" let:matches>
         {#if matches}
             <div class="main-container mx-auto">
                 <div class="desktop-filter px-4 py-4">
-                    <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
+                    <FilterContainer bind:filteredContacts={filteredContacts} />
                 </div>
-                <div class="desktop-map">
-                    <svelte:component this={LeafletContainer} {renderedContacts}/> 
+                <div class="map desktop">
+                    <svelte:component this={LeafletMap} {renderedContacts} mapOptions={$mapOptions}/>
                 </div>
             </div>
+            {#if $selectedContact}
+                <SelectedContact/>
+            {/if}
         {/if}
     </MediaQuery>
 
-    <!-- Tablet --> 
-    <MediaQuery query="(min-width: 481px) and (max-width: 1280px)" let:matches>
+    <!-- Tablet && Mobile--> 
+    <MediaQuery query="(max-width: 1280px)" let:matches>
         {#if matches}
-            <svelte:component this={LeafletContainer} {renderedContacts}/> 
+            <div class="map tablet-mobile">
+                <svelte:component this={LeafletMap} {renderedContacts} mapOptions={$mapOptions}/>
+            </div>
             <Toggle >
-                <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
+                <FilterContainer bind:filteredContacts={filteredContacts} />
             </Toggle>
         {/if}
     </MediaQuery>
-    
-    <!-- Mobile -->
-    <MediaQuery query="(max-width: 480px)" let:matches>
-        {#if matches}
-            <svelte:component this={LeafletContainer} {renderedContacts}/> 
-            <Toggle >
-                <FilterContainer bind:filteredContacts={filteredContacts} contactList={contactList} />
-            </Toggle>
-        {/if}
-    </MediaQuery>
-
-    {#if $selectedContact}
-        <SelectedContact/>
-    {/if}
 {:else}
     loading
 {/if}
@@ -108,26 +105,21 @@
         display: flex;
         width: 100vw;
     }
-
-    .desktop-filter {
-        
+    .map {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        z-index: 5;
+        position: sticky; /* Override: no idea what is setting this to `static` */
     }
-
-    .filter-container {
-        backdrop-filter: blur(2px);
-        border-style: solid;
-        border-top-width: 4px;
-        /* position: absolute; */
-        /* bottom: 0px; */
-        z-index: 10;
-        background-color: rgba(31, 41, 55,0.9);
-        width: 100vw;
-        height: 54px; 
-        padding: 16px 16px 0px;
-    }
-
-    .desktop-map {
+    .desktop {
+        height: 800px;
         min-width: 65vw;
         flex-grow: 1;
+    }
+    .tablet-mobile {
+        flex-grow: 1;
+        height: 100vh;
+        width: 100vw;
     }
 </style>

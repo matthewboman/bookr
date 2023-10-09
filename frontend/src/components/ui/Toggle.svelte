@@ -38,6 +38,7 @@
             anime({
                 targets: `.${toggleClass}`,
                 height:  322,
+                width: '100vw',
                 padding: 16,
                 easing,
                 duration
@@ -78,7 +79,7 @@
         border-top-width: 4px;
         z-index: 10;
         background-color: rgba(31, 41, 55,0.9);
-        width: 100vw;
+        /* width: 100vw; */
         height: 54px; 
         padding: 16px 16px 0px;
     }

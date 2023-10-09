@@ -13,6 +13,7 @@
     import ContactReview   from './ContactReview.svelte'
 
     export let reviews: Review[]
+    export let displayHeader: false
 
     let allowAddReview    = false
     let allowDeleteReview = false
@@ -37,7 +38,7 @@
     })
 </script>
 
-<div class="flex">
+<div class="grid grid-cols-4 gap-4">
     {#if allowAddReview && $selectedContact}
         <EditReview on:disallowEditReview={() => allowAddReview = false}/>
     {/if}

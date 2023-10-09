@@ -3,6 +3,7 @@ import { writable } from 'svelte/store'
 export const admin           = writable(false)
 export const adminReviews    = writable([])
 export const authenticated   = writable(false)
+export const contactList     = writable([])
 export const contactReviews  = writable([])
 export const genres          = writable([])
 export const mapOptions      = writable({

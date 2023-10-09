@@ -202,9 +202,9 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
-    pub async fn admin_get_reviews(&self) -> reqwest::Response {
+    pub async fn admin_get_recent_reviews(&self) -> reqwest::Response {
         self.api_client
-            .get(&format!("{}/admin/all-reviews", &self.address))
+            .get(&format!("{}/admin/recent-reviews", &self.address))
             .send()
             .await
             .expect("Failed to execute request")

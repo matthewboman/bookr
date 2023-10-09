@@ -23,14 +23,14 @@
     xmlns="http://www.w3.org/2000/svg"
     width={size}
     height={size}
-    viewBox="0 0 51 48"
+    viewBox="0 0 50 40"
     class="star"
     on:mouseover on:mouseleave on:click data-starid={starId}
 >
     <defs>
         {#if percentFilled}
             <clipPath id="half-clip">
-                <rect x="0" y="0" width={percentFilled} height="48" />
+                <rect x="0" y="0" width={percentFilled} height={`${2 * size}`} />
             </clipPath>
         {/if}
     </defs>

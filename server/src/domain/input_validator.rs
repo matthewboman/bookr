@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-const FORBIDDEN_CHARACTERS: [char; 9] = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
+const FORBIDDEN_CHARACTERS: [char; 8] = ['(', ')', '"', '<', '>', '\\', '{', '}'];
 
 fn contains_forbidden_characters(s: &str) -> bool {
     s.chars().any(|g| FORBIDDEN_CHARACTERS.contains(&g))

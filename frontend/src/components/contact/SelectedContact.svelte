@@ -54,7 +54,7 @@
 </script>
 
 <div>
-    <ContactDetails contact={$selectedContact} className={''} />
+    <ContactDetails contact={$selectedContact} className={'mb-4'} />
 
     {#if canEditContact}
         <Button on:click={editContact}>Edit</Button>
@@ -66,4 +66,6 @@
     </Modal>
 </div>
 
-<Reviews reviews={$contactReviews}/>
+{#if $contactReviews}
+    <Reviews reviews={$contactReviews} />
+{/if}

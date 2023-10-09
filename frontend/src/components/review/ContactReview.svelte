@@ -15,6 +15,7 @@
     import ReviewDispaly   from "./Review.svelte"
 
     export let review: Review
+    export let displayHeader: boolean
     let errorMessage:  string | null
 
     const dispatch = createEventDispatcher()
@@ -26,7 +27,7 @@
             reviewId: review.reviewId,
         }
 
-        let response = await post(url, review)
+        let response = await post(url, data)
         errorMessage = handleResponse(
             response,
             "There was an error deleting the review. Please try again.",
@@ -57,7 +58,7 @@
     }
 </script>
 
-<ReviewDispaly review={review}>
+<ReviewDispaly review={review} {displayHeader}>
     <div class="basis-1/4 gap-4" slot="actions">
         {#if $admin || review.userId === $userId}
             <GradientButton type="submit" class="w-full1" on:click={() => deleteReview(review)}>Delete review</GradientButton>

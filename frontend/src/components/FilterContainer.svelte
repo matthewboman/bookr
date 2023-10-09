@@ -2,14 +2,13 @@
 	import { onMount } from 'svelte'
     import { Button, Checkbox, Input, Label, MultiSelect, Search } from 'flowbite-svelte'
 
-    import { post }               from '../api'
-    import { handleResponse }     from '../functions'
-    import { genres, mapOptions } from '../store'
-    import type { Contact }       from '../types'
-    import ErrorMessage           from './ui/ErrorMessage.svelte'
+    import { post }           from '../api'
+    import { handleResponse } from '../functions'
+    import { contactList, genres, mapOptions } from '../store'
+    import type { Contact }   from '../types'
+    import ErrorMessage       from './ui/ErrorMessage.svelte'
     
     export let filteredContacts: Contact[]
-    export let contactList:      Contact[]
 
     const CITY_SEARCH_URL = "/find-coordinates-for-city"
     const CITY_ZOOM       = 12
@@ -87,7 +86,7 @@
     }
 
     function update() {
-        filteredContacts = contactList
+        filteredContacts = $contactList
             .filter(c => capacityFilter(c))
             .filter(c => ageRangeFilter(c))
             .filter(c => genreFilter(c))

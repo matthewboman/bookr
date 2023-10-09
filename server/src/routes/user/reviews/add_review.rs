@@ -28,7 +28,7 @@ pub async fn review_contact(
         .await
         .context("Failed to find Contact with provided contact_id")?;
 
-    insert_review(review, user_id, &mut transaction)
+    let review = insert_review(review, user_id, &mut transaction)
         .await
         .context("Failed to insert new review into database")?;
     
@@ -37,7 +37,7 @@ pub async fn review_contact(
         .await
         .context("Failed to commit SQL transaction to add new review")?;
     
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::Ok().json(review))
 }
 
 #[tracing::instrument(
